@@ -59,7 +59,7 @@ run_bookmark (gpointer data)
 static void
 doadd_bookmark (gpointer * data, gftp_dialog_data * ddata)
 {
-  GtkItemFactoryEntry test = { NULL, NULL, run_bookmark, 0, MN_(NULL) };
+  GtkItemFactoryEntry test = { NULL, NULL, run_bookmark, 0, NULL, NULL };
   const char *edttxt, *spos;
   gftp_bookmarks_var * tempentry;
   char *dpos, *proto;
@@ -68,14 +68,14 @@ doadd_bookmark (gpointer * data, gftp_dialog_data * ddata)
   if (*edttxt == '\0')
     {
       ftp_log (gftp_logging_error, NULL,
-	       _("Add Bookmark: You must enter a name for the bookmark\n"));
+           _("Add Bookmark: You must enter a name for the bookmark\n"));
       return;
     }
 
   if (g_hash_table_lookup (gftp_bookmarks_htable, edttxt) != NULL)
     {
       ftp_log (gftp_logging_error, NULL,
-	       _("Add Bookmark: Cannot add bookmark %s because that name already exists\n"), edttxt);
+           _("Add Bookmark: Cannot add bookmark %s because that name already exists\n"), edttxt);
       return;
     }
 
@@ -121,7 +121,7 @@ doadd_bookmark (gpointer * data, gftp_dialog_data * ddata)
 
   test.path = g_strconcat ("/Bookmarks/", tempentry->path, NULL);
   gtk_item_factory_create_item (factory, &test, (gpointer) tempentry->path,
-				1);
+                1);
   g_free (test.path);
   gftp_write_bookmarks_file ();
 }
@@ -139,7 +139,7 @@ add_bookmark (gpointer data)
   if (*edttxt == '\0')
     {
       ftp_log (gftp_logging_error, NULL,
-	       _("Add Bookmark: You must enter a hostname\n"));
+           _("Add Bookmark: You must enter a hostname\n"));
       return;
     }
 
@@ -150,7 +150,7 @@ add_bookmark (gpointer data)
 void
 build_bookmarks_menu (void)
 {
-  GtkItemFactoryEntry test = { NULL, NULL, NULL, 0, MN_(NULL) };
+  GtkItemFactoryEntry test = { NULL, NULL, NULL, 0, NULL, NULL };
   gftp_bookmarks_var * tempentry;
 
   tempentry = gftp_bookmarks->children;
@@ -203,28 +203,28 @@ copy_bookmarks (gftp_bookmarks_var * bookmarks)
       newentry->save_password = tempentry->save_password;
       newentry->cnode = tempentry->cnode;
       if (tempentry->path)
-	newentry->path = g_strdup (tempentry->path);
+    newentry->path = g_strdup (tempentry->path);
 
       if (tempentry->hostname)
-	newentry->hostname = g_strdup (tempentry->hostname);
+    newentry->hostname = g_strdup (tempentry->hostname);
 
       if (tempentry->protocol)
-	newentry->protocol = g_strdup (tempentry->protocol);
+    newentry->protocol = g_strdup (tempentry->protocol);
 
       if (tempentry->local_dir)
-	newentry->local_dir = g_strdup (tempentry->local_dir);
+    newentry->local_dir = g_strdup (tempentry->local_dir);
 
       if (tempentry->remote_dir)
-	newentry->remote_dir = g_strdup (tempentry->remote_dir);
+    newentry->remote_dir = g_strdup (tempentry->remote_dir);
 
       if (tempentry->user)
-	newentry->user = g_strdup (tempentry->user);
+    newentry->user = g_strdup (tempentry->user);
 
       if (tempentry->pass)
-	newentry->pass = g_strdup (tempentry->pass);
+    newentry->pass = g_strdup (tempentry->pass);
 
       if (tempentry->acct)
-	newentry->acct = g_strdup (tempentry->acct);
+    newentry->acct = g_strdup (tempentry->acct);
 
       newentry->port = tempentry->port;
 
@@ -236,45 +236,45 @@ copy_bookmarks (gftp_bookmarks_var * bookmarks)
       newentry->num_local_options_vars = tempentry->num_local_options_vars;
 
       if (sibling == NULL)
-	{
-	  if (preventry->children == NULL)
-	    preventry->children = newentry;
-	  else
-	    {
-	      tentry = preventry->children;
-	      while (tentry->next != NULL)
-		tentry = tentry->next;
-	      tentry->next = newentry;
-	    }
-	}
+    {
+      if (preventry->children == NULL)
+        preventry->children = newentry;
       else
-	sibling->next = newentry;
+        {
+          tentry = preventry->children;
+          while (tentry->next != NULL)
+        tentry = tentry->next;
+          tentry->next = newentry;
+        }
+    }
+      else
+    sibling->next = newentry;
       newentry->prev = preventry;
 
       if (tempentry->children != NULL)
-	{
-	  preventry = newentry;
-	  sibling = NULL;
-	  tempentry = tempentry->children;
-	}
+    {
+      preventry = newentry;
+      sibling = NULL;
+      tempentry = tempentry->children;
+    }
       else
-	{
-	  if (tempentry->next == NULL)
-	    {
-	      sibling = NULL;
-	      while (tempentry->next == NULL && tempentry->prev != NULL)
-		{
-		  tempentry = tempentry->prev;
-		  preventry = preventry->prev;
-		}
-	      tempentry = tempentry->next;
-	    }
-	  else
-	    {
-	      sibling = newentry;
-	      tempentry = tempentry->next;
-	    }
-	}
+    {
+      if (tempentry->next == NULL)
+        {
+          sibling = NULL;
+          while (tempentry->next == NULL && tempentry->prev != NULL)
+        {
+          tempentry = tempentry->prev;
+          preventry = preventry->prev;
+        }
+          tempentry = tempentry->next;
+        }
+      else
+        {
+          sibling = newentry;
+          tempentry = tempentry->next;
+        }
+    }
     }
 
   return (new_bm);
@@ -384,8 +384,6 @@ bm_close_dialog (GtkWidget * widget, GtkWidget * dialog)
     }
 }
 
-
-#if GTK_MAJOR_VERSION > 1 
 static void
 editbm_action (GtkWidget * widget, gint response, gpointer user_data)
 {
@@ -398,14 +396,12 @@ editbm_action (GtkWidget * widget, gint response, gpointer user_data)
         bm_close_dialog (NULL, widget);
     }
 }
-#endif
-
 
 static void
 do_make_new (gpointer data, gftp_dialog_data * ddata)
 {
   GdkPixmap * closedir_pixmap, * opendir_pixmap;
-  GdkBitmap * closedir_bitmap, * opendir_bitmap;  
+  GdkBitmap * closedir_bitmap, * opendir_bitmap;
   gftp_bookmarks_var * tempentry, * newentry;
   char *pos, *text[2];
   const char *str;
@@ -443,22 +439,22 @@ do_make_new (gpointer data, gftp_dialog_data * ddata)
     {
       tempentry = new_bookmarks->children;
       while (tempentry->next != NULL)
-	tempentry = tempentry->next;
+    tempentry = tempentry->next;
       tempentry->next = newentry;
     }
 
   text[0] = text[1] = newentry->path;
 
   if (newentry->isfolder)
-    newentry->cnode = gtk_ctree_insert_node (GTK_CTREE (tree), 
+    newentry->cnode = gtk_ctree_insert_node (GTK_CTREE (tree),
                                              new_bookmarks->cnode, NULL,
-			                     text, 5, closedir_pixmap, 
+                                 text, 5, closedir_pixmap,
                                              closedir_bitmap, opendir_pixmap,
-			                     opendir_bitmap, FALSE, FALSE);
+                                 opendir_bitmap, FALSE, FALSE);
   else
-    newentry->cnode = gtk_ctree_insert_node (GTK_CTREE (tree), 
+    newentry->cnode = gtk_ctree_insert_node (GTK_CTREE (tree),
                                              new_bookmarks->cnode, NULL,
-                                             text, 5, NULL, NULL, NULL, NULL, 
+                                             text, 5, NULL, NULL, NULL, NULL,
                                              TRUE, FALSE);
 
   gtk_ctree_node_set_row_data (GTK_CTREE (tree), newentry->cnode, newentry);
@@ -470,8 +466,8 @@ static void
 new_folder_entry (gpointer data)
 {
   MakeEditDialog (_("New Folder"),
-		  _("Enter the name of the new folder to create"), NULL, 1,
-		  NULL, gftp_dialog_button_create, 
+          _("Enter the name of the new folder to create"), NULL, 1,
+          NULL, gftp_dialog_button_create,
                   do_make_new, (gpointer) 0x1, NULL, NULL);
 }
 
@@ -480,8 +476,8 @@ static void
 new_item_entry (gpointer data)
 {
   MakeEditDialog (_("New Item"),
-		  _("Enter the name of the new item to create"), NULL, 1,
-		  NULL, gftp_dialog_button_create,
+          _("Enter the name of the new item to create"), NULL, 1,
+          NULL, gftp_dialog_button_create,
                   do_make_new, NULL, NULL, NULL);
 }
 
@@ -499,7 +495,7 @@ do_delete_entry (gftp_bookmarks_var * entry, gftp_dialog_data * ddata)
     {
       tempentry = entry->prev->children;
       while (tempentry->next != entry)
-	tempentry = tempentry->next;
+    tempentry = tempentry->next;
       tempentry->next = entry->next;
     }
 
@@ -511,20 +507,20 @@ do_delete_entry (gftp_bookmarks_var * entry, gftp_dialog_data * ddata)
       gftp_free_bookmark (tempentry, 0);
 
       if (tempentry->children != NULL)
-	{
-	  tempentry = tempentry->children;
-	  continue;
-	}
+    {
+      tempentry = tempentry->children;
+      continue;
+    }
       else if (tempentry->next == NULL && tempentry->prev != NULL)
-	{
-	  delentry = tempentry->prev;
-	  g_free (tempentry);
-	  tempentry = delentry->next;
-	  if (delentry != entry)
-	    g_free (delentry);
-	}
+    {
+      delentry = tempentry->prev;
+      g_free (tempentry);
+      tempentry = delentry->next;
+      if (delentry != entry)
+        g_free (delentry);
+    }
       else
-	tempentry = tempentry->next;
+    tempentry = tempentry->next;
     }
   g_free (entry);
 }
@@ -540,7 +536,7 @@ delete_entry (gpointer data)
     return;
   entry =
     gtk_ctree_node_get_row_data (GTK_CTREE (tree),
-				 GTK_CLIST (tree)->selection->data);
+                 GTK_CLIST (tree)->selection->data);
   if (entry == NULL || entry->prev == NULL)
     return;
 
@@ -549,12 +545,12 @@ delete_entry (gpointer data)
   else
     {
       if ((pos = strrchr (entry->path, '/')) == NULL)
-	pos = entry->path;
+    pos = entry->path;
       else
-	pos++;
+    pos++;
 
       tempstr = g_strdup_printf (_("Are you sure you want to erase the bookmark\n%s and all its children?"), pos);
-      MakeYesNoDialog (_("Delete Bookmark"), tempstr, do_delete_entry, entry, 
+      MakeYesNoDialog (_("Delete Bookmark"), tempstr, do_delete_entry, entry,
                        NULL, NULL);
       g_free (tempstr);
     }
@@ -606,7 +602,7 @@ _add_tree_node (gftp_bookmarks_var * entry, char *path, int isleaf,
   else
     parent = entry->prev->cnode;
 
-  if (isleaf) 
+  if (isleaf)
     entry->cnode = gtk_ctree_insert_node (GTK_CTREE (tree), parent, NULL, text,
                                           5, NULL, NULL, NULL, NULL, TRUE,
                                           expanded);
@@ -634,10 +630,10 @@ build_bookmarks_tree (void)
       tempentry->cnode = NULL;
 
       if (tempentry->children != NULL)
-	{
-	  tempentry = tempentry->children;
-	  continue;
-	}
+    {
+      tempentry = tempentry->children;
+      continue;
+    }
       else if (strchr (tempentry->path, '/') == NULL && tempentry->isfolder)
         _add_tree_node (tempentry, NULL, 0, 0);
       else
@@ -657,7 +653,7 @@ build_bookmarks_tree (void)
             }
 
           _add_tree_node (tempentry, NULL, TRUE, 0);
-	}
+    }
 
       while (tempentry->next == NULL && tempentry->prev != NULL)
         tempentry = tempentry->prev;
@@ -747,10 +743,10 @@ entry_apply_changes (GtkWidget * widget, gftp_bookmarks_var * entry)
       entry->next = NULL;
 
       while (tempentry != NULL)
-	{
+    {
           bmentry = g_hash_table_lookup (gftp_bookmarks_htable,
                                          tempentry->path);
-	  if (bmentry == NULL)
+      if (bmentry == NULL)
             bmentry = g_hash_table_lookup (new_bookmarks_htable,
                                            tempentry->path);
 
@@ -762,48 +758,35 @@ entry_apply_changes (GtkWidget * widget, gftp_bookmarks_var * entry)
             g_free (tempentry->path);
 
           if (*(tempentry->path + oldpathlen) == '\0')
-	    tempentry->path = g_strdup (newpath);
+        tempentry->path = g_strdup (newpath);
           else
-	    tempentry->path = gftp_build_path (NULL, newpath,
+        tempentry->path = gftp_build_path (NULL, newpath,
                                                tempentry->path + oldpathlen,
                                                NULL);
 
-	  g_hash_table_insert (new_bookmarks_htable, tempentry->path,
+      g_hash_table_insert (new_bookmarks_htable, tempentry->path,
                                tempentry);
 
           gtk_ctree_node_set_text (GTK_CTREE (tree), tempentry->cnode, 0,
                                    tempentry->path);
 
-	  if (tempentry->children != NULL)
-	    tempentry = tempentry->children;
+      if (tempentry->children != NULL)
+        tempentry = tempentry->children;
           else
             {
-	      while (tempentry->next == NULL && tempentry != entry &&
+          while (tempentry->next == NULL && tempentry != entry &&
                      tempentry->prev != NULL)
                 tempentry = tempentry->prev;
 
-	      tempentry = tempentry->next;
+          tempentry = tempentry->next;
             }
-	}
+    }
 
       entry->next = nextentry;
     }
 
   g_free (newpath);
 }
-
-
-#if GTK_MAJOR_VERSION == 1
-
-static void
-entry_close_dialog (void * data)
-{
-  gtk_widget_destroy (bm_dialog);
-  bm_dialog = NULL;
-}
-
-
-#else
 
 static void
 bmedit_action (GtkWidget * widget, gint response, gpointer user_data)
@@ -817,9 +800,7 @@ bmedit_action (GtkWidget * widget, gint response, gpointer user_data)
         gtk_widget_destroy (widget);
         bm_dialog = NULL;
     }
-}   
-#endif
-
+}
 
 static void
 edit_entry (gpointer data)
@@ -839,23 +820,18 @@ edit_entry (gpointer data)
     return;
 
   entry = gtk_ctree_node_get_row_data (GTK_CTREE (tree),
-				 GTK_CLIST (tree)->selection->data);
+                 GTK_CLIST (tree)->selection->data);
 
   if (entry == NULL || entry == new_bookmarks)
     return;
 
-#if GTK_MAJOR_VERSION == 1
-  bm_dialog = gtk_dialog_new ();
-  gtk_window_set_title (GTK_WINDOW (bm_dialog), _("Edit Entry"));
-  gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (bm_dialog)->action_area), 15);
-#else
   bm_dialog = gtk_dialog_new_with_buttons (_("Edit Entry"), NULL, 0,
                                            GTK_STOCK_CANCEL,
                                            GTK_RESPONSE_CANCEL,
                                            GTK_STOCK_SAVE,
                                            GTK_RESPONSE_OK,
                                            NULL);
-#endif
+
   gtk_window_set_wmclass (GTK_WINDOW (bm_dialog), "Edit Bookmark Entry",
                           "gFTP");
   gtk_window_set_position (GTK_WINDOW (bm_dialog), GTK_WIN_POS_MOUSE);
@@ -871,7 +847,7 @@ edit_entry (gpointer data)
 
   notebook = gtk_notebook_new ();
   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (bm_dialog)->vbox), notebook, TRUE,
-		      TRUE, 0);
+              TRUE, 0);
   gtk_widget_show (notebook);
 
   table = gtk_table_new (11, 2, FALSE);
@@ -949,7 +925,7 @@ edit_entry (gpointer data)
       gtk_widget_show (tempwid);
       if (entry->protocol &&
           strcmp (gftp_protocols[i].name, entry->protocol) == 0)
-	num = i;
+    num = i;
     }
   gtk_option_menu_set_menu (GTK_OPTION_MENU (menu), bm_protocol);
   gtk_option_menu_set_history (GTK_OPTION_MENU (menu), num);
@@ -1032,36 +1008,13 @@ edit_entry (gpointer data)
   else
     {
       gtk_signal_connect (GTK_OBJECT (anon_chk), "toggled",
-			  GTK_SIGNAL_FUNC (set_userpass_visible), NULL);
+              GTK_SIGNAL_FUNC (set_userpass_visible), NULL);
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (anon_chk), entry->user
-				    && strcmp (entry->user, "anonymous") == 0);
+                    && strcmp (entry->user, "anonymous") == 0);
     }
   gtk_widget_show (anon_chk);
-
-#if GTK_MAJOR_VERSION == 1
-  tempwid = gtk_button_new_with_label (_("OK"));
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (bm_dialog)->action_area), tempwid,
-		      TRUE, TRUE, 0);
-  gtk_signal_connect (GTK_OBJECT (tempwid), "clicked",
-		      GTK_SIGNAL_FUNC (entry_apply_changes),
-		      (gpointer) entry);
-  gtk_signal_connect_object (GTK_OBJECT (tempwid), "clicked",
-			     GTK_SIGNAL_FUNC (entry_close_dialog), NULL);
-  GTK_WIDGET_SET_FLAGS (tempwid, GTK_CAN_DEFAULT);
-  gtk_widget_show (tempwid);
-
-  tempwid = gtk_button_new_with_label (_("  Cancel  "));
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (bm_dialog)->action_area), tempwid,
-		      TRUE, TRUE, 0);
-  gtk_signal_connect_object (GTK_OBJECT (tempwid), "clicked",
-			     GTK_SIGNAL_FUNC (entry_close_dialog), NULL);
-  GTK_WIDGET_SET_FLAGS (tempwid, GTK_CAN_DEFAULT);
-  gtk_widget_grab_focus (tempwid);
-  gtk_widget_show (tempwid);
-#else
   g_signal_connect (GTK_OBJECT (bm_dialog), "response",
                     G_CALLBACK (bmedit_action), (gpointer) entry);
-#endif
 
   gftp_gtk_setup_bookmark_options (notebook, entry);
 
@@ -1075,21 +1028,21 @@ bm_enter (GtkWidget * widget, GdkEventKey * event, gpointer data)
   if (event->type == GDK_KEY_PRESS)
     {
       if (event->keyval == GDK_Return || event->keyval == GDK_KP_Enter)
-	{
-	  edit_entry (NULL);
-	  return (FALSE);
-	}
+    {
+      edit_entry (NULL);
+      return (FALSE);
+    }
       else if (event->keyval == GDK_KP_Delete || event->keyval == GDK_Delete)
-	{
-	  delete_entry (NULL);
-	  return (FALSE);
-	}
+    {
+      delete_entry (NULL);
+      return (FALSE);
+    }
     }
   return (TRUE);
 }
 
 
-static inline gboolean 
+static inline gboolean
 move_possible (GtkCTree *ctree, GtkCTreeNode *child, GtkCTreeNode *parent,
                GtkCTreeNode *sibling)
 {
@@ -1099,7 +1052,7 @@ move_possible (GtkCTree *ctree, GtkCTreeNode *child, GtkCTreeNode *parent,
 
 static void
 after_move (GtkCTree * ctree, GtkCTreeNode * child, GtkCTreeNode * parent,
-	    GtkCTreeNode * sibling, gpointer data)
+        GtkCTreeNode * sibling, gpointer data)
 {
 
   gftp_bookmarks_var * childentry, * siblingentry, * parententry, * tempentry;
@@ -1115,7 +1068,7 @@ after_move (GtkCTree * ctree, GtkCTreeNode * child, GtkCTreeNode * parent,
   else
     {
       while (tempentry->next != childentry)
-	tempentry = tempentry->next;
+    tempentry = tempentry->next;
       tempentry->next = childentry->next;
     }
   childentry->prev = parententry;
@@ -1124,57 +1077,57 @@ after_move (GtkCTree * ctree, GtkCTreeNode * child, GtkCTreeNode * parent,
       childentry->next = parententry->children;
       parententry->children = childentry;
       gtk_ctree_move (ctree, child, parententry->prev->cnode,
-		      parententry->cnode);
+              parententry->cnode);
     }
   else
     {
       if (siblingentry == NULL || parententry->children == siblingentry)
-	{
-	  childentry->next = parententry->children;
-	  parententry->children = childentry;
-	}
+    {
+      childentry->next = parententry->children;
+      parententry->children = childentry;
+    }
       else
-	{
-	  tempentry = parententry->children;
-	  while (tempentry->next != siblingentry)
-	    tempentry = tempentry->next;
-	  childentry->next = tempentry->next;
-	  tempentry->next = childentry;
-	}
+    {
+      tempentry = parententry->children;
+      while (tempentry->next != siblingentry)
+        tempentry = tempentry->next;
+      childentry->next = tempentry->next;
+      tempentry->next = childentry;
+    }
 
       tempentry = childentry;
       while (tempentry != NULL)
-	{
-	  g_hash_table_remove (new_bookmarks_htable, tempentry->path);
-	  if ((pos = strrchr (tempentry->path, '/')) == NULL)
-	    pos = tempentry->path;
-	  else
-	    pos++;
-	  tempstr = g_strdup_printf ("%s/%s", tempentry->prev->path, pos);
-	  for (stpos = tempstr; *stpos == '/'; stpos++);
-	  g_free (tempentry->path);
-	  tempentry->path = g_strdup (stpos);
-	  g_free (tempstr);
-	  g_hash_table_insert (new_bookmarks_htable, tempentry->path,
-			       tempentry);
-	  if (tempentry->children != NULL)
-	    tempentry = tempentry->children;
-	  else
-	    {
-	      if (tempentry->next == NULL)
-		{
-		  if (tempentry->prev == childentry)
-		    break;
-		  else
-		    {
-		      while (tempentry->next == NULL
-			     && tempentry->prev != NULL)
-			tempentry = tempentry->prev;
-		    }
-		}
-	      tempentry = tempentry->next;
-	    }
-	}
+    {
+      g_hash_table_remove (new_bookmarks_htable, tempentry->path);
+      if ((pos = strrchr (tempentry->path, '/')) == NULL)
+        pos = tempentry->path;
+      else
+        pos++;
+      tempstr = g_strdup_printf ("%s/%s", tempentry->prev->path, pos);
+      for (stpos = tempstr; *stpos == '/'; stpos++);
+      g_free (tempentry->path);
+      tempentry->path = g_strdup (stpos);
+      g_free (tempstr);
+      g_hash_table_insert (new_bookmarks_htable, tempentry->path,
+                   tempentry);
+      if (tempentry->children != NULL)
+        tempentry = tempentry->children;
+      else
+        {
+          if (tempentry->next == NULL)
+        {
+          if (tempentry->prev == childentry)
+            break;
+          else
+            {
+              while (tempentry->next == NULL
+                 && tempentry->prev != NULL)
+            tempentry = tempentry->prev;
+            }
+        }
+          tempentry = tempentry->next;
+        }
+    }
     }
 }
 
@@ -1184,7 +1137,7 @@ bm_dblclick (GtkWidget * widget, GdkEventButton * event, gpointer data)
 {
   if (event->button == 3)
     gtk_item_factory_popup (edit_factory, (guint) event->x_root,
-			    (guint) event->y_root, 1, 0);
+                (guint) event->y_root, 1, 0);
   else if (event->type == GDK_2BUTTON_PRESS)
     {
       edit_entry (NULL);
@@ -1201,18 +1154,15 @@ edit_bookmarks (gpointer data)
   GtkItemFactory * ifactory;
   GtkWidget * scroll;
   GtkItemFactoryEntry menu_items[] = {
-    {N_("/_File"), NULL, 0, 0, MN_("<Branch>")},
-    {N_("/File/tearoff"), NULL, 0, 0, MN_("<Tearoff>")},
-    {N_("/File/New _Folder..."), NULL, new_folder_entry, 0, MN_(NULL)},
-    {N_("/File/New _Item..."), NULL, new_item_entry, 0, MS_(GTK_STOCK_NEW)},
-    {N_("/File/_Delete"), NULL, delete_entry, 0, MS_(GTK_STOCK_DELETE)},
-    {N_("/File/_Properties..."), NULL, edit_entry, 0, MS_(GTK_STOCK_PROPERTIES)},
-    {N_("/File/sep"), NULL, 0, 0, MN_("<Separator>")},
-    {N_("/File/_Close"), NULL, gtk_widget_destroy, 0, MS_(GTK_STOCK_CLOSE)}
+    {N_("/_File"), NULL, 0, 0, "<Branch>", NULL},
+    {N_("/File/tearoff"), NULL, 0, 0, "<Tearoff>", NULL},
+    {N_("/File/New _Folder..."), NULL, new_folder_entry, 0, NULL, NULL},
+    {N_("/File/New _Item..."), NULL, new_item_entry, 0, "<StockItem>", GTK_STOCK_NEW},
+    {N_("/File/_Delete"), NULL, delete_entry, 0, "<StockItem>", GTK_STOCK_DELETE},
+    {N_("/File/_Properties..."), NULL, edit_entry, 0, "<StockItem>", GTK_STOCK_PROPERTIES},
+    {N_("/File/sep"), NULL, 0, 0, "<Separator>", NULL},
+    {N_("/File/_Close"), NULL, gtk_widget_destroy, 0, "<StockItem>", GTK_STOCK_CLOSE}
   };
-#if GTK_MAJOR_VERSION == 1
-  GtkWidget * tempwid;
-#endif
 
   if (edit_bookmarks_dialog != NULL)
     {
@@ -1223,20 +1173,13 @@ edit_bookmarks (gpointer data)
   new_bookmarks = copy_bookmarks (gftp_bookmarks);
   new_bookmarks_htable = build_bookmarks_hash_table (new_bookmarks);
 
-#if GTK_MAJOR_VERSION == 1
-  edit_bookmarks_dialog = gtk_dialog_new ();
-  gtk_window_set_title (GTK_WINDOW (edit_bookmarks_dialog),
-                        _("Edit Bookmarks"));
-  gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (edit_bookmarks_dialog)->action_area), 15);
-#else
   edit_bookmarks_dialog = gtk_dialog_new_with_buttons (_("Edit Bookmarks"),
-                                                       NULL, 0, 
+                                                       NULL, 0,
                                                        GTK_STOCK_CANCEL,
                                                        GTK_RESPONSE_CANCEL,
-						       GTK_STOCK_SAVE,
+                               GTK_STOCK_SAVE,
                                                        GTK_RESPONSE_OK,
                                                        NULL);
-#endif
   gtk_window_set_wmclass (GTK_WINDOW(edit_bookmarks_dialog), "Edit Bookmarks",
                           "gFTP");
   gtk_window_set_position (GTK_WINDOW (edit_bookmarks_dialog),
@@ -1261,7 +1204,7 @@ edit_bookmarks (gpointer data)
 
   scroll = gtk_scrolled_window_new (NULL, NULL);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll),
-				  GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+                  GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_widget_set_size_request (scroll, 150, 200);
 
   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (edit_bookmarks_dialog)->vbox),
@@ -1280,42 +1223,18 @@ edit_bookmarks (gpointer data)
   gtk_clist_set_reorderable (GTK_CLIST (tree), 1);
   gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scroll), tree);
   gtk_signal_connect_after (GTK_OBJECT (tree), "key_press_event",
-			    GTK_SIGNAL_FUNC (bm_enter), (gpointer) tree);
+                GTK_SIGNAL_FUNC (bm_enter), (gpointer) tree);
   gtk_signal_connect_after (GTK_OBJECT (tree), "tree_move",
-			    GTK_SIGNAL_FUNC (after_move), NULL);
+                GTK_SIGNAL_FUNC (after_move), NULL);
   gtk_signal_connect_after (GTK_OBJECT (tree), "button_press_event",
-			    GTK_SIGNAL_FUNC (bm_dblclick), (gpointer) tree);
+                GTK_SIGNAL_FUNC (bm_dblclick), (gpointer) tree);
   gtk_ctree_set_drag_compare_func (GTK_CTREE(tree), &move_possible);
   gtk_widget_show (tree);
 
-#if GTK_MAJOR_VERSION == 1
-  tempwid = gtk_button_new_with_label (_("OK"));
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (edit_bookmarks_dialog)->action_area),
-                      tempwid, TRUE, TRUE, 0);
-  gtk_signal_connect (GTK_OBJECT (tempwid), "clicked",
-		      GTK_SIGNAL_FUNC (bm_apply_changes), NULL);
-  gtk_signal_connect (GTK_OBJECT (tempwid), "clicked",
-		      GTK_SIGNAL_FUNC (bm_close_dialog),
-                      (gpointer) edit_bookmarks_dialog);
-  GTK_WIDGET_SET_FLAGS (tempwid, GTK_CAN_DEFAULT);
-  gtk_widget_show (tempwid);
-
-  tempwid = gtk_button_new_with_label (_("  Cancel  "));
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (edit_bookmarks_dialog)->action_area),
-                      tempwid, TRUE, TRUE, 0);
-  gtk_signal_connect (GTK_OBJECT (tempwid), "clicked",
-		      GTK_SIGNAL_FUNC (bm_close_dialog),
-                      (gpointer) edit_bookmarks_dialog);
-  GTK_WIDGET_SET_FLAGS (tempwid, GTK_CAN_DEFAULT);
-  gtk_widget_grab_focus (tempwid);
-  gtk_widget_show (tempwid);
-#else
   g_signal_connect (GTK_OBJECT (edit_bookmarks_dialog), "response",
                     G_CALLBACK (editbm_action), NULL);
-#endif
 
   gtk_widget_show (edit_bookmarks_dialog);
 
   build_bookmarks_tree ();
 }
-

@@ -67,18 +67,18 @@ do_view_or_edit_file (gftp_window_data * fromwdata, int is_view)
           new_fle->destfile = g_strconcat (g_get_tmp_dir (),
                                            "/gftp-view.XXXXXX", suffix, NULL);
           new_fle->fd = mkstemps (new_fle->destfile, strlen (suffix));
-	}
+    }
       else
         {
-	  new_fle->destfile = g_strconcat (g_get_tmp_dir (),
-                                           "/gftp-view.XXXXXX", NULL);		
+      new_fle->destfile = g_strconcat (g_get_tmp_dir (),
+                                           "/gftp-view.XXXXXX", NULL);
           new_fle->fd = mkstemps (new_fle->destfile, 0);
-	}
-		
+    }
+
       if (new_fle->fd < 0)
         {
-          ftp_log (gftp_logging_error, NULL, 
-                   _("Error: Cannot open %s for writing: %s\n"),  
+          ftp_log (gftp_logging_error, NULL,
+                   _("Error: Cannot open %s for writing: %s\n"),
                    new_fle->destfile, g_strerror (errno));
           gftp_file_destroy (new_fle, 1);
           return;
@@ -94,7 +94,7 @@ do_view_or_edit_file (gftp_window_data * fromwdata, int is_view)
       else
         new_fle->done_edit = 1;
 
-      newfile = g_list_append (NULL, new_fle); 
+      newfile = g_list_append (NULL, new_fle);
       gftpui_common_add_file_transfer (fromwdata->request, towdata->request,
                                        fromwdata, towdata, newfile);
     }
@@ -114,13 +114,13 @@ edit_dialog (gpointer data)
   gftp_window_data * fromwdata = data;
   char *edit_program;
 
-  gftp_lookup_request_option (fromwdata->request, "edit_program", 
+  gftp_lookup_request_option (fromwdata->request, "edit_program",
                               &edit_program);
 
   if (*edit_program == '\0')
     {
       ftp_log (gftp_logging_error, NULL,
-	       _("Edit: You must specify an editor in the options dialog\n"));
+           _("Edit: You must specify an editor in the options dialog\n"));
       return;
     }
 
@@ -129,7 +129,7 @@ edit_dialog (gpointer data)
 
 
 static gftp_viewedit_data *
-fork_process (char *proc, char *filename, int fd, char *remote_filename, 
+fork_process (char *proc, char *filename, int fd, char *remote_filename,
               unsigned int viewedit, unsigned int del_file,
               unsigned int dontupload, gftp_window_data * wdata)
 {
@@ -172,13 +172,13 @@ fork_process (char *proc, char *filename, int fd, char *remote_filename,
       _exit (1);
     case -1:
       for (n = 0; argv[n] != NULL; n++)
-	g_free (argv[n]);
+    g_free (argv[n]);
       ftp_log (gftp_logging_error, NULL,
               _("View: Cannot fork another process: %s\n"), g_strerror (errno));
       break;
     default:
       ftp_log (gftp_logging_misc, NULL, _("Running program: %s %s\n"), proc,
-	       filename);
+           filename);
       newproc = g_malloc0 (sizeof (*newproc));
       newproc->pid = ret;
       newproc->argv = argv;
@@ -195,7 +195,7 @@ fork_process (char *proc, char *filename, int fd, char *remote_filename,
       newproc->torequest = gftp_copy_request (newproc->towdata->request);
       newproc->filename = g_strdup (filename);
       if (remote_filename != NULL)
-	newproc->remote_filename = g_strdup (remote_filename);
+    newproc->remote_filename = g_strdup (remote_filename);
       newproc->view = viewedit;
       newproc->rm = del_file;
       newproc->dontupload = dontupload;
@@ -221,10 +221,8 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   int doclose;
   ssize_t n;
   char * non_utf8;
-#if GTK_MAJOR_VERSION > 1
   GtkTextBuffer * textbuf;
   GtkTextIter iter;
-#endif
 
   doclose = 1;
   stlen = strlen (filename);
@@ -271,7 +269,7 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   else if (!viewedit && *edit_program != '\0')
     {
       /* Open the file with the default file editor */
-      newproc = fork_process (edit_program, filename, fd, remote_filename, 
+      newproc = fork_process (edit_program, filename, fd, remote_filename,
                               viewedit, del_file, dontupload, wdata);
       stat (non_utf8, &newproc->st);
       if (non_utf8 != filename && non_utf8)
@@ -285,8 +283,8 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
     {
       if ((fd = open (non_utf8, O_RDONLY)) < 0)
         {
-          ftp_log (gftp_logging_error, NULL, 
-                   _("View: Cannot open file %s: %s\n"), non_utf8, 
+          ftp_log (gftp_logging_error, NULL,
+                   _("View: Cannot open file %s: %s\n"), non_utf8,
                    g_strerror (errno));
           if (non_utf8 != filename && non_utf8)
             g_free (non_utf8);
@@ -303,29 +301,21 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   if (del_file)
     {
       if (unlink (non_utf8) == 0)
-        ftp_log (gftp_logging_misc, NULL, _("Successfully removed %s\n"), 
+        ftp_log (gftp_logging_misc, NULL, _("Successfully removed %s\n"),
                  filename);
       else
         ftp_log (gftp_logging_error, NULL,
-                 _("Error: Could not remove file %s: %s\n"), filename, 
+                 _("Error: Could not remove file %s: %s\n"), filename,
                  g_strerror (errno));
     }
 
   if (non_utf8 != filename && non_utf8)
     g_free (non_utf8);
 
-#if GTK_MAJOR_VERSION == 1
-  dialog = gtk_dialog_new ();
-  gtk_window_set_title (GTK_WINDOW (dialog), filename);
-  gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->action_area),
-                              5);
-  gtk_box_set_homogeneous (GTK_BOX (GTK_DIALOG (dialog)->action_area), TRUE);
-#else
   dialog = gtk_dialog_new_with_buttons (filename, NULL, 0,
                                         GTK_STOCK_CLOSE,
                                         GTK_RESPONSE_CLOSE,
                                         NULL);
-#endif
   gtk_window_set_wmclass (GTK_WINDOW(dialog), "fileview", "gFTP");
   gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 5);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
@@ -341,23 +331,6 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   table = gtk_table_new (1, 2, FALSE);
   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), table, TRUE, TRUE, 0);
 
-#if GTK_MAJOR_VERSION == 1
-  view = gtk_text_new (NULL, NULL);
-  gtk_text_set_editable (GTK_TEXT (view), FALSE);
-  gtk_text_set_word_wrap (GTK_TEXT (view), TRUE);
-
-  gtk_table_attach (GTK_TABLE (table), view, 0, 1, 0, 1,
-		    GTK_FILL | GTK_EXPAND, GTK_FILL | GTK_EXPAND | GTK_SHRINK,
-		    0, 0);
-  gtk_widget_show (view);
-
-  tempwid = gtk_vscrollbar_new (GTK_TEXT (view)->vadj);
-  gtk_table_attach (GTK_TABLE (table), tempwid, 1, 2, 0, 1,
-		    GTK_FILL, GTK_EXPAND | GTK_FILL | GTK_SHRINK, 0, 0);
-  gtk_widget_show (tempwid);
-
-  vadj = GTK_TEXT (view)->vadj;
-#else
   view = gtk_text_view_new ();
   gtk_text_view_set_editable (GTK_TEXT_VIEW (view), FALSE);
   gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (view), FALSE);
@@ -372,40 +345,26 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   gtk_widget_show (view);
 
   gtk_table_attach (GTK_TABLE (table), tempwid, 0, 1, 0, 1,
-		    GTK_FILL | GTK_EXPAND, GTK_FILL | GTK_EXPAND | GTK_SHRINK,
-		    0, 0);
+            GTK_FILL | GTK_EXPAND, GTK_FILL | GTK_EXPAND | GTK_SHRINK,
+            0, 0);
   gtk_widget_show (tempwid);
 
   vadj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (tempwid));
-#endif
+
   gtk_widget_set_size_request (table, 500, 400);
   gtk_widget_show (table);
 
-#if GTK_MAJOR_VERSION == 1
-  tempwid = gtk_button_new_with_label (_("  Close  "));
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->action_area), tempwid,
-		      FALSE, FALSE, 0);
-  gtk_signal_connect_object (GTK_OBJECT (tempwid), "clicked",
-			     GTK_SIGNAL_FUNC (gtk_widget_destroy),
-			     GTK_OBJECT (dialog));
-  gtk_widget_show (tempwid);
-#else
   g_signal_connect_swapped (GTK_OBJECT (dialog), "response",
                             G_CALLBACK (gtk_widget_destroy),
                             GTK_OBJECT (dialog));
-#endif
 
   buf[sizeof (buf) - 1] = '\0';
   while ((n = read (fd, buf, sizeof (buf) - 1)) > 0)
     {
       buf[n] = '\0';
-#if GTK_MAJOR_VERSION == 1
-      gtk_text_insert (GTK_TEXT (view), NULL, NULL, NULL, buf, -1);
-#else
       textbuf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
       gtk_text_buffer_get_iter_at_offset (textbuf, &iter, -1);
       gtk_text_buffer_insert (textbuf, &iter, buf, -1);
-#endif
     }
 
   if (doclose)
@@ -416,4 +375,3 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   if (!start_pos)
     gtk_adjustment_set_value (vadj, vadj->upper);
 }
-

@@ -74,7 +74,7 @@ dochange_filespec (gftp_window_data * wdata, gftp_dialog_data * ddata)
 }
 
 
-void 
+void
 change_filespec (gpointer data)
 {
   gftp_window_data * wdata;
@@ -84,7 +84,7 @@ change_filespec (gpointer data)
     return;
 
   MakeEditDialog (_("Change Filespec"), _("Enter the new file specification"),
-                  wdata->filespec, 1, NULL, gftp_dialog_button_change, 
+                  wdata->filespec, 1, NULL, gftp_dialog_button_change,
                   dochange_filespec, wdata, NULL, NULL);
 }
 
@@ -105,18 +105,18 @@ dosave_directory_listing (GtkWidget * widget, gftp_save_dir_struct * str)
   GList * templist;
   char *tempstr;
   FILE * fd;
- 
+
 
   filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (str->filew));
   if ((fd = fopen (filename, "w")) == NULL)
     {
-      ftp_log (gftp_logging_error, NULL, 
-               _("Error: Cannot open %s for writing: %s\n"), filename, 
+      ftp_log (gftp_logging_error, NULL,
+               _("Error: Cannot open %s for writing: %s\n"), filename,
                g_strerror (errno));
       return;
     }
 
-  for (templist = str->wdata->files; 
+  for (templist = str->wdata->files;
        templist != NULL;
        templist = templist->next)
     {
@@ -134,7 +134,7 @@ dosave_directory_listing (GtkWidget * widget, gftp_save_dir_struct * str)
 }
 
 
-void 
+void
 save_directory_listing (gpointer data)
 {
   gftp_save_dir_struct * str;
@@ -147,13 +147,13 @@ save_directory_listing (gpointer data)
   str->wdata = data;
 
   gtk_signal_connect (GTK_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
-                      "clicked", GTK_SIGNAL_FUNC (dosave_directory_listing), 
+                      "clicked", GTK_SIGNAL_FUNC (dosave_directory_listing),
                       str);
   gtk_signal_connect (GTK_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
-                      "clicked", 
+                      "clicked",
                       GTK_SIGNAL_FUNC (destroy_save_directory_listing), str);
-  gtk_signal_connect (GTK_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button), 
-                      "clicked", 
+  gtk_signal_connect (GTK_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button),
+                      "clicked",
                       GTK_SIGNAL_FUNC (destroy_save_directory_listing), str);
 
   gtk_window_set_wmclass (GTK_WINDOW(filew), "Save Directory Listing", "gFTP");
@@ -172,7 +172,7 @@ show_selected (gpointer data)
 }
 
 
-void 
+void
 selectall (gpointer data)
 {
   gftp_window_data * wdata;
@@ -183,7 +183,7 @@ selectall (gpointer data)
 }
 
 
-void 
+void
 selectallfiles (gpointer data)
 {
   gftp_window_data * wdata;
@@ -200,20 +200,20 @@ selectallfiles (gpointer data)
     {
       tempfle = (gftp_file *) templist->data;
       if (tempfle->shown)
-	{
-	  if (S_ISDIR (tempfle->st_mode))
-	    gtk_clist_unselect_row (GTK_CLIST (wdata->listbox), i, 0);
-	  else
-	    gtk_clist_select_row (GTK_CLIST (wdata->listbox), i, 0);
+    {
+      if (S_ISDIR (tempfle->st_mode))
+        gtk_clist_unselect_row (GTK_CLIST (wdata->listbox), i, 0);
+      else
+        gtk_clist_select_row (GTK_CLIST (wdata->listbox), i, 0);
           i++;
-	}
+    }
       templist = templist->next;
     }
   gtk_clist_thaw (GTK_CLIST (wdata->listbox));
 }
 
 
-void 
+void
 deselectall (gpointer data)
 {
   gftp_window_data * wdata;
@@ -228,7 +228,7 @@ int
 chdir_edit (GtkWidget * widget, gpointer data)
 {
   gftp_window_data * wdata;
-  const char *edttxt; 
+  const char *edttxt;
   char *tempstr;
 
   wdata = data;
@@ -258,16 +258,11 @@ chdir_edit (GtkWidget * widget, gpointer data)
 }
 
 
-void 
+void
 clearlog (gpointer data)
 {
   gint len;
 
-#if GTK_MAJOR_VERSION == 1
-  len = gtk_text_get_length (GTK_TEXT (logwdw));
-  gtk_text_set_point (GTK_TEXT (logwdw), len);
-  gtk_text_backward_delete (GTK_TEXT (logwdw), len);
-#else
   GtkTextBuffer * textbuf;
   GtkTextIter iter, iter2;
 
@@ -276,37 +271,30 @@ clearlog (gpointer data)
   gtk_text_buffer_get_iter_at_offset (textbuf, &iter, 0);
   gtk_text_buffer_get_iter_at_offset (textbuf, &iter2, len);
   gtk_text_buffer_delete (textbuf, &iter, &iter2);
-#endif
 }
 
 
-void 
+void
 viewlog (gpointer data)
 {
   char *tempstr, *txt, *pos;
   gint textlen;
   ssize_t len;
   int fd;
-#if GTK_MAJOR_VERSION > 1
   GtkTextBuffer * textbuf;
   GtkTextIter iter, iter2;
-#endif
 
   tempstr = g_strconcat (g_get_tmp_dir (), "/gftp-view.XXXXXXXXXX", NULL);
   if ((fd = mkstemp (tempstr)) < 0)
     {
-      ftp_log (gftp_logging_error, NULL, 
-               _("Error: Cannot open %s for writing: %s\n"), tempstr, 
+      ftp_log (gftp_logging_error, NULL,
+               _("Error: Cannot open %s for writing: %s\n"), tempstr,
                g_strerror (errno));
-      g_free (tempstr); 
+      g_free (tempstr);
       return;
     }
   chmod (tempstr, S_IRUSR | S_IWUSR);
-  
-#if GTK_MAJOR_VERSION == 1
-  textlen = gtk_text_get_length (GTK_TEXT (logwdw));
-  txt = gtk_editable_get_chars (GTK_EDITABLE (logwdw), 0, -1);
-#else
+
   textbuf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (logwdw));
   textlen = gtk_text_buffer_get_char_count (textbuf);
   gtk_text_buffer_get_iter_at_offset (textbuf, &iter, 0);
@@ -316,15 +304,14 @@ viewlog (gpointer data)
   /* gtk_text_buffer_get_char_count() returns the number of characters,
      not bytes. So get the number of bytes that need to be written out */
   textlen = strlen (txt);
-#endif
   pos = txt;
 
   while (textlen > 0)
     {
       if ((len = write (fd, pos, textlen)) == -1)
-        { 
-          ftp_log (gftp_logging_error, NULL, 
-                   _("Error: Error writing to %s: %s\n"), 
+        {
+          ftp_log (gftp_logging_error, NULL,
+                   _("Error: Error writing to %s: %s\n"),
                    tempstr, g_strerror (errno));
           break;
         }
@@ -351,24 +338,18 @@ dosavelog (GtkWidget * widget, GtkFileSelection * fs)
   ssize_t len;
   FILE *fd;
   int ok;
-#if GTK_MAJOR_VERSION > 1
   GtkTextBuffer * textbuf;
   GtkTextIter iter, iter2;
-#endif
 
   filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (fs));
   if ((fd = fopen (filename, "w")) == NULL)
     {
-      ftp_log (gftp_logging_error, NULL, 
-               _("Error: Cannot open %s for writing: %s\n"), filename, 
+      ftp_log (gftp_logging_error, NULL,
+               _("Error: Cannot open %s for writing: %s\n"), filename,
                g_strerror (errno));
       return;
     }
 
-#if GTK_MAJOR_VERSION == 1
-  textlen = gtk_text_get_length (GTK_TEXT (logwdw));
-  txt = gtk_editable_get_chars (GTK_EDITABLE (logwdw), 0, -1);
-#else
   textbuf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (logwdw));
   textlen = gtk_text_buffer_get_char_count (textbuf);
   gtk_text_buffer_get_iter_at_offset (textbuf, &iter, 0);
@@ -378,7 +359,6 @@ dosavelog (GtkWidget * widget, GtkFileSelection * fs)
   /* gtk_text_buffer_get_char_count() returns the number of characters,
      not bytes. So get the number of bytes that need to be written out */
   textlen = strlen (txt);
-#endif
 
   ok = 1;
   pos = txt;
@@ -387,8 +367,8 @@ dosavelog (GtkWidget * widget, GtkFileSelection * fs)
       if ((len = write (fileno (fd), pos, textlen)) == -1)
         {
           ok = 0;
-          ftp_log (gftp_logging_error, NULL, 
-                   _("Error: Error writing to %s: %s\n"), 
+          ftp_log (gftp_logging_error, NULL,
+                   _("Error: Error writing to %s: %s\n"),
                    filename, g_strerror (errno));
           break;
         }
@@ -406,7 +386,7 @@ dosavelog (GtkWidget * widget, GtkFileSelection * fs)
 }
 
 
-void 
+void
 savelog (gpointer data)
 {
   GtkWidget *filew;
@@ -426,41 +406,31 @@ savelog (gpointer data)
 }
 
 
-void 
+void
 clear_cache (gpointer data)
 {
   gftp_clear_cache_files ();
 }
 
 
-void 
+void
 about_dialog (gpointer data)
 {
   GtkWidget * tempwid, * notebook, * box, * label, * view, * vscroll, * dialog;
   char *tempstr, *temp1str, *no_license_agreement, *str, buf[255], *share_dir;
   size_t len;
   FILE * fd;
-#if GTK_MAJOR_VERSION > 1
   GtkTextBuffer * textbuf;
   GtkTextIter iter;
   gint textlen;
-#endif
 
   share_dir = gftp_get_share_dir ();
   no_license_agreement = g_strdup_printf (_("Cannot find the license agreement file COPYING. Please make sure it is in either %s or in %s"), BASE_CONF_DIR, share_dir);
 
-#if GTK_MAJOR_VERSION == 1
-  dialog = gtk_dialog_new ();
-  gtk_window_set_title (GTK_WINDOW (dialog), _("About gFTP"));
-  gtk_container_border_width (GTK_CONTAINER
-			      (GTK_DIALOG (dialog)->action_area), 5);
-  gtk_box_set_homogeneous (GTK_BOX (GTK_DIALOG (dialog)->action_area), TRUE);
-#else
   dialog = gtk_dialog_new_with_buttons (_("About gFTP"), NULL, 0,
                                         GTK_STOCK_CLOSE,
                                         GTK_RESPONSE_CLOSE,
                                         NULL);
-#endif
   gtk_window_set_wmclass (GTK_WINDOW(dialog), "about", "gFTP");
   gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_MOUSE);
   gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
@@ -476,7 +446,7 @@ about_dialog (gpointer data)
 
   notebook = gtk_notebook_new ();
   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), notebook, TRUE,
-		      TRUE, 0);
+              TRUE, 0);
   gtk_widget_show (notebook);
 
   box = gtk_vbox_new (TRUE, 5);
@@ -513,21 +483,6 @@ about_dialog (gpointer data)
   gtk_box_pack_start (GTK_BOX (box), tempwid, TRUE, TRUE, 0);
   gtk_widget_show (tempwid);
 
-#if GTK_MAJOR_VERSION == 1
-  view = gtk_text_new (NULL, NULL);
-  gtk_text_set_editable (GTK_TEXT (view), FALSE);
-  gtk_text_set_word_wrap (GTK_TEXT (view), TRUE);
-
-  gtk_table_attach (GTK_TABLE (tempwid), view, 0, 1, 0, 1,
-                    GTK_FILL | GTK_EXPAND, GTK_FILL | GTK_EXPAND | GTK_SHRINK,
-                    0, 0);
-  gtk_widget_show (view);
-
-  vscroll = gtk_vscrollbar_new (GTK_TEXT (view)->vadj);
-  gtk_table_attach (GTK_TABLE (tempwid), vscroll, 1, 2, 0, 1,
-                    GTK_FILL, GTK_EXPAND | GTK_FILL | GTK_SHRINK, 0, 0);
-  gtk_widget_show (vscroll);
-#else
   view = gtk_text_view_new ();
   gtk_text_view_set_editable (GTK_TEXT_VIEW (view), FALSE);
   gtk_text_view_set_cursor_visible (GTK_TEXT_VIEW (view), FALSE);
@@ -547,28 +502,14 @@ about_dialog (gpointer data)
   gtk_widget_show (vscroll);
 
   textbuf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (view));
-#endif
 
   label = gtk_label_new (_("License Agreement"));
   gtk_widget_show (label);
 
   gtk_notebook_append_page (GTK_NOTEBOOK (notebook), box, label);
-
-#if GTK_MAJOR_VERSION == 1
-  tempwid = gtk_button_new_with_label (_("  Close  "));
-  GTK_WIDGET_SET_FLAGS (tempwid, GTK_CAN_DEFAULT);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->action_area), tempwid,
-		      FALSE, FALSE, 0);
-  gtk_signal_connect_object (GTK_OBJECT (tempwid), "clicked",
-			     GTK_SIGNAL_FUNC (gtk_widget_destroy),
-			     GTK_OBJECT (dialog));
-  gtk_widget_grab_default (tempwid);
-  gtk_widget_show (tempwid);
-#else
   g_signal_connect_swapped (GTK_OBJECT (dialog), "response",
                             G_CALLBACK (gtk_widget_destroy),
                             GTK_OBJECT (dialog));
-#endif
 
   tempstr = g_strconcat ("/usr/share/common-licenses/GPL", NULL);
   if (access (tempstr, F_OK) != 0)
@@ -578,35 +519,26 @@ about_dialog (gpointer data)
       tempstr = gftp_expand_path (NULL, temp1str);
       g_free (temp1str);
       if (access (tempstr, F_OK) != 0)
-	{
-	  g_free (tempstr);
+    {
+      g_free (tempstr);
           tempstr = gftp_expand_path (NULL, BASE_CONF_DIR "/COPYING");
-	  if (access (tempstr, F_OK) != 0)
-	    {
-#if GTK_MAJOR_VERSION == 1
-	      gtk_text_insert (GTK_TEXT (view), NULL, NULL, NULL,
-			       no_license_agreement, -1);
-#else
+      if (access (tempstr, F_OK) != 0)
+        {
               textlen = gtk_text_buffer_get_char_count (textbuf);
               gtk_text_buffer_get_iter_at_offset (textbuf, &iter, textlen);
               gtk_text_buffer_insert (textbuf, &iter, no_license_agreement, -1);
-#endif
-	      gtk_widget_show (dialog);
-	      return;
-	    }
-	}
+          gtk_widget_show (dialog);
+          return;
+        }
+    }
     }
 
   if ((fd = fopen (tempstr, "r")) == NULL)
     {
-#if GTK_MAJOR_VERSION == 1
-      gtk_text_insert (GTK_TEXT (view), NULL, NULL, NULL,
-		       no_license_agreement, -1);
-#else
+
       textlen = gtk_text_buffer_get_char_count (textbuf);
       gtk_text_buffer_get_iter_at_offset (textbuf, &iter, textlen);
       gtk_text_buffer_insert (textbuf, &iter, no_license_agreement, -1);
-#endif
       gtk_widget_show (dialog);
       g_free (tempstr);
       return;
@@ -617,13 +549,9 @@ about_dialog (gpointer data)
   while ((len = fread (buf, 1, sizeof (buf) - 1, fd)))
     {
       buf[len] = '\0';
-#if GTK_MAJOR_VERSION == 1
-      gtk_text_insert (GTK_TEXT (view), NULL, NULL, NULL, buf, -1);
-#else
       textlen = gtk_text_buffer_get_char_count (textbuf);
       gtk_text_buffer_get_iter_at_offset (textbuf, &iter, textlen);
       gtk_text_buffer_insert (textbuf, &iter, buf, -1);
-#endif
     }
   fclose (fd);
   gtk_widget_show (dialog);
@@ -652,7 +580,7 @@ _do_compare_windows (gftp_window_data * win1, gftp_window_data * win2)
 
       otherlist = win2->files;
       while (otherlist != NULL)
-	{
+    {
           otherfle = otherlist->data;
           if (!otherfle->shown)
             {
@@ -666,20 +594,20 @@ _do_compare_windows (gftp_window_data * win1, gftp_window_data * win2)
           if (strcmp (otherfle->file, curfle->file) == 0 &&
               curdir == othdir &&
               (curdir || otherfle->size == curfle->size))
-	    break;
+        break;
 
           otherlist = otherlist->next;
-	}
+    }
 
       if (otherlist == NULL)
-	gtk_clist_select_row (GTK_CLIST (win1->listbox), row, 0);
+    gtk_clist_select_row (GTK_CLIST (win1->listbox), row, 0);
       row++;
       curlist = curlist->next;
     }
 }
 
 
-void 
+void
 compare_windows (gpointer data)
 {
   if (!check_status (_("Compare Windows"), &window2, 1, 0, 0, 1))

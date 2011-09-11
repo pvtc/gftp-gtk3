@@ -75,9 +75,9 @@ gftpui_refresh (void *uidata, int clear_cache_entry)
 }
 
 
-#define _GFTPUI_GTK_USER_PW_SIZE	256
+#define _GFTPUI_GTK_USER_PW_SIZE    256
 
-static void 
+static void
 _gftpui_gtk_set_username (gftp_request * request, gftp_dialog_data * ddata)
 {
   gftp_set_username (request, gtk_entry_get_text (GTK_ENTRY (ddata->edit)));
@@ -85,7 +85,7 @@ _gftpui_gtk_set_username (gftp_request * request, gftp_dialog_data * ddata)
 }
 
 
-static void 
+static void
 _gftpui_gtk_set_password (gftp_request * request, gftp_dialog_data * ddata)
 {
   gftp_set_password (request, gtk_entry_get_text (GTK_ENTRY (ddata->edit)));
@@ -105,7 +105,7 @@ gftpui_show_busy (gboolean busy)
   GtkWidget * toplevel = gtk_widget_get_toplevel (openurl_btn);
   GdkDisplay * display = gtk_widget_get_display (toplevel);
 
-  GdkCursor * busyCursor = 
+  GdkCursor * busyCursor =
     (busy) ? (gdk_cursor_new_for_display (display, GDK_WATCH)) : NULL;
 
   gdk_window_set_cursor (toplevel->window, busyCursor);
@@ -127,11 +127,7 @@ gftpui_prompt_username (void *uidata, gftp_request * request)
   while (request->stopable)
     {
       GDK_THREADS_LEAVE ();
-#if GTK_MAJOR_VERSION == 1
-      g_main_iteration (TRUE);
-#else
       g_main_context_iteration (NULL, TRUE);
-#endif
     }
 }
 
@@ -149,11 +145,7 @@ gftpui_prompt_password (void *uidata, gftp_request * request)
   while (request->stopable)
     {
       GDK_THREADS_LEAVE ();
-#if GTK_MAJOR_VERSION == 1
-      g_main_iteration (TRUE);
-#else
       g_main_context_iteration (NULL, TRUE);
-#endif
     }
 }
 
@@ -249,11 +241,7 @@ gftpui_generic_thread (void * (*func) (void *), void *data)
   while (wdata->request->stopable)
     {
       GDK_THREADS_LEAVE ();
-#if GTK_MAJOR_VERSION == 1
-      g_main_iteration (TRUE);
-#else
       g_main_context_iteration (NULL, TRUE);
-#endif
     }
 
   _gftpui_teardown_wakeup_main_thread (cdata->request, handler);
@@ -419,8 +407,8 @@ gftpui_run_chdir (gpointer uidata, char *directory)
 
   wdata = uidata;
   if ((tempstr = gftp_expand_path (wdata->request, directory)) == NULL)
-    return (FALSE);	  
-  
+    return (FALSE);
+
   cdata = g_malloc0 (sizeof (*cdata));
   cdata->request = wdata->request;
   cdata->uidata = wdata;
@@ -463,7 +451,7 @@ gftpui_chdir_dialog (gpointer data)
 }
 
 
-void 
+void
 gftpui_disconnect (void *uidata)
 {
   gftp_window_data * wdata;
@@ -535,11 +523,7 @@ gftpui_protocol_ask_yes_no (gftp_request * request, char *title,
       while (answer == -1)
         {
           GDK_THREADS_LEAVE ();
-#if GTK_MAJOR_VERSION == 1
-          g_main_iteration (TRUE);
-#else
           g_main_context_iteration (NULL, TRUE);
-#endif
         }
     }
 
@@ -591,11 +575,7 @@ gftpui_protocol_ask_user_input (gftp_request * request, char *title,
       while (*buf == '\0' && *(buf + 1) == ' ')
         {
           GDK_THREADS_LEAVE ();
-#if GTK_MAJOR_VERSION == 1
-          g_main_iteration (TRUE);
-#else
           g_main_context_iteration (NULL, TRUE);
-#endif
         }
     }
 
@@ -604,4 +584,3 @@ gftpui_protocol_ask_user_input (gftp_request * request, char *title,
   else
     return (NULL);
 }
-
