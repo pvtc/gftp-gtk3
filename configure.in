@@ -79,15 +79,7 @@ AC_CHECK_TYPE(union semun, ,AC_DEFINE(_SEM_SEMUN_UNDEFINED,1,[Define if you do n
 #include <sys/sem.h>
 ])
 
-if test "x$enable_gtk20" = "xyes" ; then
-  PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.0.0, found_glib20=1, found_glib20=0)
-else
-  found_glib20=0;
-fi
-
-if test "x$GFTP_TEXT" = "x" -a $found_glib20 = 0 ; then
-  AM_PATH_GLIB(1.2.3, , AC_MSG_ERROR(gFTP needs GLIB 1.2.3 or higher))
-fi
+PKG_CHECK_MODULES(GLIB, glib-2.0 >= 2.0.0, found_glib20=1, found_glib20=0)
 
 EXTRA_LIBS=""
 
@@ -201,12 +193,7 @@ if test "x$enable_gtkport" = "xyes" ; then
     PKG_CHECK_MODULES(GTK, gtk+-2.0 >= 2.0.0, GFTP_GTK=gftp-gtk, AC_MSG_ERROR(You have GLIB 2.0 installed but I cannot find GTK+ 2.0. Run configure with --disable-gtk20 or install GTK+ 2.0))
   fi
 
-  if test "x$GFTP_GTK" = "x" ; then
-    AM_PATH_GTK(1.2.3, GFTP_GTK=gftp-gtk, AC_MSG_WARN(gFTP needs GTK+ 1.2.3 or higher for the graphical version. Only building the text version))
-    GTHREAD_LIBS="-lgthread"
-  else
-    GTHREAD_LIBS="-lgthread-2.0"
-  fi
+  GTHREAD_LIBS="-lgthread-2.0"
 
   if test "x$GFTP_GTK" = xgftp-gtk; then
     case $host in
