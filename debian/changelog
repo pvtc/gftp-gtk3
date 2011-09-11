@@ -1,8 +1,35 @@
+gftp (2.0.19-2) unstable; urgency=low
+
+  * Bump Standards-Version to 3.8.3
+  * Set debian/compat to 7
+  * Update debian/copyright with debian/* files copyright
+  * Fix incorrect handling of filename encodings under UTF-8 enviromnent.
+    (Closes: #364592) Fixed upstream.
+  * Fix missing files and sub-directories (Closes: #344595)
+    This is not a bug but gnome choices to not go deeper than 2 directories
+  * Replace libreadline5-dev build dependency with libreadline-dev 
+    (Closes: #553764)
+  * Crash on some servers and certains conditions (Closes: #442938)
+  * gftp hides directories (Closes: #518157)
+  * Fix lintian:
+    W: gftp source: dh-clean-k-is-deprecated
+    W: gftp source: configure-generated-file-in-source config.log
+
+ -- Xavier Oswald <xoswald@debian.org>  Sun, 08 Nov 2009 11:32:49 +0100
+
 gftp (2.0.19-1) unstable; urgency=low
+  
+  * New upstream release
+  * Set met as maintainer. Thanks to Aurélien for his work.
+  * debian/control:
+    - Remove DM flag
+    - Remove old Vcs-*
+    + Update version of debhelper in Build-Depends
+  * Set debian/compat to 7
+  * Update debian/copyright
+  * Bump Standards-Version to 3.8.1
 
-  * New release. See the ChangeLog file for details on changes in this release
-
- -- Brian Masney <masneyb@gftp.org>  Sun, 30 Nov 2008 16:31:32 -0500
+ -- Xavier Oswald <xoswald@debian.org>  Tue, 21 Apr 2009 14:00:34 +0200
 
 gftp (2.0.18-17) unstable; urgency=medium
 

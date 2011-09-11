@@ -1,18 +1,15 @@
 Source: gftp
 Section: net
 Priority: optional
-Maintainer: Aurélien GÉRÔME <ag@roxor.cx> 
-Build-Depends: debhelper (>> 4.0.0), autotools-dev, libreadline5-dev | libreadline-dev, libgtk2.0-dev (>= 2.0.9), libglib2.0-dev (>= 2.2.0), imagemagick
-Standards-Version: 3.7.3
+Maintainer: Xavier Oswald <xoswald@debian.org> 
+Build-Depends: debhelper (>= 7), autotools-dev, libreadline-dev, libgtk2.0-dev (>= 2.0.9), libglib2.0-dev (>= 2.2.0), imagemagick
+Standards-Version: 3.8.3
 Homepage: http://www.gftp.org/
-Vcs-Git: git://git.roxor.cx/git/gftp/
-Vcs-Browser: http://git.roxor.cx/?p=gftp
-XS-DM-Upload-Allowed: yes
 
 Package: gftp
 Architecture: all
-Depends: gftp-gtk (>= ${source:Version}), gftp-text (>= ${source:Version})
-Description: X/GTK+ FTP client
+Depends: gftp-gtk (>= ${source:Version}), gftp-text (>= ${source:Version}), ${misc:Depends}
+Description: X/GTK+ and console FTP client
  gFTP is a multithreaded FTP client, available in two versions:
   * version for X, written using GLib and GTK+
   * version for the console, using only GLib
@@ -21,11 +18,11 @@ Description: X/GTK+ FTP client
 
 Package: gftp-gtk
 Architecture: any
-Depends: ${shlibs:Depends}, gftp-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, gftp-common (= ${binary:Version}), ${misc:Depends}
 Conflicts: gftp-common (<< 2.0.14-1)
 Description: X/GTK+ FTP client
- gFTP is a multithreaded FTP client. This version of it runs under X
- and was written using GLib/GTK+.
+ gFTP graphical version is a multithreaded FTP client running under X and
+ written using GLib/GTK+.
  .
  gFTP features:
    * simultaneous downloads,
@@ -45,10 +42,10 @@ Description: X/GTK+ FTP client
 
 Package: gftp-text
 Architecture: any
-Depends: ${shlibs:Depends}, gftp-common (= ${binary:Version})
+Depends: ${shlibs:Depends}, gftp-common (= ${binary:Version}), ${misc:Depends}
 Description: colored FTP client using GLib
- gFTP is a multithreaded FTP client. This version of it runs under console
- and was written using GLib.
+ gFTP text version is a multithreaded FTP client running under console and
+ written using GLib.
  .
  gFTP features:
    * simultaneous downloads,
@@ -68,6 +65,7 @@ Description: colored FTP client using GLib
 
 Package: gftp-common
 Architecture: any
+Depends: ${misc:Depends}
 Description: shared files for other gFTP packages
  gFTP is a multithreaded FTP client. This package contains the locale data
  used by both gftp-gtk and gftp-text, along with a common manual page.

@@ -1,8 +1,5 @@
 #!/usr/bin/make -f
-# Sample debian/rules that uses debhelper.
-# GNU copyright 1997 to 1999 by Joey Hess.
 
-# Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
 # These are used for cross-compiling and for saving the configure script
@@ -17,12 +14,10 @@ endif
 
 config.status: configure
 	dh_testdir
-	
 	-test -r /usr/share/misc/config.sub && \
 	cp -f /usr/share/misc/config.sub config.sub
 	-test -r /usr/share/misc/config.guess && \
 	cp -f /usr/share/misc/config.guess config.guess
-
 	chmod +x ./configure
 	CFLAGS="-O2 -g -Wall -D_GNU_SOURCE" ./configure \
 		--host=$(DEB_HOST_GNU_TYPE) \
@@ -52,21 +47,16 @@ debian-clean:
 install: build
 	dh_testdir
 	dh_testroot
-	dh_clean -k
+	dh_prep
 	dh_installdirs
-	
 	# Main install.
 	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
-	
 	# Install icon
 	convert -geometry 32x32 $(CURDIR)/debian/tmp/usr/share/pixmaps/gftp.png $(CURDIR)/debian/tmp/usr/share/pixmaps/gftp.xpm
-
 	# Move all files in their corresponding package
 	dh_install --sourcedir=debian/tmp
-
 	# Install parse-netrc.pl
 	install -m 755 $(CURDIR)/docs/parse-netrc.pl $(CURDIR)/debian/gftp-common/usr/share/doc/gftp-common/examples
-
 	# Move bookmarks and gftprc to /etc/gftp
 	mv $(CURDIR)/debian/gftp-common/usr/share/gftp/gftprc $(CURDIR)/debian/gftp-common/etc/gftp
 	mv $(CURDIR)/debian/gftp-common/usr/share/gftp/bookmarks $(CURDIR)/debian/gftp-common/etc/gftp
