@@ -4,20 +4,20 @@
 # Valek Filippov  <frob@df.ru>, 2001-2002, 2004.
 # Vitaly Lipatov <lav@altlinux.ru>, 2002, 2003, 2004.
 # Alexander Orlov <alxorlov@pochta.ru>, 2007.
-
 msgid ""
 msgstr ""
 "Project-Id-Version: gftp-2.0.19\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-03-23 13:14+0300\n"
+"POT-Creation-Date: 2011-09-11 03:18+0200\n"
 "PO-Revision-Date: 2007-03-24 11:17+0300\n"
 "Last-Translator: Alexander Orlov <alxorlov@pochta.ru>\n"
 "Language-Team: none\n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
-"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #: lib/bookmark.c:38
 #, c-format
@@ -51,23 +51,31 @@ msgstr "Ошибка при закрытии файлового дескрипт
 msgid "Error: Cannot seek on file %s: %s\n"
 msgstr "Ошибка: Невозможно позиционирование на файле %s: %s\n"
 
-#: lib/config_file.c:126 lib/config_file.c:133 lib/protocols.c:3200
+#: lib/charset-conv.c:73
+#, c-format
+msgid ""
+"Error converting string '%s' from character set %s to character set %s: %s\n"
+msgstr ""
+"Ошибка преобразования строки \"%s\" из кодировки \"%s\" в кодировку \"%s\": "
+"%s\n"
+
+#: lib/config_file.c:126 lib/config_file.c:133 lib/protocols.c:1627
 #, c-format
 msgid "Error: Cannot open local file %s: %s\n"
 msgstr "Ошибка: Невозможно открыть локальный файл %s: %s\n"
 
-#: lib/config_file.c:143 lib/protocols.c:2901 lib/sslcommon.c:497
+#: lib/config_file.c:143 lib/sockutils.c:293 lib/sslcommon.c:493
 #, c-format
 msgid "Error: Could not write to socket: %s\n"
 msgstr "Ошибка: Невозможно записать в сокет: %s\n"
 
-#: lib/config_file.c:151 lib/protocols.c:2823 lib/sshv2.c:445
-#: lib/sslcommon.c:450
+#: lib/config_file.c:151 lib/sockutils.c:214 lib/sshv2.c:445
+#: lib/sslcommon.c:446
 #, c-format
 msgid "Error: Could not read from socket: %s\n"
 msgstr "Ошибка: Невозможно прочесть из сокета: %s\n"
 
-#: lib/config_file.c:183 lib/config_file.c:738
+#: lib/config_file.c:183 lib/config_file.c:737
 #, c-format
 msgid "gFTP Error: Bad bookmarks file name %s\n"
 msgstr "Ошибка gFTP: Неправильное название файла закладок %s\n"
@@ -77,7 +85,7 @@ msgstr "Ошибка gFTP: Неправильное название файла 
 msgid "Warning: Cannot find master bookmark file %s\n"
 msgstr "Внимание: Невозможно найти главный файл закладок %s\n"
 
-#: lib/config_file.c:203 lib/config_file.c:744
+#: lib/config_file.c:203 lib/config_file.c:743
 #, c-format
 msgid "gFTP Error: Cannot open bookmarks file %s: %s\n"
 msgstr "Ошибка gFTP: Невозможно открыть файл закладок %s: %s\n"
@@ -94,7 +102,7 @@ msgstr ""
 "Предупреждение gFTP: Строка %d не содержит достаточного количества "
 "аргументов\n"
 
-#: lib/config_file.c:505
+#: lib/config_file.c:504
 msgid ""
 "This section specifies which hosts are on the local subnet and won't need to "
 "go out the proxy server (if available). Syntax: dont_use_proxy=.domain or "
@@ -104,7 +112,7 @@ msgstr ""
 "пользоваться прокси-сервером (если он доступен). Синтаксис: dont_use_proxy=."
 "domain или dont_use_proxy=network number/netmask"
 
-#: lib/config_file.c:508
+#: lib/config_file.c:507
 msgid ""
 "ext=file extenstion:XPM file:Ascii or Binary (A or B):viewer program. Note: "
 "All arguments except the file extension are optional"
@@ -112,53 +120,53 @@ msgstr ""
 "ext=расширение файла:XPM-файл:Текстовый или Двоичный (A или B):программа "
 "просмотра. Заметьте: все аргументы кроме расширения файла не обязательны"
 
-#: lib/config_file.c:588 lib/config_file.c:833
+#: lib/config_file.c:587 lib/config_file.c:832
 #, c-format
 msgid "gFTP Error: Bad config file name %s\n"
 msgstr "Ошибка gFTP: Неверное название файла настроек %s\n"
 
-#: lib/config_file.c:599
+#: lib/config_file.c:598
 #, c-format
 msgid "gFTP Error: Could not make directory %s: %s\n"
 msgstr "Ошибка gFTP: Невозможно создать каталог %s: %s\n"
 
-#: lib/config_file.c:609
+#: lib/config_file.c:608
 #, c-format
 msgid "gFTP Error: Cannot find master config file %s\n"
 msgstr "Ошибка gFTP: Невозможно найти главный файл настроек %s\n"
 
-#: lib/config_file.c:611
+#: lib/config_file.c:610
 #, c-format
 msgid "Did you do a make install?\n"
 msgstr "Вы выполняли установку?\n"
 
-#: lib/config_file.c:620 lib/config_file.c:839
+#: lib/config_file.c:619 lib/config_file.c:838
 #, c-format
 msgid "gFTP Error: Cannot open config file %s: %s\n"
 msgstr "Ошибка gFTP: Невозможно открыть файл настроек %s: %s\n"
 
-#: lib/config_file.c:659
+#: lib/config_file.c:658
 #, c-format
 msgid "Terminating due to parse errors at line %d in the config file\n"
 msgstr ""
 "Завершено из-за ошибки при разборе конфигурационного файла в строке %d\n"
 
-#: lib/config_file.c:665
+#: lib/config_file.c:664
 #, c-format
 msgid "gFTP Warning: Skipping line %d in config file: %s\n"
 msgstr "Предупреждение gFTP: Пропущена строка %d в файле настроек: %s\n"
 
-#: lib/config_file.c:672
+#: lib/config_file.c:671
 #, c-format
 msgid "gFTP Error: Bad log file name %s\n"
 msgstr "Ошибка gFTP: Неправильное название файла журнала %s\n"
 
-#: lib/config_file.c:678
+#: lib/config_file.c:677
 #, c-format
 msgid "gFTP Warning: Cannot open %s for writing: %s\n"
 msgstr "Предупреждение gFTP: Невозможно открыть %s для записи: %s\n"
 
-#: lib/config_file.c:733
+#: lib/config_file.c:732
 msgid ""
 "Bookmarks file for gFTP. Copyright (C) 1998-2007 Brian Masney <masneyb@gftp."
 "org>. Warning: Any comments that you add to this file WILL be overwritten"
@@ -167,7 +175,7 @@ msgstr ""
 "<masneyb@gftp.org>. Внимание!: Любые комментарии, которые вы добавите к "
 "этому файлу, БУДУТ перезаписаны"
 
-#: lib/config_file.c:734
+#: lib/config_file.c:733
 msgid ""
 "Note: The passwords contained inside this file are scrambled. This algorithm "
 "is not secure. This is to avoid your password being easily remembered by "
@@ -179,7 +187,7 @@ msgstr ""
 "вашего пароля кем-то, стоящим у вас за спиной. Прежде вообще все пароли "
 "хранились открытым текстом."
 
-#: lib/config_file.c:846
+#: lib/config_file.c:845
 msgid ""
 "Config file for gFTP. Copyright (C) 1998-2007 Brian Masney <masneyb@gftp."
 "org>. Warning: Any comments that you add to this file WILL be overwritten. "
@@ -190,13 +198,13 @@ msgstr ""
 "этому файлу, БУДУТ перезаписаны. Если запись содержит (*) в комментарии, вы "
 "не имеете возможности изменить её содержимое через gFTP"
 
-#: lib/config_file.c:1210 lib/protocols.c:391 lib/rfc2068.c:543
+#: lib/config_file.c:1209 lib/protocols.c:385 lib/rfc2068.c:543
 #: lib/rfc2068.c:544
 msgid "<unknown>"
 msgstr "<неизвестный>"
 
-#: lib/config_file.c:1290 lib/config_file.c:1353 lib/config_file.c:1395
-#: lib/config_file.c:1428
+#: lib/config_file.c:1289 lib/config_file.c:1352 lib/config_file.c:1394
+#: lib/config_file.c:1427
 #, c-format
 msgid "FATAL gFTP Error: Config option '%s' not found in global hash table\n"
 msgstr ""
@@ -223,10 +231,11 @@ msgstr "Ошибка: Ошибка при закрытии файла: %s\n"
 msgid "Corrupted file listing from FSP server %s\n"
 msgstr "Повреждённый список файлов с сервера FSP %s\n"
 
-#: lib/fsp.c:339 lib/fsp.c:340 lib/protocols.c:1578 lib/protocols.c:1579
-#: lib/protocols.c:1620 lib/protocols.c:1621 lib/protocols.c:1687
-#: lib/protocols.c:1694 lib/protocols.c:1770 lib/protocols.c:1771
-#: lib/protocols.c:1807
+#: lib/fsp.c:339 lib/fsp.c:340 lib/parse-dir-listing.c:337
+#: lib/parse-dir-listing.c:338 lib/parse-dir-listing.c:379
+#: lib/parse-dir-listing.c:380 lib/parse-dir-listing.c:446
+#: lib/parse-dir-listing.c:453 lib/parse-dir-listing.c:529
+#: lib/parse-dir-listing.c:530 lib/parse-dir-listing.c:566
 msgid "unknown"
 msgstr "неизвестный"
 
@@ -246,7 +255,7 @@ msgid "Could not change directory to %s\n"
 msgstr "Невозможно изменить каталог на %s\n"
 
 #: lib/fsp.c:471 lib/fsp.c:500 lib/local.c:480 lib/local.c:516
-#: src/gtk/transfer.c:263 src/gtk/view_dialog.c:288
+#: src/gtk/transfer.c:263 src/gtk/view_dialog.c:306
 #, c-format
 msgid "Successfully removed %s\n"
 msgstr "Успешно удалено %s\n"
@@ -257,7 +266,7 @@ msgid "Error: Could not remove directory %s: %s\n"
 msgstr "Ошибка: Невозможно удалить каталог %s: %s\n"
 
 #: lib/fsp.c:506 lib/local.c:522 src/gtk/transfer.c:267
-#: src/gtk/view_dialog.c:292
+#: src/gtk/view_dialog.c:310
 #, c-format
 msgid "Error: Could not remove file %s: %s\n"
 msgstr "Ошибка: Невозможно удалить файл %s: %s\n"
@@ -277,7 +286,7 @@ msgstr "%s успешно переименовано в %s\n"
 msgid "Error: Could not rename %s to %s: %s\n"
 msgstr "Ошибка: Невозможно переименовать %s в %s: %s\n"
 
-#: lib/ftps.c:157
+#: lib/ftps.c:156
 msgid ""
 "FTPS Support unavailable since SSL support was not compiled in. Aborting "
 "connection.\n"
@@ -342,15 +351,10 @@ msgstr "Ошибка: Невозможно изменить время для %s
 msgid "local filesystem"
 msgstr "локальная файловая система"
 
-#: lib/misc.c:407
+#: lib/misc.c:414
 #, c-format
 msgid "usage: gftp "
 msgstr "использование: gftp "
-
-#: lib/misc.c:407 lib/rfc2068.c:301 src/uicommon/gftpui.c:630
-#, c-format
-msgid "\n"
-msgstr "\n"
 
 #: lib/options.h:25 lib/rfc959.c:26
 msgid "none"
@@ -551,7 +555,7 @@ msgstr "Запоминать последний каталог"
 #: lib/options.h:113
 msgid "Save the last local and remote directory when the application is closed"
 msgstr ""
-"Сохраняет последний локальный и удалённый каталог при закрытии " "программы."
+"Сохраняет последний локальный и удалённый каталог при закрытии программы."
 
 #: lib/options.h:115
 msgid "Connect to remote server on startup"
@@ -560,8 +564,7 @@ msgstr "Подключаться к удалённому каталогу при
 #: lib/options.h:117
 msgid ""
 "Automatically connect to the remote server when the application is started."
-msgstr ""
-"Автоматически подключаться к удалённому серверу при запуске программы."
+msgstr "Автоматически подключаться к удалённому серверу при запуске программы."
 
 #: lib/options.h:120 src/gtk/options_dialog.c:1020
 #: src/gtk/options_dialog.c:1240
@@ -603,7 +606,8 @@ msgstr "Ограничение скорости, Кб/сек:"
 #: lib/options.h:139
 msgid "The maximum KB/s a file transfer can get. (Set to 0 to disable)"
 msgstr ""
-"Ограничение скорости передачи файла в Кб/сек. (Установите в 0 для отключения)."
+"Ограничение скорости передачи файла в Кб/сек. (Установите в 0 для "
+"отключения)."
 
 #: lib/options.h:141
 msgid "Transfer Block Size:"
@@ -772,35 +776,27 @@ msgstr "Закладки"
 msgid "FSP"
 msgstr "FSP"
 
-#: lib/protocols.c:234
+#: lib/protocols.c:228
 #, c-format
 msgid "File transfer will be throttled to %.2f KB/s\n"
 msgstr "Передача файлов будет ограничена до скорости %.2f Кб/сек\n"
 
-#: lib/protocols.c:387
+#: lib/protocols.c:381
 #, c-format
 msgid "Error setting LC_TIME to '%s'. Falling back to '%s'\n"
 msgstr "Ошибка при установке LC_TIME в \"%s\". Произведён откат в \"%s\"\n"
 
-#: lib/protocols.c:398
+#: lib/protocols.c:392
 #, c-format
 msgid "Loading directory listing %s from cache (LC_TIME=%s)\n"
 msgstr "Загрузка списка файлов каталога %s из кэша (LC_TIME=%s)\n"
 
-#: lib/protocols.c:408
+#: lib/protocols.c:402
 #, c-format
 msgid "Loading directory listing %s from server (LC_TIME=%s)\n"
 msgstr "Загрузка списка файлов каталога %s с сервера (LC_TIME=%s)\n"
 
-#: lib/protocols.c:471
-#, c-format
-msgid ""
-"Error converting string '%s' from character set %s to character set %s: %s\n"
-msgstr ""
-"Ошибка преобразования строки \"%s\" из кодировки \"%s\" в кодировку \"%s\": %"
-"s\n"
-
-#: lib/protocols.c:696
+#: lib/protocols.c:452
 #, c-format
 msgid ""
 "Warning: Stripping path off of file '%s'. The stripped path (%s) doesn't "
@@ -809,107 +805,49 @@ msgstr ""
 "Предупреждение: удаляется часть пути до файла '%s'. Удалённая часть (%s) не "
 "совпадает с текущим каталогом (%s)\n"
 
-#: lib/protocols.c:722
+#: lib/protocols.c:483
 #, c-format
 msgid "Error: Cannot write to cache: %s\n"
 msgstr "Ошибка: Невозможно записать в кэш: %s\n"
 
-#: lib/protocols.c:755
+#: lib/protocols.c:516
 #, c-format
 msgid "Error: Could not find bookmark %s\n"
 msgstr "Ошибка: Невозможно найти закладку %s\n"
 
-#: lib/protocols.c:762
+#: lib/protocols.c:523
 #, c-format
 msgid "Bookmarks Error: The bookmark entry %s does not have a hostname\n"
 msgstr "Ошибка закладок: В закладке \"%s\" нет названия сервера\n"
 
-#: lib/protocols.c:884 lib/protocols.c:911
+#: lib/protocols.c:645 lib/protocols.c:672
 #, c-format
 msgid "The protocol '%s' is currently not supported.\n"
 msgstr "Протокол \"%s\" пока не поддерживается.\n"
 
-#: lib/protocols.c:1201 lib/protocols.c:1216 lib/protocols.c:2398
-#: lib/protocols.c:2511
-#, c-format
-msgid "Looking up %s\n"
-msgstr "Поиск %s\n"
-
-#: lib/protocols.c:1207 lib/protocols.c:1222 lib/protocols.c:2403
-#: lib/protocols.c:2516
-#, c-format
-msgid "Cannot look up hostname %s: %s\n"
-msgstr "Невозможно найти сервер с именем %s: %s\n"
-
-#: lib/protocols.c:2133
+#: lib/protocols.c:1155
 #, c-format
 msgid "Found recursive symbolic link %s\n"
 msgstr "Найдена рекурсивная символьная ссылка %s\n"
 
-#: lib/protocols.c:2421
-#, c-format
-msgid "Failed to create a socket: %s\n"
-msgstr "Сбой при создании сокета: %s\n"
-
-#: lib/protocols.c:2427 lib/protocols.c:2533
-#, c-format
-msgid "Trying %s:%d\n"
-msgstr "Попытка %s:%d\n"
-
-#: lib/protocols.c:2432 lib/protocols.c:2540
-#, c-format
-msgid "Cannot connect to %s: %s\n"
-msgstr "Невозможно подключиться к %s: %s\n"
-
-#: lib/protocols.c:2470 lib/rfc959.c:706
-#, c-format
-msgid "Failed to create a IPv4 socket: %s\n"
-msgstr "Сбой при создании сокета IPv4: %s\n"
-
-#: lib/protocols.c:2494 lib/sshv2.c:1168
-#, c-format
-msgid "Cannot look up service name %s/tcp. Please check your services file\n"
-msgstr ""
-"Невозможно найти сервис с названием %s/tcp. Пожалуйста, проверьте что у вас "
-"с файлом /etc/services\n"
-
-#: lib/protocols.c:2556 lib/protocols.c:3209 lib/rfc959.c:715 lib/rfc959.c:892
-#, c-format
-msgid "Error: Cannot set close on exec flag: %s\n"
-msgstr "Ошибка: Невозможно установить close на флаг exec: %s\n"
-
-#: lib/protocols.c:2563
-#, c-format
-msgid "Connected to %s:%d\n"
-msgstr "Подключение к %s:%d\n"
-
-#: lib/protocols.c:2799 lib/protocols.c:2876 lib/sshv2.c:435
-#, c-format
-msgid "Connection to %s timed out\n"
-msgstr "Тайм-аут соединения %s\n"
-
-#: lib/protocols.c:2946
-#, c-format
-msgid "Cannot get socket flags: %s\n"
-msgstr "Невозможно получить флаги сокет: %s\n"
-
-#: lib/protocols.c:2960
-#, c-format
-msgid "Cannot set socket to non-blocking: %s\n"
-msgstr "Невозможно установить неблокирующий режим для сокета: %s\n"
-
-#: lib/protocols.c:3106
+#: lib/protocols.c:1533
 #, c-format
 msgid "Error: Remote site %s disconnected. Max retries reached...giving up\n"
 msgstr ""
 "Ошибка: Удалённый сервер %s отключился. Достигнуто макс. число повторов..\n"
 
-#: lib/protocols.c:3114
+#: lib/protocols.c:1541
 #, c-format
 msgid "Error: Remote site %s disconnected. Will reconnect in %d seconds\n"
 msgstr ""
 "Ошибка: Удалённый сервер %s отключился. Повторное соединение будет выполнено "
 "через %d секунд\n"
+
+#: lib/protocols.c:1636 lib/rfc959.c:715 lib/rfc959.c:885
+#: lib/socket-connect.c:126
+#, c-format
+msgid "Error: Cannot set close on exec flag: %s\n"
+msgstr "Ошибка: Невозможно установить close на флаг exec: %s\n"
 
 #: lib/pty.c:301
 #, c-format
@@ -1146,77 +1084,134 @@ msgstr ""
 "передаёте из UNIX в UNIX, тогда лучше снять отметку этого пункта. Если вы "
 "передаёте двоичные данные, вы обязательно должны отключить этот режим."
 
-#: lib/rfc959.c:381 lib/rfc959.c:390 lib/rfc959.c:401 lib/rfc959.c:855
-#: lib/rfc959.c:1422
+#: lib/rfc959.c:381 lib/rfc959.c:390 lib/rfc959.c:401 lib/rfc959.c:849
+#: lib/rfc959.c:1414
 #, c-format
 msgid "Invalid response '%c' received from server.\n"
 msgstr "Принят неверный отклик \"%c\" от сервера.\n"
+
+#: lib/rfc959.c:706 lib/socket-connect-gethostbyname.c:120
+#, c-format
+msgid "Failed to create a IPv4 socket: %s\n"
+msgstr "Сбой при создании сокета IPv4: %s\n"
 
 #: lib/rfc959.c:745 lib/rfc959.c:755
 #, c-format
 msgid "Cannot find an IP address in PASV response '%s'\n"
 msgstr "Невозможно найти адрес IP в ответе PASV '%s'\n"
 
-#: lib/rfc959.c:781
+#: lib/rfc959.c:775
 #, c-format
 msgid "Ignoring IP address in PASV response, connecting to %d.%d.%d.%d:%d\n"
 msgstr ""
 "Игнорируется адрес IP в ответе на запрос PASV, соединяемся с %d.%d.%d.%d:%d\n"
 
-#: lib/rfc959.c:792 lib/rfc959.c:953
+#: lib/rfc959.c:786 lib/rfc959.c:945
 #, c-format
 msgid "Cannot create a data connection: %s\n"
 msgstr "Невозможно создать соединение для передачи данных: %s\n"
 
-#: lib/rfc959.c:804 lib/rfc959.c:825 lib/rfc959.c:978
+#: lib/rfc959.c:798 lib/rfc959.c:819 lib/rfc959.c:970
 #, c-format
 msgid "Cannot get socket name: %s\n"
 msgstr "Невозможно получить название сокета: %s\n"
 
-#: lib/rfc959.c:815 lib/rfc959.c:968
+#: lib/rfc959.c:809 lib/rfc959.c:960
 #, c-format
 msgid "Cannot bind a port: %s\n"
 msgstr "Невозможно подключиться к порту: %s\n"
 
-#: lib/rfc959.c:834 lib/rfc959.c:987
+#: lib/rfc959.c:828 lib/rfc959.c:979
 #, c-format
 msgid "Cannot listen on port %d: %s\n"
 msgstr "Невозможно прослушивание на порту %d: %s\n"
 
-#: lib/rfc959.c:883
+#: lib/rfc959.c:876
 #, c-format
 msgid "Failed to create a IPv6 socket: %s\n"
 msgstr "Сбой при создании сокета IPv6: %s\n"
 
-#: lib/rfc959.c:903
+#: lib/rfc959.c:895
 msgid ""
 "Error: It doesn't look like we are connected via IPv6. Aborting connection.\n"
 msgstr ""
 "Ошибка: Не похоже, что мы подсоединились через IPv6. Отменяем соединение.\n"
 
-#: lib/rfc959.c:931 lib/rfc959.c:940
+#: lib/rfc959.c:923 lib/rfc959.c:932
 #, c-format
 msgid "Invalid EPSV response '%s'\n"
 msgstr "Неправильный отклик EPSV '%s'\n"
 
-#: lib/rfc959.c:997
+#: lib/rfc959.c:989
 #, c-format
 msgid "Cannot get address of local socket: %s\n"
 msgstr "Невозможно получить адрес локального сокета: %s\n"
 
-#: lib/rfc959.c:1084
+#: lib/rfc959.c:1076
 #, c-format
 msgid "Cannot accept connection from server: %s\n"
 msgstr "Невозможно принять соединение от сервера: %s\n"
 
-#: lib/rfc959.c:1592
+#: lib/rfc959.c:1584
 msgid "total"
 msgstr "всего"
 
-#: lib/rfc959.c:1594
+#: lib/rfc959.c:1586
 #, c-format
 msgid "Warning: Cannot parse listing %s\n"
 msgstr "Внимание: Невозможно проанализировать список %s\n"
+
+#: lib/socket-connect-getaddrinfo.c:77 lib/socket-connect-gethostbyname.c:64
+#, c-format
+msgid "Looking up %s\n"
+msgstr "Поиск %s\n"
+
+#: lib/socket-connect-getaddrinfo.c:82 lib/socket-connect-gethostbyname.c:69
+#, c-format
+msgid "Cannot look up hostname %s: %s\n"
+msgstr "Невозможно найти сервер с именем %s: %s\n"
+
+#: lib/socket-connect-getaddrinfo.c:115
+#, c-format
+msgid "Failed to create a socket: %s\n"
+msgstr "Сбой при создании сокета: %s\n"
+
+#: lib/socket-connect-getaddrinfo.c:121 lib/socket-connect-gethostbyname.c:134
+#, c-format
+msgid "Trying %s:%d\n"
+msgstr "Попытка %s:%d\n"
+
+#: lib/socket-connect-getaddrinfo.c:127 lib/socket-connect-gethostbyname.c:141
+#, c-format
+msgid "Cannot connect to %s: %s\n"
+msgstr "Невозможно подключиться к %s: %s\n"
+
+#: lib/socket-connect-getaddrinfo.c:152 lib/socket-connect-gethostbyname.c:159
+#, c-format
+msgid "Connected to %s:%d\n"
+msgstr "Подключение к %s:%d\n"
+
+#: lib/socket-connect-gethostbyname.c:101 lib/sshv2.c:1168
+#, c-format
+msgid "Cannot look up service name %s/tcp. Please check your services file\n"
+msgstr ""
+"Невозможно найти сервис с названием %s/tcp. Пожалуйста, проверьте что у вас "
+"с файлом /etc/services\n"
+
+#: lib/sockutils.c:190 lib/sockutils.c:268 lib/sshv2.c:435
+#, c-format
+msgid "Connection to %s timed out\n"
+msgstr "Тайм-аут соединения %s\n"
+
+#: lib/sockutils.c:338
+#, c-format
+msgid "Cannot get socket flags: %s\n"
+msgstr "Невозможно получить флаги сокет: %s\n"
+
+#: lib/sockutils.c:352
+#, c-format
+msgid "Cannot set socket to non-blocking: %s\n"
+msgstr "Невозможно установить неблокирующий режим для сокета: %s\n"
 
 #: lib/sshv2.c:28
 msgid "SSH"
@@ -1470,7 +1465,7 @@ msgstr ""
 msgid "Cannot get peer certificate\n"
 msgstr "Невозможно получить сертификат другой стороны\n"
 
-#: lib/sslcommon.c:199
+#: lib/sslcommon.c:196
 #, c-format
 msgid ""
 "ERROR: The host in the SSL certificate (%s) does not match the host that we "
@@ -1479,31 +1474,31 @@ msgstr ""
 "ОШИБКА: Сервер в SSL-сертификате (%s) не совпадает с сервером, к которому мы "
 "подсоединяемся (%s). Отменяем соединение.\n"
 
-#: lib/sslcommon.c:306
+#: lib/sslcommon.c:302
 msgid "Cannot initialize the OpenSSL library\n"
 msgstr "Невозможно инициализировать библиотеку OpenSSL\n"
 
-#: lib/sslcommon.c:321
+#: lib/sslcommon.c:317
 msgid "Error loading default SSL certificates\n"
 msgstr "Ошибка при загрузке сертификатов SSL по умолчанию\n"
 
-#: lib/sslcommon.c:333
+#: lib/sslcommon.c:329
 msgid "Error setting cipher list (no valid ciphers)\n"
 msgstr "Ошибка настройки списка cipher (нет верных ciphers)\n"
 
-#: lib/sslcommon.c:353 lib/sslcommon.c:427 lib/sslcommon.c:475
+#: lib/sslcommon.c:349 lib/sslcommon.c:423 lib/sslcommon.c:471
 msgid "Error: SSL engine was not initialized\n"
 msgstr "Ошибка: ядро SSL не было инициализировано\n"
 
-#: lib/sslcommon.c:370
+#: lib/sslcommon.c:366
 msgid "Error setting up SSL connection (BIO object)\n"
 msgstr "Ошибка настройки SSL-соединения (объект BIO)\n"
 
-#: lib/sslcommon.c:380
+#: lib/sslcommon.c:376
 msgid "Error setting up SSL connection (SSL object)\n"
 msgstr "Ошибка настройки SSL-соединения (объект SSL)\n"
 
-#: lib/sslcommon.c:401
+#: lib/sslcommon.c:397
 #, c-format
 msgid "Error with peer certificate: %s\n"
 msgstr "Ошибка с сертификатом другой стороны: %s\n"
@@ -1517,17 +1512,7 @@ msgstr "Операция отменена\n"
 msgid "Waiting %d seconds until trying to connect again\n"
 msgstr "Ожидание %d секунд перед повторной попыткой установления соединения\n"
 
-#: src/uicommon/gftpui.c:157
-msgid ""
-">. If you have any questions, comments, or suggestions about this program, "
-"please feel free to email them to me. You can always find out the latest "
-"news about gFTP from my website at http://www.gftp.org/\n"
-msgstr ""
-">. Если у вас есть вопросы, комментарии или замечания по этой программе, вы "
-"можете написать мне об этом по эл. адресу. Вы можете также найти последние "
-"новости о gFTP на моём сайте по адресу http://www.gftp.org/\n"
-
-#: src/uicommon/gftpui.c:158
+#: src/uicommon/gftpui.c:156
 msgid ""
 "gFTP comes with ABSOLUTELY NO WARRANTY; for details, see the COPYING file. "
 "This is free software, and you are welcome to redistribute it under certain "
@@ -1537,74 +1522,75 @@ msgstr ""
 "COPYING. Это свободная программа, вы можете распространять ее на условиях, "
 "описанных в файле COPYING\n"
 
-#: src/uicommon/gftpui.c:160 src/gtk/menu-items.c:491
+#: src/uicommon/gftpui.c:158 src/gtk/menu-items.c:491
 msgid "Translated by"
-msgstr "Перевод сделал Валёк Филиппов, дополнили Виталий Липатов и Александр Орлов"
+msgstr ""
+"Перевод сделал Валёк Филиппов, дополнили Виталий Липатов и Александр Орлов"
 
-#: src/uicommon/gftpui.c:207 src/uicommon/gftpui.c:249
-#: src/uicommon/gftpui.c:289 src/uicommon/gftpui.c:324
-#: src/uicommon/gftpui.c:359 src/uicommon/gftpui.c:395
-#: src/uicommon/gftpui.c:431 src/uicommon/gftpui.c:496
-#: src/uicommon/gftpui.c:577 src/uicommon/gftpui.c:845
+#: src/uicommon/gftpui.c:205 src/uicommon/gftpui.c:247
+#: src/uicommon/gftpui.c:287 src/uicommon/gftpui.c:322
+#: src/uicommon/gftpui.c:357 src/uicommon/gftpui.c:393
+#: src/uicommon/gftpui.c:429 src/uicommon/gftpui.c:494
+#: src/uicommon/gftpui.c:575 src/uicommon/gftpui.c:845
 msgid "Error: Not connected to a remote site\n"
 msgstr "Ошибка: Не подключён к удалённому серверу\n"
 
-#: src/uicommon/gftpui.c:218
+#: src/uicommon/gftpui.c:216
 msgid "usage: chmod <mode> <file>\n"
 msgstr "использование: chmod <режим> <файл>\n"
 
-#: src/uicommon/gftpui.c:259
+#: src/uicommon/gftpui.c:257
 msgid "usage: rename <old name> <new name>\n"
 msgstr "использование: rename <старое название> <новое название>\n"
 
-#: src/uicommon/gftpui.c:295
+#: src/uicommon/gftpui.c:293
 msgid "usage: delete <file>\n"
 msgstr "использование: delete <файл>\n"
 
-#: src/uicommon/gftpui.c:330
+#: src/uicommon/gftpui.c:328
 msgid "usage: rmdir <directory>\n"
 msgstr "использование: rmdir <каталог>\n"
 
-#: src/uicommon/gftpui.c:365
+#: src/uicommon/gftpui.c:363
 msgid "usage: site <site command>\n"
 msgstr "использование: site <site command>\n"
 
-#: src/uicommon/gftpui.c:401
+#: src/uicommon/gftpui.c:399
 msgid "usage: mkdir <new directory>\n"
 msgstr "использование: mkdir <новый каталог>\n"
 
-#: src/uicommon/gftpui.c:437 src/uicommon/gftpui.c:455
+#: src/uicommon/gftpui.c:435 src/uicommon/gftpui.c:453
 msgid "usage: chdir <directory>\n"
 msgstr "использование: chdir <каталог>\n"
 
-#: src/uicommon/gftpui.c:528
+#: src/uicommon/gftpui.c:526
 msgid "Invalid argument\n"
 msgstr "Недопустимый аргумент\n"
 
-#: src/uicommon/gftpui.c:541
+#: src/uicommon/gftpui.c:539
 msgid "Clear the directory cache\n"
 msgstr "Очистить кэш каталогов\n"
 
-#: src/uicommon/gftpui.c:630
+#: src/uicommon/gftpui.c:628
 msgid "usage: open "
 msgstr "использование: open "
 
-#: src/uicommon/gftpui.c:706
+#: src/uicommon/gftpui.c:704
 msgid "usage: set [variable = value]\n"
 msgstr "использование: set [переменная = значение]\n"
 
-#: src/uicommon/gftpui.c:720
+#: src/uicommon/gftpui.c:718
 #, c-format
 msgid "Error: Variable %s is not a valid configuration variable.\n"
 msgstr ""
 "Ошибка: Переменная %s не является корректной переменной конфигурации.\n"
 
-#: src/uicommon/gftpui.c:727
+#: src/uicommon/gftpui.c:725
 #, c-format
 msgid "Error: Variable %s is not available in the text port of gFTP\n"
 msgstr "Ошибка: Переменная %s недоступна в текстовой версии gFTP\n"
 
-#: src/uicommon/gftpui.c:809
+#: src/uicommon/gftpui.c:807
 msgid ""
 "Supported commands:\n"
 "\n"
@@ -1887,22 +1873,22 @@ msgstr "Пропускаем файл %s на сервере %s\n"
 msgid "Stopping the transfer on host %s\n"
 msgstr "Остановка передачи на сервер %s\n"
 
-#: src/uicommon/gftpui.c:1502
+#: src/uicommon/gftpui.c:1505
 #, c-format
 msgid "Could not download %s from %s\n"
 msgstr "Невозможно выкачать %s c %s\n"
 
-#: src/uicommon/gftpui.c:1558
+#: src/uicommon/gftpui.c:1561
 #, c-format
 msgid ""
 "There were %d files or directories that could not be transferred. Check the "
 "log for which items were not properly transferred."
 msgstr ""
-"%d файл(ов) или каталог(ов) не могут быть переданы. Проверьте журнал "
-"чтобы узнать, какие элементы не были переданы."
+"%d файл(ов) или каталог(ов) не могут быть переданы. Проверьте журнал чтобы "
+"узнать, какие элементы не были переданы."
 
 #: src/gtk/bookmarks.c:40 src/gtk/dnd.c:122 src/gtk/gftp-gtk.c:234
-#: src/gtk/gftp-gtk.c:1096 src/gtk/misc-gtk.c:505 src/gtk/misc-gtk.c:513
+#: src/gtk/gftp-gtk.c:1103 src/gtk/misc-gtk.c:505 src/gtk/misc-gtk.c:513
 #, c-format
 msgid "%s: Please hit the stop button first to do anything else\n"
 msgstr ""
@@ -2097,7 +2083,7 @@ msgstr "SGID"
 msgid "Sticky"
 msgstr "Sticky"
 
-#: src/gtk/chmod_dialog.c:192 src/gtk/gftp-gtk.c:780
+#: src/gtk/chmod_dialog.c:192 src/gtk/gftp-gtk.c:789
 msgid "User"
 msgstr "Пользователь"
 
@@ -2116,7 +2102,7 @@ msgstr "Запись"
 msgid "Execute"
 msgstr "Выполнение"
 
-#: src/gtk/chmod_dialog.c:212 src/gtk/gftp-gtk.c:781
+#: src/gtk/chmod_dialog.c:212 src/gtk/gftp-gtk.c:790
 msgid "Group"
 msgstr "Группа"
 
@@ -2147,7 +2133,7 @@ msgstr "Удаление файлов/каталогов"
 msgid "Delete"
 msgstr "Удалить"
 
-#: src/gtk/dnd.c:123 src/gtk/gftp-gtk.c:1097 src/gtk/misc-gtk.c:929
+#: src/gtk/dnd.c:123 src/gtk/gftp-gtk.c:1104 src/gtk/misc-gtk.c:929
 #: src/gtk/misc-gtk.c:1004
 msgid "Connect"
 msgstr "Соединить"
@@ -2517,27 +2503,27 @@ msgstr "Пароль: "
 msgid "Command: "
 msgstr "Команда: "
 
-#: src/gtk/gftp-gtk.c:778 src/gtk/gftp-gtk.c:989 src/gtk/gtkui_transfer.c:228
+#: src/gtk/gftp-gtk.c:787 src/gtk/gftp-gtk.c:996 src/gtk/gtkui_transfer.c:228
 msgid "Filename"
 msgstr "Название файла"
 
-#: src/gtk/gftp-gtk.c:779
+#: src/gtk/gftp-gtk.c:788
 msgid "Size"
 msgstr "Размер"
 
-#: src/gtk/gftp-gtk.c:782
+#: src/gtk/gftp-gtk.c:791
 msgid "Date"
 msgstr "Дата"
 
-#: src/gtk/gftp-gtk.c:783
+#: src/gtk/gftp-gtk.c:792
 msgid "Attribs"
 msgstr "Атрибуты"
 
-#: src/gtk/gftp-gtk.c:990
+#: src/gtk/gftp-gtk.c:997
 msgid "Progress"
 msgstr "Ход работы"
 
-#: src/gtk/gftp-gtk.c:1126
+#: src/gtk/gftp-gtk.c:1133
 msgid "Error: You must type in a host to connect to\n"
 msgstr "Ошибка: вы должны указать сервер для подключения\n"
 
@@ -2725,7 +2711,7 @@ msgstr "О программе"
 msgid "License Agreement"
 msgstr "Лицензионное соглашение"
 
-#: src/gtk/menu-items.c:558 src/gtk/view_dialog.c:364
+#: src/gtk/menu-items.c:558 src/gtk/view_dialog.c:385
 msgid "  Close  "
 msgstr "  Закрыть  "
 
@@ -2942,15 +2928,15 @@ msgstr "Завершено"
 #, c-format
 msgid "Sent %s of %s at %.2fKB/s, %02d:%02d:%02d est. time remaining"
 msgstr ""
-"Передано %s из %s со скоростью %.2fКб/сек, ожидаемое время завершения: %02d:%"
-"02d:%02d"
+"Передано %s из %s со скоростью %.2fКб/сек, ожидаемое время завершения: %02d:"
+"%02d:%02d"
 
 #: src/gtk/transfer.c:739
 #, c-format
 msgid "Recv %s of %s at %.2fKB/s, %02d:%02d:%02d est. time remaining"
 msgstr ""
-"Получено %s из %s со скоростью %.2fКб/сек, ожидаемое время завершения: %02d:%"
-"02d:%02d "
+"Получено %s из %s со скоростью %.2fКб/сек, ожидаемое время завершения: %02d:"
+"%02d:%02d "
 
 #: src/gtk/transfer.c:750
 #, c-format
@@ -2973,8 +2959,8 @@ msgstr "Неизвестный процент до завершения. (Фай
 #, c-format
 msgid "%d%% complete, %02d:%02d:%02d est. time remaining. (File %ld of %ld)"
 msgstr ""
-"Выполнено %d%%, ожидаемое время до завершения: %02d:%02d:%02d. (Файл %ld из %"
-"ld) "
+"Выполнено %d%%, ожидаемое время до завершения: %02d:%02d:%02d. (Файл %ld из "
+"%ld) "
 
 #: src/gtk/transfer.c:842
 #, c-format
@@ -3004,27 +2990,27 @@ msgstr "Редактирование: %s -- это каталог. Его нев
 msgid "Edit: You must specify an editor in the options dialog\n"
 msgstr "Редактирование: Вы должны указать редактор в диалоге параметров\n"
 
-#: src/gtk/view_dialog.c:169
+#: src/gtk/view_dialog.c:177
 #, c-format
 msgid "View: Cannot fork another process: %s\n"
 msgstr "Просмотр: Невозможно порождение другого процесса: %s\n"
 
-#: src/gtk/view_dialog.c:172
+#: src/gtk/view_dialog.c:180
 #, c-format
 msgid "Running program: %s %s\n"
 msgstr "Запуск программы: %s %s\n"
 
-#: src/gtk/view_dialog.c:231
+#: src/gtk/view_dialog.c:240
 #, c-format
 msgid "Opening %s with %s\n"
 msgstr "Открытие %s с помощью %s\n"
 
-#: src/gtk/view_dialog.c:266
+#: src/gtk/view_dialog.c:282
 #, c-format
 msgid "Viewing file %s\n"
 msgstr "Просмотр файла %s\n"
 
-#: src/gtk/view_dialog.c:273
+#: src/gtk/view_dialog.c:289
 #, c-format
 msgid "View: Cannot open file %s: %s\n"
 msgstr "Просмотр: Невозможно открыть файл %s: %s\n"
@@ -3042,10 +3028,21 @@ msgstr "Имя пользователя [anonymous]:"
 #, c-format
 msgid ""
 "%s already exists. (%s source size, %s destination size):\n"
-"(o)verwrite, (r)esume, (s)kip, (O)verwrite All, (R)esume All, (S)kip All: (%"
-"c)"
+"(o)verwrite, (r)esume, (s)kip, (O)verwrite All, (R)esume All, (S)kip All: "
+"(%c)"
 msgstr ""
 "%s уже существует. (%s исходный размер, %s размер получателя):\n"
 "(o) перезаписать, (r)отложить, (s)пропустить, (O)перезаписать всё, (R)"
 "отложить всё, (S)пропустить всё: (%c)"
 
+#~ msgid "\n"
+#~ msgstr "\n"
+
+#~ msgid ""
+#~ ">. If you have any questions, comments, or suggestions about this "
+#~ "program, please feel free to email them to me. You can always find out "
+#~ "the latest news about gFTP from my website at http://www.gftp.org/\n"
+#~ msgstr ""
+#~ ">. Если у вас есть вопросы, комментарии или замечания по этой программе, "
+#~ "вы можете написать мне об этом по эл. адресу. Вы можете также найти "
+#~ "последние новости о gFTP на моём сайте по адресу http://www.gftp.org/\n"

@@ -1,3 +1,49 @@
+2011-09-11  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* configure.in (AC_CONFIG_FILES): Add intl/Makefile.
+
+2011-09-11  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* Makefile.am (SUBDIRS): Remove intl.
+
+2011-09-11  gettextize  <bug-gnu-gettext@gnu.org>
+
+	* m4/gettext.m4: New file, from gettext-0.18.1.
+	* m4/iconv.m4: New file, from gettext-0.18.1.
+	* m4/lib-ld.m4: New file, from gettext-0.18.1.
+	* m4/lib-link.m4: New file, from gettext-0.18.1.
+	* m4/lib-prefix.m4: New file, from gettext-0.18.1.
+	* m4/nls.m4: New file, from gettext-0.18.1.
+	* m4/po.m4: New file, from gettext-0.18.1.
+	* m4/progtest.m4: New file, from gettext-0.18.1.
+	* m4/codeset.m4: New file, from gettext-0.18.1.
+	* m4/fcntl-o.m4: New file, from gettext-0.18.1.
+	* m4/glibc2.m4: New file, from gettext-0.18.1.
+	* m4/glibc21.m4: New file, from gettext-0.18.1.
+	* m4/intdiv0.m4: New file, from gettext-0.18.1.
+	* m4/intl.m4: New file, from gettext-0.18.1.
+	* m4/intldir.m4: New file, from gettext-0.18.1.
+	* m4/intlmacosx.m4: New file, from gettext-0.18.1.
+	* m4/intmax.m4: New file, from gettext-0.18.1.
+	* m4/inttypes_h.m4: New file, from gettext-0.18.1.
+	* m4/inttypes-pri.m4: New file, from gettext-0.18.1.
+	* m4/lcmessage.m4: New file, from gettext-0.18.1.
+	* m4/lock.m4: New file, from gettext-0.18.1.
+	* m4/longlong.m4: New file, from gettext-0.18.1.
+	* m4/printf-posix.m4: New file, from gettext-0.18.1.
+	* m4/size_max.m4: New file, from gettext-0.18.1.
+	* m4/stdint_h.m4: New file, from gettext-0.18.1.
+	* m4/threadlib.m4: New file, from gettext-0.18.1.
+	* m4/uintmax_t.m4: New file, from gettext-0.18.1.
+	* m4/visibility.m4: New file, from gettext-0.18.1.
+	* m4/wchar_t.m4: New file, from gettext-0.18.1.
+	* m4/wint_t.m4: New file, from gettext-0.18.1.
+	* m4/xsize.m4: New file, from gettext-0.18.1.
+	* m4/Makefile.am (EXTRA_DIST): Add the new files.
+	* Makefile.am (SUBDIRS): Add intl.
+	(EXTRA_DIST): Add config.rpath.
+	* configure.in (AC_CONFIG_FILES): Add intl/Makefile, po/Makefile.in.
+
 2008-11-30 Brian Masney <masneyb@gftp.org>
 	* docs/website/index.html.in docs/website/generate-gftp-website.pl
 	docs/website/announce.txt ChangeLog-old - updated for the 2.0.19
