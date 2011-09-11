@@ -319,7 +319,7 @@ int check_status                ( char *name,
                           unsigned int at_least_one,
                           unsigned int func );
 
-GtkItemFactory *item_factory_new                ( GtkType          container_type,
+GtkItemFactory *item_factory_new                ( GType          container_type,
                           const char          *path,
                           GtkAccelGroup       *accel_group,
                           const char          *strip_prefix );

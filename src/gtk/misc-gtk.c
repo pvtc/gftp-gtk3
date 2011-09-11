@@ -516,7 +516,7 @@ gftp_item_factory_translate (const char *path, gpointer func_data)
 
 
 GtkItemFactory *
-item_factory_new (GtkType container_type, const char *path,
+item_factory_new (GType container_type, const char *path,
           GtkAccelGroup *accel_group, const char *strip_prefix)
 {
   GtkItemFactory *result = gtk_item_factory_new (container_type, path, accel_group);
