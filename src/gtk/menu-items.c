@@ -146,15 +146,15 @@ save_directory_listing (gpointer data)
   str->filew = filew;
   str->wdata = data;
 
-  gtk_signal_connect (GTK_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
-                      "clicked", GTK_SIGNAL_FUNC (dosave_directory_listing),
+  g_signal_connect (G_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
+                      "clicked", G_CALLBACK (dosave_directory_listing),
                       str);
-  gtk_signal_connect (GTK_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
+  g_signal_connect (G_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
                       "clicked",
-                      GTK_SIGNAL_FUNC (destroy_save_directory_listing), str);
-  gtk_signal_connect (GTK_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button),
+                      G_CALLBACK (destroy_save_directory_listing), str);
+  g_signal_connect (G_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button),
                       "clicked",
-                      GTK_SIGNAL_FUNC (destroy_save_directory_listing), str);
+                      G_CALLBACK (destroy_save_directory_listing), str);
 
   gtk_window_set_wmclass (GTK_WINDOW(filew), "Save Directory Listing", "gFTP");
   gtk_widget_show (filew);
@@ -393,12 +393,12 @@ savelog (gpointer data)
 
   filew = gtk_file_selection_new (_("Save Log"));
 
-  gtk_signal_connect (GTK_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
-                      "clicked", GTK_SIGNAL_FUNC (dosavelog), filew);
-  gtk_signal_connect_object (GTK_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
-                             "clicked", GTK_SIGNAL_FUNC (gtk_widget_destroy),
-                             GTK_OBJECT (filew));
-  gtk_signal_connect_object (GTK_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button), "clicked", GTK_SIGNAL_FUNC (gtk_widget_destroy), GTK_OBJECT (filew));
+  g_signal_connect (G_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
+                      "clicked", G_CALLBACK (dosavelog), filew);
+  g_signal_connect_swapped (G_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
+                             "clicked", G_CALLBACK (gtk_widget_destroy),
+                             G_OBJECT (filew));
+  g_signal_connect_swapped (G_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button), "clicked", G_CALLBACK (gtk_widget_destroy), G_OBJECT (filew));
 
   gtk_file_selection_set_filename (GTK_FILE_SELECTION (filew), "gftp.log");
   gtk_window_set_wmclass (GTK_WINDOW(filew), "Save Log", "gFTP");
@@ -507,9 +507,9 @@ about_dialog (gpointer data)
   gtk_widget_show (label);
 
   gtk_notebook_append_page (GTK_NOTEBOOK (notebook), box, label);
-  g_signal_connect_swapped (GTK_OBJECT (dialog), "response",
+  g_signal_connect_swapped (G_OBJECT (dialog), "response",
                             G_CALLBACK (gtk_widget_destroy),
-                            GTK_OBJECT (dialog));
+                            G_OBJECT (dialog));
 
   tempstr = g_strconcat ("/usr/share/common-licenses/GPL", NULL);
   if (access (tempstr, F_OK) != 0)
