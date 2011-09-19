@@ -33,10 +33,6 @@
 #define GFTP_MENU_ITEM_WIN1 3
 #define GFTP_MENU_ITEM_WIN2 4
 
-#define IS_ONE_SELECTED(wdata)      (GTK_CLIST ((wdata)->listbox)->selection && GTK_CLIST ((wdata)->listbox)->selection->next == NULL)
-#define IS_NONE_SELECTED(wdata)     (GTK_CLIST ((wdata)->listbox)->selection == NULL)
-#define gftp_gtk_get_list_selection(wdata)  (GTK_CLIST ((wdata)->listbox)->selection)
-
 #define GFTP_IS_SAME_HOST_START_TRANS(wdata,trequest) \
   ((wdata) != NULL && (wdata)->request != NULL && \
   (wdata)->request->datafd > 0 && !(wdata)->request->always_connected && \
@@ -92,8 +88,7 @@ typedef struct _gftpui_gtk_thread_data
 typedef struct gftp_graphic_tag
 {
   char * filename;
-  GdkPixmap * pixmap;
-  GdkBitmap * bitmap;
+  GdkPixbuf * pb;
 } gftp_graphic;
 
 
@@ -173,7 +168,6 @@ extern GHashTable * graphic_hash_table;
 extern GtkItemFactoryEntry * menus;
 extern GtkItemFactory * factory;
 extern pthread_mutex_t log_mutex;
-extern gftp_graphic * gftp_icon;
 extern pthread_t main_thread_id;
 extern GList * viewedit_processes;
 
@@ -225,8 +219,7 @@ void gftp_gtk_init_request          ( gftp_window_data * wdata );
 void toolbar_hostedit               ( GtkWidget * widget,
                           gpointer data );
 
-void sortrows                   ( GtkCList * clist,
-                          gint column,
+void sortrows                   ( GtkTreeViewColumn * col,
                           gpointer data );
 
 void stop_button                ( GtkWidget * widget,
@@ -299,18 +292,12 @@ void update_window_info             ( void );
 
 void update_window              ( gftp_window_data * wdata );
 
-GtkWidget * toolbar_pixmap          ( GtkWidget * widget,
-                          char *filename );
+GtkWidget * toolbar_pixmap          ( char *filename );
 
-gftp_graphic * open_xpm             ( GtkWidget * widget,
-                          char *filename );
-
+gftp_graphic * open_xpm             ( char *filename );
 void gftp_free_pixmap               ( char *filename );
 
-void gftp_get_pixmap                ( GtkWidget * widget,
-                          char *filename,
-                          GdkPixmap ** pix,
-                          GdkBitmap ** bitmap );
+GdkPixbuf * gftp_get_pixmap (char *filename);
 
 int check_status                ( char *name,
                           gftp_window_data * wdata,

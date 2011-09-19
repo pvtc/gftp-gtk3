@@ -35,12 +35,12 @@ dnd_remote_file (gftp_window_data * wdata, GList ** trans_list, char *url)
     fromwdata = &window2;
   else if (wdata == &window2)
     fromwdata = &window1;
-  else 
+  else
     fromwdata = NULL;
-    
+
   newfle = g_malloc0 (sizeof (*newfle));
   newfle->shown = 1;
-  if (url[strlen (url) - 1] == '/') 
+  if (url[strlen (url) - 1] == '/')
     {
       newfle->st_mode |= S_IFDIR;
       url[strlen (url) - 1] = '\0';
@@ -51,7 +51,7 @@ dnd_remote_file (gftp_window_data * wdata, GList ** trans_list, char *url)
 
   if (gftp_parse_url (current_ftpdata, url) != 0 ||
       current_ftpdata->directory == NULL ||
-      (pos = strrchr (current_ftpdata->directory, '/')) == NULL) 
+      (pos = strrchr (current_ftpdata->directory, '/')) == NULL)
     {
       gftp_request_destroy (current_ftpdata, 1);
       gftp_file_destroy (newfle, 1);
@@ -66,7 +66,7 @@ dnd_remote_file (gftp_window_data * wdata, GList ** trans_list, char *url)
       return (0);
     }
 
-  if (fromwdata != NULL && 
+  if (fromwdata != NULL &&
       compare_request (current_ftpdata, fromwdata->request, 0))
     {
       if (fromwdata->request->password != NULL)
@@ -78,7 +78,7 @@ dnd_remote_file (gftp_window_data * wdata, GList ** trans_list, char *url)
   *(pos - 1) = '/';
   newfle->file = g_strdup (current_ftpdata->directory);
   *(pos - 1) = '\0';
-  
+
   newfle->destfile = gftp_build_path (wdata->request,
                                       wdata->request->directory, pos, NULL);
 
@@ -113,8 +113,8 @@ dnd_remote_file (gftp_window_data * wdata, GList ** trans_list, char *url)
 
 void
 openurl_get_drag_data (GtkWidget * widget, GdkDragContext * context, gint x,
-		       gint y, GtkSelectionData * selection_data, guint info,
-		       guint32 clk_time, gpointer data)
+               gint y, GtkSelectionData * selection_data, guint info,
+               guint32 clk_time, gpointer data)
 {
   if (current_wdata->request->stopable)
     {
@@ -124,12 +124,12 @@ openurl_get_drag_data (GtkWidget * widget, GdkDragContext * context, gint x,
       return;
     }
 
-  if ((selection_data->length >= 0) && (selection_data->format == 8)) 
+  if ((selection_data->length >= 0) && (selection_data->format == 8))
     {
       if (GFTP_IS_CONNECTED (current_wdata->request))
         gftpui_disconnect (current_wdata);
 
-      if (gftp_parse_url (current_wdata->request, 
+      if (gftp_parse_url (current_wdata->request,
                           (char *) selection_data->data) == 0)
         {
           ftp_log (gftp_logging_misc, NULL,
@@ -143,56 +143,57 @@ openurl_get_drag_data (GtkWidget * widget, GdkDragContext * context, gint x,
 
 void
 listbox_drag (GtkWidget * widget, GdkDragContext * context,
-	      GtkSelectionData * selection_data, guint info, guint32 clk_time,
-	      gpointer data)
+          GtkSelectionData * selection_data, guint info, guint32 clk_time,
+          gpointer data)
 {
   GList * templist, * filelist;
   char *tempstr, *str, *df;
   gftp_window_data * wdata;
   size_t totlen, oldlen;
   gftp_file * tempfle;
-  int curpos;
-   
+  GtkTreeSelection *select;
+  GtkTreeIter iter;
+  GtkTreeModel * model;
+
   totlen = 0;
   str = NULL;
   wdata = data;
-  if (!check_status (_("Drag-N-Drop"), wdata, 1, 0, 1, 1)) 
+  if (!check_status (_("Drag-N-Drop"), wdata, 1, 0, 1, 1))
     return;
 
-  filelist = wdata->files;
-  templist = gftp_gtk_get_list_selection (wdata);
-  curpos = 0;
-  while (templist != NULL)
-    {
-      templist = get_next_selection (templist, &filelist, &curpos);
-      tempfle = filelist->data;
+  select = gtk_tree_view_get_selection (GTK_TREE_VIEW (wdata->listbox));
+  templist = gtk_tree_selection_get_selected_rows(select, &model);
+  for (filelist = templist ; filelist != NULL; filelist = g_list_next(filelist))
+  {
+    gtk_tree_model_get_iter(model, &iter, (GtkTreePath*)filelist->data);
+    gtk_tree_model_get(model, &iter, 0, &tempfle, -1);
 
-      if (strcmp (tempfle->file, "..") == 0) 
+      if (strcmp (tempfle->file, "..") == 0)
         continue;
 
       oldlen = totlen;
       df = gftp_build_path (wdata->request, wdata->request->directory,
                             tempfle->file, NULL);
 
-      if (wdata->request->hostname == NULL || 
+      if (wdata->request->hostname == NULL ||
           wdata->request->protonum == GFTP_LOCAL_NUM)
         {
-          tempstr = g_strdup_printf ("%s://%s ", 
+          tempstr = g_strdup_printf ("%s://%s ",
                                  wdata->request->url_prefix, df);
         }
-      else if (wdata->request->username == NULL || 
+      else if (wdata->request->username == NULL ||
                *wdata->request->username == '\0')
         {
-          tempstr = g_strdup_printf ("%s://%s:%d%s ", 
+          tempstr = g_strdup_printf ("%s://%s:%d%s ",
                                  wdata->request->url_prefix,
                                  wdata->request->hostname,
                                  wdata->request->port, df);
         }
       else
         {
-          tempstr = g_strdup_printf ("%s://%s@%s:%d%s ", 
+          tempstr = g_strdup_printf ("%s://%s@%s:%d%s ",
                                  wdata->request->url_prefix,
-                                 wdata->request->username, 
+                                 wdata->request->username,
                                  wdata->request->hostname,
                                  wdata->request->port, df);
         }
@@ -213,7 +214,7 @@ listbox_drag (GtkWidget * widget, GdkDragContext * context,
           str = g_realloc (str, totlen + 1);
           strcpy (str + oldlen, "\n");
           strcpy (str + oldlen + 1, tempstr);
-        } 
+        }
       else
         {
           str = g_malloc0 ((gulong) totlen + 1);
@@ -221,11 +222,13 @@ listbox_drag (GtkWidget * widget, GdkDragContext * context,
         }
       g_free (tempstr);
     }
+  g_list_foreach (templist, (GFunc) gtk_tree_path_free, NULL);
+  g_list_free (templist);
 
   if (str != NULL)
     {
       gtk_selection_data_set (selection_data, selection_data->target, 8,
-      	                      (unsigned char *) str, strlen (str));
+                              (unsigned char *) str, strlen (str));
       g_free (str);
     }
 }
@@ -233,8 +236,8 @@ listbox_drag (GtkWidget * widget, GdkDragContext * context,
 
 void
 listbox_get_drag_data (GtkWidget * widget, GdkDragContext * context, gint x,
-		       gint y, GtkSelectionData * selection_data, guint info,
-		       guint32 clk_time, gpointer data)
+               gint y, GtkSelectionData * selection_data, guint info,
+               guint32 clk_time, gpointer data)
 {
   char *newpos, *oldpos, *tempstr;
   GList * trans_list, * templist;
@@ -243,17 +246,18 @@ listbox_get_drag_data (GtkWidget * widget, GdkDragContext * context, gint x,
   int finish_drag;
   size_t len;
 
-  wdata = data;   
-  if (!check_status (_("Drag-N-Drop"), wdata, 1, 0, 0, 1)) 
+  g_print("%s\n", "listbox_get_drag_data");
+  wdata = data;
+  if (!check_status (_("Drag-N-Drop"), wdata, 1, 0, 0, 1))
     return;
 
   trans_list = NULL;
   finish_drag = 0;
-  if ((selection_data->length >= 0) && (selection_data->format == 8)) 
+  if ((selection_data->length >= 0) && (selection_data->format == 8))
     {
       oldpos = (char *) selection_data->data;
-      while ((newpos = strchr (oldpos, '\n')) || 
-             (newpos = strchr (oldpos, '\0'))) 
+      while ((newpos = strchr (oldpos, '\n')) ||
+             (newpos = strchr (oldpos, '\0')))
         {
           len = newpos - oldpos;
           if (oldpos[len - 1] == '\r')
@@ -273,7 +277,7 @@ listbox_get_drag_data (GtkWidget * widget, GdkDragContext * context, gint x,
 
           g_free (tempstr);
 
-          if (*newpos == '\0') 
+          if (*newpos == '\0')
             break;
 
           oldpos = newpos + 1;

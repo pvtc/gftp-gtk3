@@ -29,19 +29,21 @@ do_view_or_edit_file (gftp_window_data * fromwdata, int is_view)
   gftp_window_data * towdata;
   gftp_file * new_fle;
   char *suffix;
-  int num;
+  GtkTreeSelection *select;
+  GtkTreeIter iter;
+  GtkTreeModel * model;
 
   if (!check_status (is_view ? _("View") : _("Edit"), fromwdata, 0, 1, 1, 1))
     return;
 
   towdata = fromwdata == &window1 ? &window2 : &window1;
 
-  templist = GTK_CLIST (fromwdata->listbox)->selection;
-  num = 0;
-  filelist = fromwdata->files;
-  templist = get_next_selection (templist, &filelist, &num);
-  curfle = filelist->data;
-
+  select = gtk_tree_view_get_selection (GTK_TREE_VIEW (fromwdata->listbox));
+  templist = gtk_tree_selection_get_selected_rows(select, &model);
+  gtk_tree_model_get_iter(model, &iter, (GtkTreePath*)templist->data);
+  gtk_tree_model_get(model, &iter, 0, &curfle, -1);
+  g_list_foreach (templist, (GFunc) gtk_tree_path_free, NULL);
+  g_list_free (templist);
   if (S_ISDIR (curfle->st_mode))
     {
       if (is_view)
@@ -320,13 +322,6 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 5);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
   gtk_widget_realize (dialog);
-
-  if (gftp_icon != NULL)
-    {
-      gdk_window_set_icon (dialog->window, NULL, gftp_icon->pixmap,
-                           gftp_icon->bitmap);
-      gdk_window_set_icon_name (dialog->window, gftp_version);
-    }
 
   table = gtk_table_new (1, 2, FALSE);
   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), table, TRUE, TRUE, 0);

@@ -71,7 +71,7 @@ askdel (gftp_transfer * transfer)
   else
     return;
 
-  MakeYesNoDialog (_("Delete Files/Directories"), tempstr, 
+  MakeYesNoDialog (_("Delete Files/Directories"), tempstr,
                    yesCB, transfer, _gftp_gtk_free_del_data, transfer);
   g_free (tempstr);
 }
@@ -84,7 +84,10 @@ delete_dialog (gpointer data)
   GList * templist, * filelist;
   gftp_transfer * transfer;
   gftp_window_data * wdata;
-  int num, ret;
+  int ret;
+  GtkTreeSelection *select;
+  GtkTreeIter iter;
+  GtkTreeModel * model;
 
   wdata = data;
   if (!check_status (_("Delete"), wdata,
@@ -95,19 +98,21 @@ delete_dialog (gpointer data)
   transfer->fromreq = gftp_copy_request (wdata->request);
   transfer->fromwdata = wdata;
 
-  num = 0;
-  templist = gftp_gtk_get_list_selection (wdata);
-  filelist = wdata->files;
-  while (templist != NULL)
-    {
-      templist = get_next_selection (templist, &filelist, &num);
-      tempfle = filelist->data;
+  select = gtk_tree_view_get_selection (GTK_TREE_VIEW (wdata->listbox));
+  templist = gtk_tree_selection_get_selected_rows(select, &model);
+  for (filelist = templist ; filelist != NULL; filelist = g_list_next(filelist))
+  {
+    gtk_tree_model_get_iter(model, &iter, (GtkTreePath*)filelist->data);
+    gtk_tree_model_get(model, &iter, 0, &tempfle, -1);
+
       if (strcmp (tempfle->file, "..") == 0 ||
           strcmp (tempfle->file, ".") == 0)
         continue;
       newfle = copy_fdata (tempfle);
       transfer->files = g_list_append (transfer->files, newfle);
-    }
+  }
+  g_list_foreach (templist, (GFunc) gtk_tree_path_free, NULL);
+  g_list_free (templist);
 
   if (transfer->files == NULL)
     {
@@ -132,5 +137,3 @@ delete_dialog (gpointer data)
 
   askdel (transfer);
 }
-
-

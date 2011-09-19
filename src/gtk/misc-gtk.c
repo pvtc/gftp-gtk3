@@ -27,11 +27,11 @@ void
 remove_files_window (gftp_window_data * wdata)
 {
   wdata->show_selected = 0;
-  gtk_clist_freeze (GTK_CLIST (wdata->listbox));
-  gtk_clist_clear (GTK_CLIST (wdata->listbox));
+
+  GtkTreeModel * model = gtk_tree_view_get_model(GTK_TREE_VIEW (wdata->listbox));
+  gtk_list_store_clear (GTK_LIST_STORE(model));
   free_file_list (wdata->files);
   wdata->files = NULL;
-  gtk_clist_thaw (GTK_CLIST (wdata->listbox));
 }
 
 
@@ -336,7 +336,7 @@ update_window (gftp_window_data * wdata)
 
 
 GtkWidget *
-toolbar_pixmap (GtkWidget * widget, char *filename)
+toolbar_pixmap (char *filename)
 {
   gftp_graphic * graphic;
   GtkWidget *pix;
@@ -344,12 +344,12 @@ toolbar_pixmap (GtkWidget * widget, char *filename)
   if (filename == NULL || *filename == '\0')
     return (NULL);
 
-  graphic = open_xpm (widget, filename);
+  graphic = open_xpm (filename);
 
   if (graphic == NULL)
     return (NULL);
 
-  if ((pix = gtk_pixmap_new (graphic->pixmap, graphic->bitmap)) == NULL)
+  if ((pix = gtk_image_new_from_pixbuf (graphic->pb)) == NULL)
     return (NULL);
 
   gtk_widget_show (pix);
@@ -358,30 +358,27 @@ toolbar_pixmap (GtkWidget * widget, char *filename)
 
 
 gftp_graphic *
-open_xpm (GtkWidget * widget, char *filename)
+open_xpm (char *filename)
 {
   gftp_graphic * graphic;
-  GtkStyle *style;
   char *exfile;
+  GError * error = NULL;
 
   if ((graphic = g_hash_table_lookup (graphic_hash_table, filename)) != NULL)
     return (graphic);
-
-  style = gtk_widget_get_style (widget);
 
   if ((exfile = get_xpm_path (filename, 0)) == NULL)
     return (NULL);
 
   graphic = g_malloc0 (sizeof (*graphic));
-  graphic->pixmap = gdk_pixmap_create_from_xpm (widget->window,
-                        &graphic->bitmap, &style->bg[GTK_STATE_NORMAL], exfile);
+  graphic->pb =  gdk_pixbuf_new_from_file(exfile, &error);
   g_free (exfile);
-
-  if (graphic->pixmap == NULL)
+  if (graphic->pb == NULL && error != NULL)
     {
       g_free (graphic);
       ftp_log (gftp_logging_error, NULL, _("Error opening file %s: %s\n"),
-               exfile, g_strerror (errno));
+               exfile, error->message);
+      g_error_free (error);
       return (NULL);
     }
 
@@ -400,40 +397,31 @@ gftp_free_pixmap (char *filename)
   if ((graphic = g_hash_table_lookup (graphic_hash_table, filename)) == NULL)
     return;
 
-  g_object_unref (graphic->pixmap);
-  g_object_unref (graphic->bitmap);
-
+  g_object_unref (graphic->pb);
   g_hash_table_remove (graphic_hash_table, filename);
   g_free (graphic->filename);
   g_free (graphic);
 }
 
-
-void
-gftp_get_pixmap (GtkWidget * widget, char *filename, GdkPixmap ** pix,
-                 GdkBitmap ** bitmap)
+GdkPixbuf *
+gftp_get_pixmap (char *filename)
 {
   gftp_graphic * graphic;
 
   if (filename == NULL || *filename == '\0')
     {
-      *pix = NULL;
-      *bitmap = NULL;
-      return;
+      return NULL;
     }
 
   if ((graphic = g_hash_table_lookup (graphic_hash_table, filename)) == NULL)
-    graphic = open_xpm (widget, filename);
+    graphic = open_xpm (filename);
 
   if (graphic == NULL)
     {
-      *pix = NULL;
-      *bitmap = NULL;
-      return;
+      return NULL;
     }
 
-  *pix = graphic->pixmap;
-  *bitmap = graphic->bitmap;
+  return graphic->pb;
 }
 
 
@@ -477,14 +465,16 @@ check_status (char *name, gftp_window_data *wdata,
       return (0);
     }
 
-  if (only_one && !IS_ONE_SELECTED (wdata))
+  GtkTreeSelection *select;
+  select = gtk_tree_view_get_selection (GTK_TREE_VIEW (wdata->listbox));
+  if (only_one && gtk_tree_selection_count_selected_rows(select) != 1)
     {
       ftp_log (gftp_logging_error, NULL,
            _("%s: You must only have one item selected\n"), name);
       return (0);
     }
 
-  if (at_least_one && !only_one && IS_NONE_SELECTED (wdata))
+  if (at_least_one && !only_one && gtk_tree_selection_count_selected_rows(select) == 0)
     {
       ftp_log (gftp_logging_error, NULL,
            _("%s: You must have at least one item selected\n"), name);
@@ -526,7 +516,7 @@ item_factory_new (GType container_type, const char *path,
                        strip_prefix_dup, NULL);
 
   if (strip_prefix_dup)
-    gtk_object_set_data_full (G_OBJECT (result), "gftp-strip-prefix",
+    g_object_set_data_full (G_OBJECT (result), "gftp-strip-prefix",
                   strip_prefix_dup, (GDestroyNotify)g_free);
 
   return result;
@@ -541,7 +531,7 @@ create_item_factory (GtkItemFactory * ifactory, gint n_entries,
   size_t strip_prefix_len;
   int i;
 
-  strip_prefix = gtk_object_get_data (G_OBJECT (ifactory), "gftp-strip-prefix");
+  strip_prefix = g_object_get_data (G_OBJECT (ifactory), "gftp-strip-prefix");
   if (strip_prefix)
     strip_prefix_len = strlen (strip_prefix);
   else
@@ -623,15 +613,7 @@ check_reconnect (gftp_window_data *wdata)
 void
 add_file_listbox (gftp_window_data * wdata, gftp_file * fle)
 {
-  char *add_data[7] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL };
-  char *tempstr, *str, *pos, *attribs;
-  gftp_config_list_vars * tmplistvar;
-  gftp_file_extensions * tempext;
-  GdkBitmap * bitmap;
-  GList * templist;
-  GdkPixmap * pix;
-  int clist_num;
-  size_t stlen;
+  GtkTreeIter iter;
 
   if (wdata->show_selected)
     {
@@ -648,79 +630,16 @@ add_file_listbox (gftp_window_data * wdata, gftp_file * fle)
   else
     fle->shown = 1;
 
-  clist_num = gtk_clist_append (GTK_CLIST (wdata->listbox), add_data);
-
+  GtkTreeModel * model = gtk_tree_view_get_model(GTK_TREE_VIEW (wdata->listbox));
+  gtk_list_store_append (GTK_LIST_STORE(model), &iter);
+  gtk_list_store_set(GTK_LIST_STORE(model), &iter, 0, fle, -1);
   if (fle->was_sel)
-    {
-      fle->was_sel = 0;
-      gtk_clist_select_row (GTK_CLIST (wdata->listbox), clist_num, 0);
-    }
-
-  pix = NULL;
-  bitmap = NULL;
-  if (strcmp (fle->file, "..") == 0)
-    gftp_get_pixmap (wdata->listbox, "dotdot.xpm", &pix, &bitmap);
-  else if (S_ISLNK (fle->st_mode) && S_ISDIR (fle->st_mode))
-    gftp_get_pixmap (wdata->listbox, "linkdir.xpm", &pix, &bitmap);
-  else if (S_ISLNK (fle->st_mode))
-    gftp_get_pixmap (wdata->listbox, "linkfile.xpm", &pix, &bitmap);
-  else if (S_ISDIR (fle->st_mode))
-    gftp_get_pixmap (wdata->listbox, "dir.xpm", &pix, &bitmap);
-  else if ((fle->st_mode & S_IXUSR) ||
-           (fle->st_mode & S_IXGRP) ||
-           (fle->st_mode & S_IXOTH))
-    gftp_get_pixmap (wdata->listbox, "exe.xpm", &pix, &bitmap);
-  else
-    {
-      stlen = strlen (fle->file);
-      gftp_lookup_global_option ("ext", &tmplistvar);
-      templist = tmplistvar->list;
-      while (templist != NULL)
-        {
-          tempext = templist->data;
-          if (stlen >= tempext->stlen &&
-              strcmp (&fle->file[stlen - tempext->stlen], tempext->ext) == 0)
-            {
-              gftp_get_pixmap (wdata->listbox, tempext->filename, &pix,
-                               &bitmap);
-              break;
-            }
-          templist = templist->next;
-        }
-    }
-
-  if (pix == NULL && bitmap == NULL)
-    gftp_get_pixmap (wdata->listbox, "doc.xpm", &pix, &bitmap);
-
-  gtk_clist_set_pixmap (GTK_CLIST (wdata->listbox), clist_num, 0, pix, bitmap);
-
-  if (fle->file != NULL && fle->filename_utf8_encoded)
-    gtk_clist_set_text (GTK_CLIST (wdata->listbox), clist_num, 1, fle->file);
-
-  if (GFTP_IS_SPECIAL_DEVICE (fle->st_mode))
-    tempstr = g_strdup_printf ("%d, %d", major (fle->size),
-                               minor (fle->size));
-  else
-    tempstr = insert_commas (fle->size, NULL, 0);
-
-  gtk_clist_set_text (GTK_CLIST (wdata->listbox), clist_num, 2, tempstr);
-  g_free (tempstr);
-
-  if (fle->user)
-    gtk_clist_set_text (GTK_CLIST (wdata->listbox), clist_num, 3, fle->user);
-  if (fle->group)
-    gtk_clist_set_text (GTK_CLIST (wdata->listbox), clist_num, 4, fle->group);
-  if ((str = ctime (&fle->datetime)))
-    {
-      if ((pos = strchr (str, '\n')) != NULL)
-        *pos = '\0';
-      gtk_clist_set_text (GTK_CLIST (wdata->listbox), clist_num, 5, str);
-    }
-
-  attribs = gftp_convert_attributes_from_mode_t (fle->st_mode);
-  gtk_clist_set_text (GTK_CLIST (wdata->listbox), clist_num, 6, attribs);
-  g_free (attribs);
-
+  {
+    GtkTreeSelection * select;
+    select = gtk_tree_view_get_selection (GTK_TREE_VIEW (wdata->listbox));
+    fle->was_sel = 0;
+    gtk_tree_selection_select_iter (select, &iter);
+  }
 }
 
 
@@ -881,13 +800,6 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
   gtk_grab_add (dialog);
   gtk_widget_realize (dialog);
 
-  if (gftp_icon != NULL)
-    {
-      gdk_window_set_icon (dialog->window, NULL, gftp_icon->pixmap,
-                           gftp_icon->bitmap);
-      gdk_window_set_icon_name (dialog->window, gftp_version);
-    }
-
   ddata->dialog = dialog;
 
   tempwid = gtk_label_new (infotxt);
@@ -952,13 +864,6 @@ MakeYesNoDialog (char *diagtxt, char *infotxt,
   gtk_window_set_wmclass (GTK_WINDOW(dialog), "yndiag", "gFTP");
   gtk_grab_add (dialog);
   gtk_widget_realize (dialog);
-
-  if (gftp_icon != NULL)
-    {
-      gdk_window_set_icon (dialog->window, NULL, gftp_icon->pixmap,
-                           gftp_icon->bitmap);
-      gdk_window_set_icon_name (dialog->window, gftp_version);
-    }
 
   ddata->dialog = dialog;
 

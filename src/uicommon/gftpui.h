@@ -65,12 +65,6 @@ typedef struct _gftpui_common_methods
   int (*subhelp_func) (const char *topic);
 } gftpui_common_methods;
 
-typedef struct _gftpui_common_curtrans_data
-{
-  gftp_transfer * transfer;
-  GList * curfle;
-} gftpui_common_curtrans_data;
-
 #define gftpui_common_use_threads(request)	(gftp_protocols[(request)->protonum].use_threads)
 
 #define GFTPUI_COMMON_COLOR_BLACK     "\033[30m"

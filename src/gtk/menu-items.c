@@ -25,28 +25,29 @@ update_window_listbox (gftp_window_data * wdata)
 {
   GList * templist, * filelist;
   gftp_file * tempfle;
-  int num;
 
-  filelist = wdata->files;
-  templist = gftp_gtk_get_list_selection (wdata);
-  num = 0;
-  while (templist != NULL)
-    {
-      templist = get_next_selection (templist, &filelist, &num);
-      tempfle = filelist->data;
-      tempfle->was_sel = 1;
-    }
+  GtkTreeSelection *select;
+  GtkTreeIter iter;
+  GtkTreeModel * model;
+  select = gtk_tree_view_get_selection (GTK_TREE_VIEW (wdata->listbox));
+  templist = gtk_tree_selection_get_selected_rows(select, &model);
+  for (filelist = templist ; filelist != NULL; filelist = g_list_next(filelist))
+  {
+    gtk_tree_model_get_iter(model, &iter, (GtkTreePath*)filelist->data);
+    gtk_tree_model_get(model, &iter, 0, &tempfle, -1);
+    tempfle->was_sel = 1;
+  }
+  g_list_foreach (templist, (GFunc) gtk_tree_path_free, NULL);
+  g_list_free (templist);
 
-  gtk_clist_freeze (GTK_CLIST (wdata->listbox));
-  gtk_clist_clear (GTK_CLIST (wdata->listbox));
+  gtk_list_store_clear (GTK_LIST_STORE (model));
   templist = wdata->files;
   while (templist != NULL)
-    {
-      tempfle = templist->data;
-      add_file_listbox (wdata, tempfle);
-      templist = templist->next;
-    }
-  gtk_clist_thaw (GTK_CLIST (wdata->listbox));
+  {
+    tempfle = templist->data;
+    add_file_listbox (wdata, tempfle);
+    templist = templist->next;
+  }
   update_window (wdata);
 }
 
@@ -179,37 +180,37 @@ selectall (gpointer data)
 
   wdata = data;
   wdata->show_selected = 0;
-  gtk_clist_select_all (GTK_CLIST (wdata->listbox));
+  GtkTreeSelection * select = gtk_tree_view_get_selection (GTK_TREE_VIEW(wdata->listbox));
+  gtk_tree_selection_select_all (select);
 }
-
 
 void
 selectallfiles (gpointer data)
 {
   gftp_window_data * wdata;
   gftp_file * tempfle;
-  GList *templist;
-  int i;
+  GtkTreeModel * list_store;
+  GtkTreeIter iter;
+  gboolean valid;
 
   wdata = data;
   wdata->show_selected = 0;
-  gtk_clist_freeze (GTK_CLIST (wdata->listbox));
-  i = 0;
-  templist = wdata->files;
-  while (templist != NULL)
-    {
-      tempfle = (gftp_file *) templist->data;
-      if (tempfle->shown)
+  GtkTreeSelection * select = gtk_tree_view_get_selection (GTK_TREE_VIEW(wdata->listbox));
+  list_store = gtk_tree_view_get_model(GTK_TREE_VIEW(wdata->listbox));
+  valid = gtk_tree_model_get_iter_first (list_store, &iter);
+  while (valid)
+  {
+    gtk_tree_model_get (list_store, &iter, 0, &tempfle, -1);
+
+    if (tempfle->shown)
     {
       if (S_ISDIR (tempfle->st_mode))
-        gtk_clist_unselect_row (GTK_CLIST (wdata->listbox), i, 0);
+        gtk_tree_selection_unselect_iter (select, &iter);
       else
-        gtk_clist_select_row (GTK_CLIST (wdata->listbox), i, 0);
-          i++;
+        gtk_tree_selection_select_iter (select, &iter);
     }
-      templist = templist->next;
-    }
-  gtk_clist_thaw (GTK_CLIST (wdata->listbox));
+    valid = gtk_tree_model_iter_next (list_store, &iter);
+  }
 }
 
 
@@ -220,7 +221,9 @@ deselectall (gpointer data)
 
   wdata = data;
   wdata->show_selected = 0;
-  gtk_clist_unselect_all (GTK_CLIST (wdata->listbox));
+
+  GtkTreeSelection * select = gtk_tree_view_get_selection (GTK_TREE_VIEW(wdata->listbox));
+  gtk_tree_selection_unselect_all (select);
 }
 
 
@@ -437,13 +440,6 @@ about_dialog (gpointer data)
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
   gtk_widget_realize (dialog);
 
-  if (gftp_icon != NULL)
-    {
-      gdk_window_set_icon (dialog->window, NULL, gftp_icon->pixmap,
-                           gftp_icon->bitmap);
-      gdk_window_set_icon_name (dialog->window, gftp_version);
-    }
-
   notebook = gtk_notebook_new ();
   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), notebook, TRUE,
               TRUE, 0);
@@ -453,7 +449,7 @@ about_dialog (gpointer data)
   gtk_container_border_width (GTK_CONTAINER (box), 10);
   gtk_widget_show (box);
 
-  tempwid = toolbar_pixmap (dialog, "gftp-logo.xpm");
+  tempwid = toolbar_pixmap ("gftp-logo.xpm");
   gtk_box_pack_start (GTK_BOX (box), tempwid, FALSE, FALSE, 0);
   gtk_widget_show (tempwid);
 
@@ -564,48 +560,45 @@ static void
 _do_compare_windows (gftp_window_data * win1, gftp_window_data * win2)
 {
   gftp_file * curfle, * otherfle;
-  GList * curlist, * otherlist;
-  int row, curdir, othdir;
+  GList * otherlist;
+  int curdir, othdir;
+  GtkTreeModel * list_store;
+  GtkTreeIter iter;
+  gboolean valid;
 
-  row = 0;
-  curlist = win1->files;
-  while (curlist != NULL)
+  GtkTreeSelection * select = gtk_tree_view_get_selection (GTK_TREE_VIEW(win1->listbox));
+  list_store = gtk_tree_view_get_model(GTK_TREE_VIEW(win1->listbox));
+  valid = gtk_tree_model_get_iter_first (list_store, &iter);
+  while (valid)
+  {
+    gtk_tree_model_get (list_store, &iter, 0, &curfle, -1);
+    if (!curfle->shown)
     {
-      curfle = curlist->data;
-      if (!curfle->shown)
-        {
-          curlist = curlist->next;
-          continue;
-        }
-
       otherlist = win2->files;
       while (otherlist != NULL)
-    {
-          otherfle = otherlist->data;
-          if (!otherfle->shown)
-            {
-              otherlist = otherlist->next;
-              continue;
-            }
-
+      {
+        otherfle = otherlist->data;
+        if (otherfle->shown)
+        {
           curdir = S_ISDIR (curfle->st_mode);
           othdir = S_ISDIR (otherfle->st_mode);
 
           if (strcmp (otherfle->file, curfle->file) == 0 &&
-              curdir == othdir &&
-              (curdir || otherfle->size == curfle->size))
-        break;
+            curdir == othdir &&
+            (curdir || otherfle->size == curfle->size))
+            break;
 
-          otherlist = otherlist->next;
-    }
-
+            otherlist = otherlist->next;
+        }
+      }
       if (otherlist == NULL)
-    gtk_clist_select_row (GTK_CLIST (win1->listbox), row, 0);
-      row++;
-      curlist = curlist->next;
+      {
+        gtk_tree_selection_select_iter (select, &iter);
+      }
     }
+    valid = gtk_tree_model_iter_next (list_store, &iter);
+  }
 }
-
 
 void
 compare_windows (gpointer data)

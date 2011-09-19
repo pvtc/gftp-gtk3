@@ -31,18 +31,20 @@ do_chmod_thread (gftpui_callback_data * cdata)
   GList * filelist, * templist;
   gftp_window_data * wdata;
   gftp_file * tempfle;
-  int error, num;
+  int error;
+  GtkTreeSelection *select;
+  GtkTreeIter iter;
+  GtkTreeModel * model;
 
   wdata = cdata->uidata;
   error = 0;
 
-  filelist = wdata->files;
-  templist = gftp_gtk_get_list_selection (wdata);
-  num = 0;
-  while (templist != NULL)
-    {
-      templist = get_next_selection (templist, &filelist, &num);
-      tempfle = filelist->data;
+  select = gtk_tree_view_get_selection (GTK_TREE_VIEW (wdata->listbox));
+  templist = gtk_tree_selection_get_selected_rows(select, &model);
+  for (filelist = templist ; filelist != NULL; filelist = g_list_next(filelist))
+  {
+    gtk_tree_model_get_iter(model, &iter, (GtkTreePath*)filelist->data);
+    gtk_tree_model_get(model, &iter, 0, &tempfle, -1);
 
       if (gftp_chmod (wdata->request, tempfle->file, mode) != 0)
         error = 1;
@@ -50,6 +52,8 @@ do_chmod_thread (gftpui_callback_data * cdata)
       if (!GFTP_IS_CONNECTED (wdata->request))
         break;
     }
+  g_list_foreach (templist, (GFunc) gtk_tree_path_free, NULL);
+  g_list_free (templist);
 
   return (error);
 }
@@ -119,10 +123,9 @@ void
 chmod_dialog (gpointer data)
 {
   GtkWidget *tempwid, *dialog, *hbox, *vbox;
-  GList * templist, * filelist;
+  GList * templist;
   gftp_window_data * wdata;
   gftp_file * tempfle;
-  int num;
 
   wdata = data;
   if (!check_status (_("Chmod"), wdata, gftpui_common_use_threads (wdata->request), 0, 1, wdata->request->chmod != NULL))
@@ -139,13 +142,6 @@ chmod_dialog (gpointer data)
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
   gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
   gtk_widget_realize (dialog);
-
-  if (gftp_icon != NULL)
-    {
-      gdk_window_set_icon (dialog->window, NULL, gftp_icon->pixmap,
-                           gftp_icon->bitmap);
-      gdk_window_set_icon_name (dialog->window, gftp_version);
-    }
 
   tempwid = gtk_label_new (_("You can now adjust the attributes of your file(s)\nNote: Not all ftp servers support the chmod feature"));
   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), tempwid, FALSE,
@@ -240,13 +236,17 @@ chmod_dialog (gpointer data)
   g_signal_connect (G_OBJECT (dialog), "response",
                     G_CALLBACK (chmod_action), wdata);
 
-  if (IS_ONE_SELECTED (wdata))
-    {
-      filelist = wdata->files;
-      templist = gftp_gtk_get_list_selection (wdata);
-      num = 0;
-      templist = get_next_selection (templist, &filelist, &num);
-      tempfle = filelist->data;
+  GtkTreeSelection *select;
+  GtkTreeIter iter;
+  GtkTreeModel * model;
+  select = gtk_tree_view_get_selection (GTK_TREE_VIEW (wdata->listbox));
+  if (gtk_tree_selection_count_selected_rows(select) == 1)
+  {
+    templist = gtk_tree_selection_get_selected_rows(select, &model);
+    gtk_tree_model_get_iter(model, &iter, (GtkTreePath*)templist->data);
+    gtk_tree_model_get(model, &iter, 0, &tempfle, -1);
+    g_list_foreach (templist, (GFunc) gtk_tree_path_free, NULL);
+    g_list_free (templist);
 
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (suid),
                                     tempfle->st_mode & S_ISUID);
@@ -275,5 +275,6 @@ chmod_dialog (gpointer data)
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ox),
                                     tempfle->st_mode & S_IXOTH);
     }
+
   gtk_widget_show (dialog);
 }

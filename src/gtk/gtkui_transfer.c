@@ -45,31 +45,101 @@ gftpui_start_transfer (gftp_transfer * tdata)
   /* Not used in GTK+ port. This is polled instead */
 }
 
+static void data_col_0 (GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
+    GtkTreeModel * model, GtkTreeIter *iter, gpointer data)
+{
+  gftp_file * fle;
+  char * text;
+  size_t len;
+  gftp_transfer * tdata;
+
+  tdata = (gftp_transfer *)data;
+  gtk_tree_model_get(model, iter, 0, &fle, -1);
+
+  len = strlen (tdata->toreq->directory);
+  text = fle->destfile;
+  if (len == 1 && (*tdata->toreq->directory) == '/')
+    text++;
+  if (strncmp (text, tdata->toreq->directory, len) == 0)
+    text += len + 1;
+
+  g_object_set(cell, "text", text, NULL);
+}
+
+static void data_col_1 (GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
+    GtkTreeModel * model, GtkTreeIter *iter, gpointer data)
+{
+  gftp_file * fle;
+  char temp[50];
+  char * text;
+
+  gtk_tree_model_get(model, iter, 0, &fle, -1);
+  text = insert_commas (fle->size, temp, sizeof (temp));
+  g_object_set(cell, "text", text, NULL);
+}
+
+static void data_col_2 (GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
+    GtkTreeModel * model, GtkTreeIter *iter, gpointer data)
+{
+  gftp_file * fle;
+  char temp[50];
+  char * text;
+
+  gtk_tree_model_get(model, iter, 0, &fle, -1);
+  text = insert_commas (fle->startsize, temp, sizeof (temp));
+  g_object_set(cell, "text", text, NULL);
+}
+
+static void data_col_3 (GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
+    GtkTreeModel * model, GtkTreeIter *iter, gpointer data)
+{
+  gftp_file * fle;
+  char * text;
+  gtk_tree_model_get(model, iter, 0, &fle, -1);
+  switch (fle->transfer_action)
+  {
+  case GFTP_TRANS_ACTION_OVERWRITE:
+    text = _("Overwrite");
+    break;
+  case GFTP_TRANS_ACTION_SKIP:
+    text = _("Skip");
+    break;
+  case GFTP_TRANS_ACTION_RESUME:
+    text = _("Resume");
+    break;
+  default:
+    text = _("Error");
+    break;
+  }
+  g_object_set(cell, "text", text, NULL);
+}
+
 
 void
 gftpui_add_file_to_transfer (gftp_transfer * tdata, GList * curfle)
 {
-  gftpui_common_curtrans_data * transdata;
-  char *text[2];
+  char * status;
   gftp_file * fle;
+  GtkTreeIter iter;
+
+  g_print("%s\n", "gftpui_common_add_file_transfer");
 
   fle = curfle->data;
-  text[0] = gftpui_gtk_get_utf8_file_pos (fle);
-
   if (fle->transfer_action == GFTP_TRANS_ACTION_SKIP)
-    text[1] = _("Skipped");
+    status = _("Skipped");
   else
-    text[1] = _("Waiting...");
+    status = _("Waiting...");
 
-  fle->user_data = gtk_ctree_insert_node (GTK_CTREE (dlwdw),
-                                          tdata->user_data, NULL, text, 5,
-                                          NULL, NULL, NULL, NULL,
-                                          FALSE, FALSE);
-  transdata = g_malloc0 (sizeof (*transdata));
-  transdata->transfer = tdata;
-  transdata->curfle = curfle;
+  g_print("%s\n", gftpui_gtk_get_utf8_file_pos (fle));
 
-  gtk_ctree_node_set_row_data (GTK_CTREE (dlwdw), fle->user_data, transdata);
+  GtkTreeModel * model = gtk_tree_view_get_model(GTK_TREE_VIEW (dlwdw));
+  gtk_tree_store_append (GTK_TREE_STORE(model), &iter, tdata->user_data);
+  gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
+    0, gftpui_gtk_get_utf8_file_pos (fle),
+    1, status,
+    2, tdata,
+    3, curfle,
+    -1);
 }
 
 
@@ -91,7 +161,8 @@ gftpui_gtk_trans_selectall (GtkWidget * widget, gpointer data)
   gftp_transfer * tdata;
   tdata = data;
 
-  gtk_clist_select_all (GTK_CLIST (tdata->clist));
+  GtkTreeSelection * select = gtk_tree_view_get_selection (GTK_TREE_VIEW(tdata->clist));
+  gtk_tree_selection_select_all (select);
 }
 
 
@@ -101,55 +172,52 @@ gftpui_gtk_trans_unselectall (GtkWidget * widget, gpointer data)
   gftp_transfer * tdata;
   tdata = data;
 
-  gtk_clist_unselect_all (GTK_CLIST (tdata->clist));
+  GtkTreeSelection * select = gtk_tree_view_get_selection (GTK_TREE_VIEW(tdata->clist));
+  gtk_tree_selection_unselect_all (select);
 }
 
-
 static void
-gftpui_gtk_set_action (gftp_transfer * tdata, char * transfer_str,
-                       int transfer_action)
+gftpui_gtk_set_action (gftp_transfer * tdata, int transfer_action)
 {
   GList * templist, * filelist;
   gftp_file * tempfle;
-  int curpos;
 
   g_static_mutex_lock (&tdata->structmutex);
 
-  curpos = 0;
-  filelist = tdata->files;
-  templist = GTK_CLIST (tdata->clist)->selection;
-  while (templist != NULL)
-    {
-      templist = get_next_selection (templist, &filelist, &curpos);
-      tempfle = filelist->data;
-      tempfle->transfer_action = transfer_action;
-      gtk_clist_set_text (GTK_CLIST (tdata->clist), curpos, 3, transfer_str);
-    }
+  GtkTreeSelection *select;
+  GtkTreeIter iter;
+  GtkTreeModel * model;
+  select = gtk_tree_view_get_selection (GTK_TREE_VIEW (tdata->clist));
+  templist = gtk_tree_selection_get_selected_rows(select, &model);
+  for (filelist = templist ; filelist != NULL; filelist = g_list_next(filelist))
+  {
+    gtk_tree_model_get_iter(model, &iter, (GtkTreePath*)filelist->data);
+    gtk_tree_model_get(model, &iter, 0, &tempfle, -1);
+    tempfle->transfer_action = transfer_action;
+  }
+  g_list_foreach (templist, (GFunc) gtk_tree_path_free, NULL);
+  g_list_free (templist);
 
   g_static_mutex_unlock (&tdata->structmutex);
 }
 
-
 static void
 gftpui_gtk_overwrite (GtkWidget * widget, gpointer data)
 {
-  gftpui_gtk_set_action (data, _("Overwrite"), GFTP_TRANS_ACTION_OVERWRITE);
+  gftpui_gtk_set_action (data, GFTP_TRANS_ACTION_OVERWRITE);
 }
-
 
 static void
 gftpui_gtk_resume (GtkWidget * widget, gpointer data)
 {
-  gftpui_gtk_set_action (data, _("Resume"), GFTP_TRANS_ACTION_RESUME);
+  gftpui_gtk_set_action (data, GFTP_TRANS_ACTION_RESUME);
 }
-
 
 static void
 gftpui_gtk_skip (GtkWidget * widget, gpointer data)
 {
-  gftpui_gtk_set_action (data, _("Skip"), GFTP_TRANS_ACTION_SKIP);
+  gftpui_gtk_set_action (data, GFTP_TRANS_ACTION_SKIP);
 }
-
 
 static void
 gftpui_gtk_ok (GtkWidget * widget, gpointer data)
@@ -213,18 +281,10 @@ gftpui_gtk_transfer_action (GtkWidget * widget, gint response,
 void
 gftpui_ask_transfer (gftp_transfer * tdata)
 {
-  char *dltitles[4], *add_data[4] = { NULL, NULL, NULL, NULL },
-       tempstr[50], temp1str[50], *pos;
   GtkWidget * dialog, * tempwid, * scroll, * hbox;
   gftp_file * tempfle;
   GList * templist;
-  size_t len;
-  int i;
-
-  dltitles[0] = _("Filename");
-  dltitles[1] = tdata->fromreq->hostname;
-  dltitles[2] = tdata->toreq->hostname;
-  dltitles[3] = _("Action");
+  GtkTreeIter iter;
 
   dialog = gtk_dialog_new_with_buttons (_("Transfer Files"), NULL, 0,
                                         GTK_STOCK_CANCEL,
@@ -247,20 +307,28 @@ gftpui_ask_transfer (gftp_transfer * tdata)
 
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll),
                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  tdata->clist = gtk_clist_new_with_titles (4, dltitles);
+
+  GtkListStore * l = gtk_list_store_new (1, G_TYPE_POINTER);
+  tdata->clist = gtk_tree_view_new_with_model(GTK_TREE_MODEL(l));
+  GtkCellRenderer * cell = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW(tdata->clist), -1, _("Filename"), cell, data_col_0, tdata, NULL);
+  gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW(tdata->clist), -1, tdata->fromreq->hostname, cell, data_col_1, NULL, NULL);
+  gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW(tdata->clist), -1, tdata->toreq->hostname, cell, data_col_2, NULL, NULL);
+  gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW(tdata->clist), -1, _("Action"), cell, data_col_3, NULL, NULL);
+
   gtk_container_add (GTK_CONTAINER (scroll), tdata->clist);
-  gtk_clist_set_selection_mode (GTK_CLIST (tdata->clist),
-                GTK_SELECTION_MULTIPLE);
-  gtk_clist_set_column_width (GTK_CLIST (tdata->clist), 0, 100);
-  gtk_clist_set_column_justification (GTK_CLIST (tdata->clist), 1,
-                      GTK_JUSTIFY_RIGHT);
-  gtk_clist_set_column_width (GTK_CLIST (tdata->clist), 1, 85);
-  gtk_clist_set_column_justification (GTK_CLIST (tdata->clist), 2,
-                      GTK_JUSTIFY_RIGHT);
-  gtk_clist_set_column_width (GTK_CLIST (tdata->clist), 2, 85);
-  gtk_clist_set_column_width (GTK_CLIST (tdata->clist), 3, 85);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), scroll, TRUE, TRUE,
-              0);
+  GtkTreeSelection * select = gtk_tree_view_get_selection (GTK_TREE_VIEW(tdata->clist));
+  gtk_tree_selection_set_mode (select, GTK_SELECTION_MULTIPLE);
+  GtkTreeViewColumn * c;
+  c = gtk_tree_view_get_column(GTK_TREE_VIEW(tdata->clist), 0);
+  gtk_tree_view_column_set_fixed_width(c, 100);
+  c = gtk_tree_view_get_column(GTK_TREE_VIEW(tdata->clist), 1);
+  gtk_tree_view_column_set_fixed_width(c, 85);
+  c = gtk_tree_view_get_column(GTK_TREE_VIEW(tdata->clist), 2);
+  gtk_tree_view_column_set_fixed_width(c, 85);
+  c = gtk_tree_view_get_column(GTK_TREE_VIEW(tdata->clist), 3);
+  gtk_tree_view_column_set_fixed_width(c, 85);
+  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), scroll, TRUE, TRUE, 0);
   gtk_widget_show (tdata->clist);
   gtk_widget_show (scroll);
 
@@ -274,42 +342,12 @@ gftpui_ask_transfer (gftp_transfer * tdata)
            continue;
         }
       tempfle->shown = 1;
-
-      len = strlen (tdata->toreq->directory);
-      pos = tempfle->destfile;
-      if (len == 1 && (*tdata->toreq->directory) == '/')
-        pos++;
-      if (strncmp (pos, tdata->toreq->directory, len) == 0)
-        pos += len + 1;
-
-      add_data[0] = pos;
-
       gftp_get_transfer_action (tdata->fromreq, tempfle);
-      switch (tempfle->transfer_action)
-        {
-          case GFTP_TRANS_ACTION_OVERWRITE:
-            add_data[3] = _("Overwrite");
-            break;
-          case GFTP_TRANS_ACTION_SKIP:
-            add_data[3] = _("Skip");
-            break;
-          case GFTP_TRANS_ACTION_RESUME:
-            add_data[3] = _("Resume");
-            break;
-          default:
-            add_data[3] = _("Error");
-            break;
-        }
-
-      add_data[1] = insert_commas (tempfle->size, tempstr, sizeof (tempstr));
-      add_data[2] = insert_commas (tempfle->startsize, temp1str,
-                                   sizeof (temp1str));
-
-      i = gtk_clist_append (GTK_CLIST (tdata->clist), add_data);
-      gtk_clist_set_row_data (GTK_CLIST (tdata->clist), i, tempfle);
+      gtk_list_store_append (l, &iter);
+      gtk_list_store_set (l, &iter, 0, tempfle, -1);
     }
 
-  gtk_clist_select_all (GTK_CLIST (tdata->clist));
+  gtk_tree_selection_select_all (select);
 
   hbox = gtk_hbox_new (TRUE, 20);
   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, TRUE, TRUE, 0);

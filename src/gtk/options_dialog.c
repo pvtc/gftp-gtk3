@@ -720,63 +720,79 @@ options_action (GtkWidget * widget, gint response, gpointer user_data)
     }
 }
 
-static void
-add_host_to_listbox (GList * templist)
+static void data_col_0 (GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
+    GtkTreeModel * model, GtkTreeIter *iter, gpointer data)
 {
   gftp_proxy_hosts *hosts;
-  char *add_data[2];
-  int num;
+  char * text;
 
-  hosts = templist->data;
+  gtk_tree_model_get(model, iter, 0, &hosts, -1);
   if (hosts->domain)
     {
-      add_data[0] = hosts->domain;
-      add_data[1] = NULL;
-      num = gtk_clist_append (GTK_CLIST (proxy_list), add_data);
+      g_object_set(cell, "text", hosts->domain, NULL);
     }
   else
     {
-      add_data[0] = g_strdup_printf ("%d.%d.%d.%d",
+      text = g_strdup_printf ("%d.%d.%d.%d",
                      hosts->ipv4_network_address >> 24 & 0xff,
                      hosts->ipv4_network_address >> 16 & 0xff,
                      hosts->ipv4_network_address >> 8 & 0xff,
                      hosts->ipv4_network_address & 0xff);
-      add_data[1] = g_strdup_printf ("%d.%d.%d.%d",
+      g_object_set(cell, "text", text, NULL);
+      g_free (text);
+    }
+}
+
+static void data_col_1 (GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
+    GtkTreeModel * model, GtkTreeIter *iter, gpointer data)
+{
+  gftp_proxy_hosts *hosts;
+  char * text;
+
+  gtk_tree_model_get(model, iter, 0, &hosts, -1);
+  if (hosts->domain)
+    {
+      g_object_set(cell, "text", "", NULL);
+    }
+  else
+    {
+      text = g_strdup_printf ("%d.%d.%d.%d",
                      hosts->ipv4_netmask >> 24 & 0xff,
                      hosts->ipv4_netmask >> 16 & 0xff,
                      hosts->ipv4_netmask >> 8 & 0xff,
                      hosts->ipv4_netmask & 0xff);
-      num = gtk_clist_append (GTK_CLIST (proxy_list), add_data);
-      g_free (add_data[0]);
-      g_free (add_data[1]);
+      g_object_set(cell, "text", text, NULL);
+      g_free (text);
     }
-
-  gtk_clist_set_row_data (GTK_CLIST (proxy_list), num, (gpointer) templist);
 }
-
 
 static void
 add_ok (GtkWidget * widget, gpointer data)
 {
   gftp_proxy_hosts *hosts;
   const char *edttxt;
-  GList *templist;
-  int num;
+  GtkTreeIter iter;
+  GtkTreeModel * l;
 
-  templist = data;
-  if (templist == NULL)
+  hosts = data;
+  if (hosts == NULL)
     {
+      GList *templist;
+      l = gtk_tree_view_get_model(GTK_TREE_VIEW (proxy_list));
       hosts = g_malloc0 (sizeof (*hosts));
       new_proxy_hosts = g_list_append (new_proxy_hosts, hosts);
       for (templist = new_proxy_hosts; templist->next != NULL;
        templist = templist->next);
+
+      gtk_list_store_append(GTK_LIST_STORE(l), &iter);
+      gtk_list_store_set(GTK_LIST_STORE(l), &iter, 0, hosts, -1);
     }
   else
     {
-      num = gtk_clist_find_row_from_data (GTK_CLIST (proxy_list), templist);
-      if (num != -1)
-    gtk_clist_remove (GTK_CLIST (proxy_list), num);
-      hosts = templist->data;
+      GtkTreeSelection * select;
+      select = gtk_tree_view_get_selection (GTK_TREE_VIEW (proxy_list));
+      if (! gtk_tree_selection_get_selected (select, &l, &iter))
+       return;
     }
 
   if (hosts->domain)
@@ -817,8 +833,6 @@ add_ok (GtkWidget * widget, gpointer data)
       edttxt = gtk_entry_get_text (GTK_ENTRY (netmask4));
       hosts->ipv4_netmask |= strtol (edttxt, NULL, 10) & 0xff;
     }
-
-  add_host_to_listbox (templist);
 }
 
 static void
@@ -852,27 +866,31 @@ add_toggle (GtkWidget * widget, gpointer data)
 }
 
 static void
-buttons_toggle (GtkWidget * widget, gint row, gint col, GdkEventButton * event, gpointer data)
+buttons_toggle (GtkTreeSelection * select, gpointer user_data)
 {
-  gtk_widget_set_sensitive (edit_button, data != NULL);
-  gtk_widget_set_sensitive (delete_button, data != NULL);
+  int num = gtk_tree_selection_count_selected_rows(select);
+
+  gtk_widget_set_sensitive (edit_button, num != 0);
+  gtk_widget_set_sensitive (delete_button, num != 0);
 }
 
 static void
 delete_proxy_host (GtkWidget * widget, gpointer data)
 {
+  GtkTreeSelection *select;
+  GtkTreeIter iter;
+  GtkTreeModel * model;
   GList *templist;
-  int num;
 
   gftp_configuration_changed = 1; /* FIXME */
 
-  if ((templist = GTK_CLIST (proxy_list)->selection) == NULL)
+  select = gtk_tree_view_get_selection(GTK_TREE_VIEW (proxy_list));
+  if (! gtk_tree_selection_get_selected(select, &model, &iter))
     return;
-  num = GPOINTER_TO_INT (templist->data);
-  templist = gtk_clist_get_row_data (GTK_CLIST (proxy_list), num);
+  gtk_tree_model_get(model, &iter, 0, &templist, -1);
   new_proxy_hosts = g_list_remove_link (new_proxy_hosts, templist);
-  gtk_clist_remove (GTK_CLIST (proxy_list), num);
-  buttons_toggle (NULL, 0, 0, 0, NULL);
+  gtk_list_store_remove (GTK_LIST_STORE(model), &iter);
+  buttons_toggle (select, NULL);
 }
 
 
@@ -882,23 +900,23 @@ add_proxy_host (GtkWidget * widget, gpointer data)
   GtkWidget *tempwid, *dialog, *box, *rbox, *vbox, *nradio, *table;
   gftp_proxy_hosts *hosts;
   char *tempstr, *title;
-  GList *templist;
+  GtkTreeSelection *select;
+  GtkTreeIter iter;
+  GtkTreeModel * model;
 
   gftp_configuration_changed = 1; /* FIXME */
 
   if (data)
-    {
-      if ((templist = GTK_CLIST (proxy_list)->selection) == NULL)
-    return;
-      templist = gtk_clist_get_row_data (GTK_CLIST (proxy_list),
-                                         GPOINTER_TO_INT (templist->data));
-      hosts = templist->data;
-    }
+  {
+    select = gtk_tree_view_get_selection (GTK_TREE_VIEW (proxy_list));
+    if (! gtk_tree_selection_get_selected (select, &model, &iter))
+      return;
+    gtk_tree_model_get(model, &iter, 0, &hosts, -1);
+  }
   else
-    {
-      hosts = NULL;
-      templist = NULL;
-    }
+  {
+    hosts = NULL;
+  }
 
   title = hosts ? _("Edit Host") : _("Add Host");
 
@@ -915,15 +933,6 @@ add_proxy_host (GtkWidget * widget, gpointer data)
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 2);
   gtk_window_set_wmclass (GTK_WINDOW(dialog), "hostinfo", "Gftp");
   gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_MOUSE);
-
-  if (gftp_icon != NULL)
-    {
-      if ((tempstr = get_xpm_path (gftp_icon->filename, 0)) != NULL)
-        {
-         gtk_window_set_default_icon_from_file (tempstr, NULL);
-     g_free (tempstr);
-        }
-    }
 
   vbox = gtk_vbox_new (FALSE, 6);
   gtk_container_border_width (GTK_CONTAINER (vbox), 5);
@@ -1112,8 +1121,7 @@ add_proxy_host (GtkWidget * widget, gpointer data)
       g_free (tempstr);
     }
     }
-  g_signal_connect (G_OBJECT (dialog), "response",
-                    G_CALLBACK (proxyhosts_action), NULL);
+  g_signal_connect (G_OBJECT (dialog), "response", G_CALLBACK (proxyhosts_action), hosts);
 
   gtk_widget_show (dialog);
 }
@@ -1123,11 +1131,9 @@ make_proxy_hosts_tab (GtkWidget * notebook)
 {
   GtkWidget *tempwid, *box, *hbox, *scroll;
   gftp_config_list_vars * proxy_hosts;
-  char *add_data[2];
   GList * templist;
-
-  add_data[0] = _("Network");
-  add_data[1] = _("Netmask");
+  GtkTreeIter iter;
+  GtkTreeSelection * select;
 
   box = gtk_vbox_new (FALSE, 6);
   gtk_container_border_width (GTK_CONTAINER (box), 12);
@@ -1142,21 +1148,25 @@ make_proxy_hosts_tab (GtkWidget * notebook)
                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
   gtk_box_pack_start (GTK_BOX (box), scroll, TRUE, TRUE, 0);
 
-  proxy_list = gtk_clist_new_with_titles (2, add_data);
+  GtkListStore * l = gtk_list_store_new (1, G_TYPE_POINTER, -1);
+  proxy_list = gtk_tree_view_new_with_model(GTK_TREE_MODEL(l));
+
+  GtkCellRenderer * cell = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW (proxy_list), -1, _("Network"), cell, data_col_0, NULL, NULL);
+  gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW (proxy_list), -1, _("Netmask"), cell, data_col_1, NULL, NULL);
+
   gtk_container_add (GTK_CONTAINER (scroll), proxy_list);
-  gtk_clist_set_column_auto_resize (GTK_CLIST (proxy_list), 0, TRUE);
-  gtk_clist_set_column_auto_resize (GTK_CLIST (proxy_list), 1, TRUE);
   gtk_widget_show (proxy_list);
   gtk_widget_show (scroll);
 
   gftp_lookup_global_option ("dont_use_proxy", &proxy_hosts);
   new_proxy_hosts = gftp_copy_proxy_hosts (proxy_hosts->list);
 
-  for (templist = new_proxy_hosts;
-       templist != NULL;
-       templist = templist->next)
-    add_host_to_listbox (templist);
-
+  for (templist = new_proxy_hosts;  templist != NULL; templist = templist->next)
+  {
+    gtk_list_store_append(l, &iter);
+    gtk_list_store_set(l, &iter, 0, templist->data, -1);
+  }
   hbox = gtk_hbox_new (TRUE, 12);
 
   gtk_box_pack_start (GTK_BOX (box), hbox, FALSE, FALSE, 0);
@@ -1180,15 +1190,14 @@ make_proxy_hosts_tab (GtkWidget * notebook)
   delete_button = tempwid;
   GTK_WIDGET_SET_FLAGS (tempwid, GTK_CAN_DEFAULT);
   gtk_box_pack_start (GTK_BOX (hbox), tempwid, TRUE, TRUE, 0);
-  g_signal_connect (G_OBJECT (tempwid), "clicked",
-              G_CALLBACK (delete_proxy_host), NULL);
+  g_signal_connect (G_OBJECT (tempwid), "clicked", G_CALLBACK (delete_proxy_host), NULL);
   gtk_widget_show (tempwid);
 
-  g_signal_connect (G_OBJECT (proxy_list), "select_row",
+  select = gtk_tree_view_get_selection(GTK_TREE_VIEW (proxy_list));
+  g_signal_connect (G_OBJECT (select), "changed",
                       G_CALLBACK (buttons_toggle), (gpointer) 1);
-  g_signal_connect (G_OBJECT (proxy_list), "unselect_row",
-                      G_CALLBACK (buttons_toggle), NULL);
-  buttons_toggle (NULL, 0, 0, 0, NULL);
+
+  buttons_toggle (select, NULL);
 }
 
 
@@ -1248,13 +1257,6 @@ options_dialog (gpointer data)
                            GTK_WIN_POS_MOUSE);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (gftp_option_data->dialog)->vbox), 2);
   gtk_widget_realize (gftp_option_data->dialog);
-
-  if (gftp_icon != NULL)
-    {
-      gdk_window_set_icon (gftp_option_data->dialog->window, NULL,
-                           gftp_icon->pixmap, gftp_icon->bitmap);
-      gdk_window_set_icon_name (gftp_option_data->dialog->window, gftp_version);
-    }
 
   gftp_option_data->notebook = gtk_notebook_new ();
   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (gftp_option_data->dialog)->vbox),
