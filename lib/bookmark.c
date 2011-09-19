@@ -18,8 +18,6 @@
 /*****************************************************************************/
 
 #include "gftp.h"
-static const char cvsid[] = "$Id$";
-
 
 static int
 bookmark_parse_url (gftp_request * request, const char * url)

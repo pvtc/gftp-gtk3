@@ -18,8 +18,6 @@
 /*****************************************************************************/
 
 #include "gftp-gtk.h"
-static const char cvsid[] = "$Id$";
-
 
 void
 gftpui_start_current_file_in_transfer (gftp_transfer * tdata)

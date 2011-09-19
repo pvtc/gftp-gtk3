@@ -20,8 +20,6 @@
 #include "gftp.h"
 #include "httpcommon.h"
 
-static const char cvsid[] = "$Id$";
-
 #ifdef USE_SSL
 static int
 https_get_next_file (gftp_request * request, gftp_file * fle, int fd)

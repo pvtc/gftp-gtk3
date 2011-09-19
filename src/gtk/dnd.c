@@ -18,8 +18,6 @@
 /*****************************************************************************/
 
 #include "gftp-gtk.h"
-static const char cvsid[] = "$Id$";
-
 
 static int
 dnd_remote_file (gftp_window_data * wdata, GList ** trans_list, char *url)

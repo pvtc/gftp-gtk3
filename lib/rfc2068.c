@@ -20,8 +20,6 @@
 #include "gftp.h"
 #include "httpcommon.h"
 
-static const char cvsid[] = "$Id$";
-
 static gftp_config_vars config_vars[] =
 {
   {"", N_("HTTP"), gftp_option_type_notebook, NULL, NULL, 
