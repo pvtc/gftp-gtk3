@@ -156,7 +156,6 @@ save_directory_listing (gpointer data)
                       "clicked",
                       G_CALLBACK (destroy_save_directory_listing), str);
 
-  gtk_window_set_wmclass (GTK_WINDOW(filew), "Save Directory Listing", "gFTP");
   gtk_widget_show (filew);
 }
 
@@ -403,7 +402,7 @@ savelog (gpointer data)
   g_signal_connect_swapped (G_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button), "clicked", G_CALLBACK (gtk_widget_destroy), G_OBJECT (filew));
 
   gtk_file_selection_set_filename (GTK_FILE_SELECTION (filew), "gftp.log");
-  gtk_window_set_wmclass (GTK_WINDOW(filew), "Save Log", "gFTP");
+
   gtk_widget_show (filew);
 }
 
@@ -433,8 +432,6 @@ about_dialog (gpointer data)
                                         GTK_STOCK_CLOSE,
                                         GTK_RESPONSE_CLOSE,
                                         NULL);
-  gtk_window_set_wmclass (GTK_WINDOW(dialog), "about", "gFTP");
-  gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_MOUSE);
   gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
   gtk_widget_realize (dialog);

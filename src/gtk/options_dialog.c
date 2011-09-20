@@ -972,8 +972,6 @@ add_proxy_host (GtkWidget * widget, gpointer data)
   gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
 
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 2);
-  gtk_window_set_wmclass (GTK_WINDOW(dialog), "hostinfo", "Gftp");
-  gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_MOUSE);
 
   vbox = gtk_vbox_new (FALSE, 6);
   gtk_container_border_width (GTK_CONTAINER (vbox), 5);
@@ -1288,10 +1286,6 @@ options_dialog (gpointer data)
   gtk_dialog_set_has_separator (GTK_DIALOG (gftp_option_data->dialog), FALSE);
   gtk_window_set_resizable (GTK_WINDOW (gftp_option_data->dialog), FALSE);
 
-  gtk_window_set_wmclass (GTK_WINDOW(gftp_option_data->dialog),
-                          "options", "gFTP");
-  gtk_window_set_position (GTK_WINDOW (gftp_option_data->dialog),
-                           GTK_WIN_POS_MOUSE);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (gftp_option_data->dialog)->vbox), 2);
   gtk_widget_realize (gftp_option_data->dialog);
 
@@ -1339,7 +1333,7 @@ options_dialog (gpointer data)
 
 
 void
-gftp_gtk_setup_bookmark_options (GtkWidget * notebook, gftp_bookmarks_var * bm)
+gftp_gtk_setup_bookmark_options (GtkWidget * notebook)
 {
   gftp_config_vars * cv;
   GList * templist;
@@ -1347,10 +1341,7 @@ gftp_gtk_setup_bookmark_options (GtkWidget * notebook, gftp_bookmarks_var * bm)
   int i;
 
   gftp_option_data = _init_option_data ();
-  gftp_option_data->bm = bm;
   gftp_option_data->notebook = notebook;
-
-  cv = gftp_options_list->data;
   gftp_option_data->last_option = cv[0].otype;
   for (templist = gftp_options_list;
        templist != NULL;
@@ -1363,7 +1354,32 @@ gftp_gtk_setup_bookmark_options (GtkWidget * notebook, gftp_bookmarks_var * bm)
           if (!(cv[i].flags & GFTP_CVARS_FLAGS_SHOW_BOOKMARK))
             continue;
 
-          if (gftp_option_types[cv[i].otype].ui_print_function == NULL)
+          if (gftp_option_types[cv[i].otype].ui_print_function != NULL)
+            cv[i].user_data = gftp_option_types[cv[i].otype].ui_print_function (&cv[i], gftp_option_data);
+
+          gftp_option_data->last_option = cv[i].otype;
+        }
+    }
+}
+
+void
+gftp_gtk_set_bookmark_options (gftp_bookmarks_var * bm)
+{
+  gftp_config_vars * cv;
+  GList * templist;
+  void *value;
+  int i;
+
+  gftp_option_data->bm = bm;
+  for (templist = gftp_options_list;
+       templist != NULL;
+       templist = templist->next)
+    {
+      cv = templist->data;
+
+      for (i=0; cv[i].key != NULL; i++)
+        {
+          if (!(cv[i].flags & GFTP_CVARS_FLAGS_SHOW_BOOKMARK))
             continue;
 
           if (*cv[i].key != '\0')
@@ -1371,15 +1387,11 @@ gftp_gtk_setup_bookmark_options (GtkWidget * notebook, gftp_bookmarks_var * bm)
           else
             value = NULL;
 
-          cv[i].user_data = gftp_option_types[cv[i].otype].ui_print_function (&cv[i], gftp_option_data);
           if (gftp_option_types[cv[i].otype].ui_set_function != NULL)
             gftp_option_types[cv[i].otype].ui_set_function (&cv[i], value);
-
-          gftp_option_data->last_option = cv[i].otype;
         }
     }
 }
-
 
 void
 gftp_gtk_save_bookmark_options ()

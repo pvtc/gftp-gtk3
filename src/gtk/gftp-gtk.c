@@ -1474,7 +1474,6 @@ main (int argc, char **argv)
   g_signal_connect (G_OBJECT (window), "destroy",
               G_CALLBACK (_gftp_force_close), NULL);
   gtk_window_set_title (GTK_WINDOW (window), gftp_version);
-  gtk_window_set_wmclass (GTK_WINDOW(window), "main", "gFTP");
   gtk_widget_set_name (window, gftp_version);
   gtk_window_set_policy (GTK_WINDOW (window), TRUE, TRUE, FALSE);
   gtk_widget_realize (window);

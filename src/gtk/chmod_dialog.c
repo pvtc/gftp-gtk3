@@ -136,8 +136,6 @@ chmod_dialog (gpointer data)
                                         GTK_STOCK_OK,
                                         GTK_RESPONSE_OK,
                                         NULL);
-  gtk_window_set_wmclass (GTK_WINDOW(dialog), "Chmod", "gFTP");
-  gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_MOUSE);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
   gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
   gtk_widget_realize (dialog);

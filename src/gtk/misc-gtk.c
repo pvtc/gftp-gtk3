@@ -791,11 +791,8 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
                                         yes_text,
                                         GTK_RESPONSE_YES,
                                         NULL);
-
   gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
-  gtk_window_set_wmclass (GTK_WINDOW(dialog), "edit", "gFTP");
-  gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_MOUSE);
   gtk_grab_add (dialog);
   gtk_widget_realize (dialog);
 
@@ -859,8 +856,6 @@ MakeYesNoDialog (char *diagtxt, char *infotxt,
 
   gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
-  gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_MOUSE);
-  gtk_window_set_wmclass (GTK_WINDOW(dialog), "yndiag", "gFTP");
   gtk_grab_add (dialog);
   gtk_widget_realize (dialog);
 
@@ -912,15 +907,12 @@ update_directory_download_progress (gftp_transfer * transfer)
   if (dialog == NULL)
     {
       dialog = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-      gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
       gtk_window_set_decorated (GTK_WINDOW (dialog), 0);
       gtk_grab_add (dialog);
       g_signal_connect (G_OBJECT (dialog), "delete_event",
                           G_CALLBACK (delete_event), NULL);
       gtk_window_set_title (GTK_WINDOW (dialog),
                 _("Getting directory listings"));
-      gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_MOUSE);
-      gtk_window_set_wmclass (GTK_WINDOW(dialog), "dirlist", "gFTP");
 
       vbox = gtk_vbox_new (FALSE, 5);
       gtk_container_border_width (GTK_CONTAINER (vbox), 10);
