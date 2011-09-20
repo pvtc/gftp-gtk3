@@ -21,9 +21,8 @@
 
 static GtkWidget * bm_hostedit, * bm_portedit, * bm_localdiredit,
                  * bm_remotediredit, * bm_useredit, * bm_passedit, * tree,
-                 * bm_acctedit, * anon_chk, * bm_pathedit, * bm_protocol;
-static GtkItemFactory * edit_factory;
-
+                 * bm_acctedit, * anon_chk, * bm_pathedit, * bm_protocol, * menu;
+static gftp_bookmarks_var * curentry;
 
 void
 run_bookmark (gpointer data)
@@ -529,7 +528,7 @@ build_bookmarks_tree (gftp_bookmarks_var * up)
 
 
 static void
-entry_apply_changes (GtkWidget * widget, gftp_bookmarks_var * entry)
+entry_apply_changes (gftp_bookmarks_var * entry)
 {
   char *pos, tempchar, *tempstr;
   GtkWidget * tempwid;
@@ -600,19 +599,21 @@ entry_apply_changes (GtkWidget * widget, gftp_bookmarks_var * entry)
   gftp_gtk_save_bookmark_options ();
 }
 
-static void
-edit_entry (gpointer data)
+static void sel_change (GtkTreeSelection * selection, gpointer user_data)
 {
-  GtkWidget * table, * tempwid, * menu, * notebook;
   gftp_bookmarks_var * entry;
   unsigned int num, i;
   char *pos;
-  GtkTreeSelection *select;
+
   GtkTreeIter iter;
   GtkTreeModel * model;
 
-  select = gtk_tree_view_get_selection (GTK_TREE_VIEW (tree));
-  if (! gtk_tree_selection_get_selected (select, &model, &iter))
+   if (curentry != NULL)
+   {
+      entry_apply_changes (curentry);
+    }
+
+  if (! gtk_tree_selection_get_selected (selection, &model, &iter))
     return;
 
   gtk_tree_model_get(model, &iter, 0, &entry, -1);
@@ -620,21 +621,119 @@ edit_entry (gpointer data)
   if (entry == NULL)
     return;
 
-  GtkWidget * bm_dialog = gtk_dialog_new_with_buttons (
-    _("Edit Entry"), NULL, 0,
-   GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-   GTK_STOCK_SAVE, GTK_RESPONSE_OK,
-   NULL);
+  curentry = entry;
+  if ((pos = strrchr (entry->path, '/')) == NULL)
+    pos = entry->path;
+  else
+    pos++;
+  if (pos)
+    gtk_entry_set_text (GTK_ENTRY (bm_pathedit), pos);
 
-  gtk_window_set_wmclass (GTK_WINDOW (bm_dialog), "Edit Bookmark Entry",
-                          "gFTP");
-  gtk_window_set_position (GTK_WINDOW (bm_dialog), GTK_WIN_POS_MOUSE);
-  gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (bm_dialog)->vbox), 10);
-  gtk_widget_realize (bm_dialog);
+  gtk_widget_set_sensitive (bm_hostedit, ! entry->isfolder);
+  if (entry->hostname)
+    gtk_entry_set_text (GTK_ENTRY (bm_hostedit), entry->hostname);
+
+  gtk_widget_set_sensitive (bm_portedit, ! entry->isfolder);
+  if (entry->port)
+    {
+      pos = g_strdup_printf ("%d", entry->port);
+      gtk_entry_set_text (GTK_ENTRY (bm_portedit), pos);
+      g_free (pos);
+    }
+
+  num = 0;
+  for (i = 0; gftp_protocols[i].name; i++)
+    {
+      if (entry->protocol &&
+          strcmp (gftp_protocols[i].name, entry->protocol) == 0)
+    num = i;
+    }
+  gtk_option_menu_set_history (GTK_OPTION_MENU (menu), num);
+
+  if (entry->isfolder)
+    gtk_widget_set_sensitive (bm_remotediredit, 0);
+  else if (entry->remote_dir)
+    gtk_entry_set_text (GTK_ENTRY (bm_remotediredit), entry->remote_dir);
+
+  if (entry->isfolder)
+    gtk_widget_set_sensitive (bm_localdiredit, 0);
+  else if (entry->local_dir)
+    gtk_entry_set_text (GTK_ENTRY (bm_localdiredit), entry->local_dir);
+
+  if (entry->isfolder)
+    gtk_widget_set_sensitive (bm_useredit, 0);
+  else if (entry->user)
+    gtk_entry_set_text (GTK_ENTRY (bm_useredit), entry->user);
+
+  if (entry->isfolder)
+    gtk_widget_set_sensitive (bm_passedit, 0);
+  else if (entry->pass)
+    gtk_entry_set_text (GTK_ENTRY (bm_passedit), entry->pass);
+
+  if (entry->isfolder)
+    gtk_widget_set_sensitive (bm_acctedit, 0);
+  else if (entry->acct)
+    gtk_entry_set_text (GTK_ENTRY (bm_acctedit), entry->acct);
+
+  if (entry->isfolder)
+    gtk_widget_set_sensitive (anon_chk, 0);
+  else
+    {
+      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (anon_chk), entry->user
+                    && strcmp (entry->user, "anonymous") == 0);
+    }
+  gftp_gtk_set_bookmark_options (entry);
+}
+
+
+static gint
+bm_enter (GtkWidget * widget, GdkEventKey * event, gpointer data)
+{
+  if (event->type == GDK_KEY_PRESS)
+  {
+    if (event->keyval == GDK_KP_Delete || event->keyval == GDK_Delete)
+    {
+      delete_entry (NULL);
+      return TRUE;
+    }
+  }
+  return FALSE;
+}
+
+void
+edit_bookmarks (gpointer data)
+{
+  GtkWidget * edit_bookmarks_dialog;
+  GtkWidget * scroll;
+  GtkWidget * table, * tempwid, * notebook;
+  unsigned int i;
+
+  curentry = NULL;
+  edit_bookmarks_dialog = gtk_dialog_new_with_buttons (
+    _("Edit Bookmarks"), NULL, 0,
+    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+    GTK_STOCK_SAVE, GTK_RESPONSE_OK,
+    NULL);
+  GtkTreeStore * l = gtk_tree_store_new (1, G_TYPE_POINTER);
+  tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(l));
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW (tree), FALSE);
+  GtkCellRenderer * cell = gtk_cell_renderer_text_new();
+  gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW (tree), -1, NULL, cell, data_col_0, NULL, NULL);
+
+  GtkTreeSelection * select = gtk_tree_view_get_selection (GTK_TREE_VIEW (tree));
+  gtk_tree_selection_set_mode (select, GTK_SELECTION_BROWSE);
+  gtk_tree_view_set_reorderable (GTK_TREE_VIEW (tree), 1);
+
+  scroll = gtk_scrolled_window_new (NULL, NULL);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll),
+                  GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
+
+  gtk_container_border_width (GTK_CONTAINER (scroll), 2);
+  gtk_widget_show (scroll);
+
+  gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scroll), tree);
 
   notebook = gtk_notebook_new ();
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (bm_dialog)->vbox), notebook, TRUE,
-              TRUE, 0);
   gtk_widget_show (notebook);
 
   table = gtk_table_new (11, 2, FALSE);
@@ -655,12 +754,6 @@ edit_entry (gpointer data)
 
   bm_pathedit = gtk_entry_new ();
   gtk_table_attach_defaults (GTK_TABLE (table), bm_pathedit, 1, 2, 0, 1);
-  if ((pos = strrchr (entry->path, '/')) == NULL)
-    pos = entry->path;
-  else
-    pos++;
-  if (pos)
-    gtk_entry_set_text (GTK_ENTRY (bm_pathedit), pos);
   gtk_widget_show (bm_pathedit);
 
   tempwid = gtk_label_new (_("Hostname:"));
@@ -670,10 +763,6 @@ edit_entry (gpointer data)
 
   bm_hostedit = gtk_entry_new ();
   gtk_table_attach_defaults (GTK_TABLE (table), bm_hostedit, 1, 2, 1, 2);
-  if (entry->isfolder)
-    gtk_widget_set_sensitive (bm_hostedit, 0);
-  else if (entry->hostname)
-    gtk_entry_set_text (GTK_ENTRY (bm_hostedit), entry->hostname);
   gtk_widget_show (bm_hostedit);
 
   tempwid = gtk_label_new (_("Port:"));
@@ -683,14 +772,6 @@ edit_entry (gpointer data)
 
   bm_portedit = gtk_entry_new ();
   gtk_table_attach_defaults (GTK_TABLE (table), bm_portedit, 1, 2, 2, 3);
-  if (entry->isfolder)
-    gtk_widget_set_sensitive (bm_portedit, 0);
-  else if (entry->port)
-    {
-      pos = g_strdup_printf ("%d", entry->port);
-      gtk_entry_set_text (GTK_ENTRY (bm_portedit), pos);
-      g_free (pos);
-    }
   gtk_widget_show (bm_portedit);
 
   tempwid = gtk_label_new (_("Protocol:"));
@@ -702,7 +783,6 @@ edit_entry (gpointer data)
   gtk_table_attach_defaults (GTK_TABLE (table), menu, 1, 2, 3, 4);
   gtk_widget_show (menu);
 
-  num = 0;
   bm_protocol = gtk_menu_new ();
   for (i = 0; gftp_protocols[i].name; i++)
     {
@@ -710,12 +790,8 @@ edit_entry (gpointer data)
       g_object_set_data (G_OBJECT (tempwid), "user", gftp_protocols[i].name);
       gtk_menu_append (GTK_MENU (bm_protocol), tempwid);
       gtk_widget_show (tempwid);
-      if (entry->protocol &&
-          strcmp (gftp_protocols[i].name, entry->protocol) == 0)
-    num = i;
     }
   gtk_option_menu_set_menu (GTK_OPTION_MENU (menu), bm_protocol);
-  gtk_option_menu_set_history (GTK_OPTION_MENU (menu), num);
 
   tempwid = gtk_label_new (_("Remote Directory:"));
   gtk_misc_set_alignment (GTK_MISC (tempwid), 1, 0.5);
@@ -724,10 +800,6 @@ edit_entry (gpointer data)
 
   bm_remotediredit = gtk_entry_new ();
   gtk_table_attach_defaults (GTK_TABLE (table), bm_remotediredit, 1, 2, 4, 5);
-  if (entry->isfolder)
-    gtk_widget_set_sensitive (bm_remotediredit, 0);
-  else if (entry->remote_dir)
-    gtk_entry_set_text (GTK_ENTRY (bm_remotediredit), entry->remote_dir);
   gtk_widget_show (bm_remotediredit);
 
   tempwid = gtk_label_new (_("Local Directory:"));
@@ -737,10 +809,6 @@ edit_entry (gpointer data)
 
   bm_localdiredit = gtk_entry_new ();
   gtk_table_attach_defaults (GTK_TABLE (table), bm_localdiredit, 1, 2, 5, 6);
-  if (entry->isfolder)
-    gtk_widget_set_sensitive (bm_localdiredit, 0);
-  else if (entry->local_dir)
-    gtk_entry_set_text (GTK_ENTRY (bm_localdiredit), entry->local_dir);
   gtk_widget_show (bm_localdiredit);
 
   tempwid = gtk_hseparator_new ();
@@ -754,10 +822,6 @@ edit_entry (gpointer data)
 
   bm_useredit = gtk_entry_new ();
   gtk_table_attach_defaults (GTK_TABLE (table), bm_useredit, 1, 2, 8, 9);
-  if (entry->isfolder)
-    gtk_widget_set_sensitive (bm_useredit, 0);
-  else if (entry->user)
-    gtk_entry_set_text (GTK_ENTRY (bm_useredit), entry->user);
   gtk_widget_show (bm_useredit);
 
   tempwid = gtk_label_new (_("Password:"));
@@ -768,10 +832,6 @@ edit_entry (gpointer data)
   bm_passedit = gtk_entry_new ();
   gtk_table_attach_defaults (GTK_TABLE (table), bm_passedit, 1, 2, 9, 10);
   gtk_entry_set_visibility (GTK_ENTRY (bm_passedit), FALSE);
-  if (entry->isfolder)
-    gtk_widget_set_sensitive (bm_passedit, 0);
-  else if (entry->pass)
-    gtk_entry_set_text (GTK_ENTRY (bm_passedit), entry->pass);
   gtk_widget_show (bm_passedit);
 
   tempwid = gtk_label_new (_("Account:"));
@@ -782,135 +842,28 @@ edit_entry (gpointer data)
   bm_acctedit = gtk_entry_new ();
   gtk_table_attach_defaults (GTK_TABLE (table), bm_acctedit, 1, 2, 10, 11);
   gtk_entry_set_visibility (GTK_ENTRY (bm_acctedit), FALSE);
-  if (entry->isfolder)
-    gtk_widget_set_sensitive (bm_acctedit, 0);
-  else if (entry->acct)
-    gtk_entry_set_text (GTK_ENTRY (bm_acctedit), entry->acct);
   gtk_widget_show (bm_acctedit);
 
   anon_chk = gtk_check_button_new_with_label (_("Log in as ANONYMOUS"));
   gtk_table_attach_defaults (GTK_TABLE (table), anon_chk, 0, 2, 11, 12);
-  if (entry->isfolder)
-    gtk_widget_set_sensitive (anon_chk, 0);
-  else
-    {
-      g_signal_connect (G_OBJECT (anon_chk), "toggled",
-              G_CALLBACK (set_userpass_visible), NULL);
-      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (anon_chk), entry->user
-                    && strcmp (entry->user, "anonymous") == 0);
-    }
+
+  g_signal_connect (G_OBJECT (anon_chk), "toggled",
+    G_CALLBACK (set_userpass_visible), NULL);
   gtk_widget_show (anon_chk);
-  gftp_gtk_setup_bookmark_options (notebook, entry);
 
-  gtk_widget_show (bm_dialog);
+  gftp_gtk_setup_bookmark_options (notebook);
 
-  gint response = gtk_dialog_run(GTK_DIALOG(bm_dialog));
-  if (response == GTK_RESPONSE_OK)
-  {
-    entry_apply_changes (bm_dialog, entry);
-  }
-  gtk_widget_destroy (bm_dialog);
-}
-
-static void row_activated (GtkTreeView * view,
-    GtkTreePath * path, GtkTreeViewColumn *column, gpointer user_data)
-{
-  edit_entry (NULL);
-}
-
-static gint
-bm_enter (GtkWidget * widget, GdkEventKey * event, gpointer data)
-{
-  if (event->type == GDK_KEY_PRESS)
-  {
-    if (event->keyval == GDK_KP_Delete || event->keyval == GDK_Delete)
-    {
-      delete_entry (NULL);
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-static gint
-bm_dblclick (GtkWidget * widget, GdkEventButton * event, gpointer data)
-{
-  if (event->button == 3)
-  {
-    gtk_item_factory_popup (edit_factory, (guint) event->x_root,
-                (guint) event->y_root, 1, 0);
-    return TRUE;
-  }
-  return FALSE;
-}
+  GtkWidget *hpaned = gtk_hpaned_new ();
+  gtk_paned_pack1 (GTK_PANED (hpaned), scroll, TRUE, FALSE);
+  gtk_paned_pack2 (GTK_PANED (hpaned), notebook, FALSE, FALSE);
 
 
-void
-edit_bookmarks (gpointer data)
-{
-  GtkWidget * edit_bookmarks_dialog;
-  GtkAccelGroup * accel_group;
-  GtkItemFactory * ifactory;
-  GtkWidget * scroll;
-  GtkItemFactoryEntry menu_items[] = {
-    {N_("/_File"), NULL, 0, 0, "<Branch>", NULL},
-    {N_("/File/New _Folder..."), NULL, new_folder_entry, 0, NULL, NULL},
-    {N_("/File/New _Item..."), NULL, new_item_entry, 0, "<StockItem>", GTK_STOCK_NEW},
-    {N_("/File/_Delete"), NULL, delete_entry, 0, "<StockItem>", GTK_STOCK_DELETE},
-    {N_("/File/_Properties..."), NULL, edit_entry, 0, "<StockItem>", GTK_STOCK_PROPERTIES},
-  };
-
-  edit_bookmarks_dialog = gtk_dialog_new_with_buttons (
-    _("Edit Bookmarks"), NULL, 0,
-    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-    GTK_STOCK_SAVE, GTK_RESPONSE_OK,
-    NULL);
-
-  gtk_window_set_wmclass (GTK_WINDOW(edit_bookmarks_dialog), "Edit Bookmarks",
-                          "gFTP");
-  gtk_window_set_position (GTK_WINDOW (edit_bookmarks_dialog),
-                           GTK_WIN_POS_MOUSE);
-  gtk_widget_realize (edit_bookmarks_dialog);
-
-  accel_group = gtk_accel_group_new ();
-  ifactory = item_factory_new (GTK_TYPE_MENU_BAR, "<bookmarks>", accel_group,
-                               NULL);
-  create_item_factory (ifactory, 7, menu_items, NULL);
-  create_item_factory (ifactory, 1, menu_items + 7, edit_bookmarks_dialog);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (edit_bookmarks_dialog)->vbox),
-                      ifactory->widget, FALSE, FALSE, 0);
-  gtk_widget_show (ifactory->widget);
-
-  scroll = gtk_scrolled_window_new (NULL, NULL);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll),
-                  GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_widget_set_size_request (scroll, 150, 200);
-
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (edit_bookmarks_dialog)->vbox),
-                      scroll, TRUE, TRUE, 0);
-  gtk_container_border_width (GTK_CONTAINER (scroll), 3);
-  gtk_widget_show (scroll);
-
-  edit_factory = item_factory_new (GTK_TYPE_MENU, "<edit_bookmark>", NULL, "/File");
-
-  create_item_factory (edit_factory, 6, menu_items + 2, edit_bookmarks_dialog);
-
-  gtk_window_add_accel_group (GTK_WINDOW (edit_bookmarks_dialog), accel_group);
-
-  GtkTreeStore * l = gtk_tree_store_new (1, G_TYPE_POINTER);
-  tree = gtk_tree_view_new_with_model(GTK_TREE_MODEL(l));
-
-  GtkCellRenderer * cell = gtk_cell_renderer_text_new();
-  gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW (tree), -1, _("Filename"), cell, data_col_0, NULL, NULL);
-
-  GtkTreeSelection * select = gtk_tree_view_get_selection (GTK_TREE_VIEW (tree));
-  gtk_tree_selection_set_mode (select, GTK_SELECTION_BROWSE);
-  gtk_tree_view_set_reorderable (GTK_TREE_VIEW (tree), 1);
-  gtk_scrolled_window_add_with_viewport (GTK_SCROLLED_WINDOW (scroll), tree);
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (edit_bookmarks_dialog))),
+                      hpaned, TRUE, TRUE, 0);
+  gtk_widget_show (hpaned);
 
   g_signal_connect (G_OBJECT (tree), "key-press-event", G_CALLBACK (bm_enter), NULL);
-  g_signal_connect_after (G_OBJECT (tree), "row-activated", G_CALLBACK (row_activated), NULL);
-  g_signal_connect (G_OBJECT (tree), "button-press-event", G_CALLBACK (bm_dblclick), NULL);
+  g_signal_connect (G_OBJECT (select), "changed", G_CALLBACK (sel_change), NULL);
 
   build_bookmarks_tree (gftp_bookmarks);
   gtk_widget_show (tree);
