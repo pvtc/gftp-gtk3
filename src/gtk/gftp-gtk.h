@@ -358,8 +358,8 @@ char * get_xpm_path                 ( char *filename,
 /* options_dialog.c */
 void options_dialog                 ( gpointer data );
 
-void gftp_gtk_setup_bookmark_options        ( GtkWidget * notebook,
-                          gftp_bookmarks_var * bm );
+void gftp_gtk_setup_bookmark_options        ( GtkWidget * notebook );
+void gftp_gtk_set_bookmark_options        ( gftp_bookmarks_var * bm );
 
 void gftp_gtk_save_bookmark_options         ( void );
 
