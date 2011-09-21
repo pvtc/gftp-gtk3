@@ -77,7 +77,7 @@ askdel (gftp_transfer * transfer)
 
 
 void
-delete_dialog (gpointer data)
+delete_dialog (GtkAction * a, gpointer data)
 {
   gftp_file * tempfle, * newfle;
   GList * templist, * filelist;

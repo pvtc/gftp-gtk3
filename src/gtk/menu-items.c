@@ -75,7 +75,7 @@ dochange_filespec (gftp_window_data * wdata, gftp_dialog_data * ddata)
 
 
 void
-change_filespec (gpointer data)
+change_filespec (GtkAction * a, gpointer data)
 {
   gftp_window_data * wdata;
 
@@ -122,7 +122,7 @@ dosave_directory_listing (const char *filename, GList * templist)
 
 
 void
-save_directory_listing (gpointer data)
+save_directory_listing (GtkAction * a, gpointer data)
 {
    GtkWidget *filew;
   filew = gtk_file_chooser_dialog_new (_("Save Directory Listing"),
@@ -144,7 +144,7 @@ save_directory_listing (gpointer data)
 
 
 void
-show_selected (gpointer data)
+show_selected (GtkAction * a, gpointer data)
 {
   gftp_window_data * wdata;
 
@@ -155,7 +155,7 @@ show_selected (gpointer data)
 
 
 void
-selectall (gpointer data)
+selectall (GtkAction * a, gpointer data)
 {
   gftp_window_data * wdata;
 
@@ -166,7 +166,7 @@ selectall (gpointer data)
 }
 
 void
-selectallfiles (gpointer data)
+selectallfiles (GtkAction * a, gpointer data)
 {
   gftp_window_data * wdata;
   gftp_file * tempfle;
@@ -196,7 +196,7 @@ selectallfiles (gpointer data)
 
 
 void
-deselectall (gpointer data)
+deselectall (GtkAction * a, gpointer data)
 {
   gftp_window_data * wdata;
 
@@ -243,7 +243,7 @@ chdir_edit (GtkWidget * widget, gpointer data)
 
 
 void
-clearlog (gpointer data)
+clearlog (GtkAction * a, gpointer data)
 {
   gint len;
 
@@ -259,7 +259,7 @@ clearlog (gpointer data)
 
 
 void
-viewlog (gpointer data)
+viewlog (GtkAction * a, gpointer data)
 {
   char *tempstr, *txt, *pos;
   gint textlen;
@@ -369,7 +369,7 @@ dosavelog (const char *filename)
 
 
 void
-savelog (gpointer data)
+savelog (GtkAction * a, gpointer data)
 {
   GtkWidget *filew;
   filew = gtk_file_chooser_dialog_new (_("Save Log"),
@@ -391,14 +391,14 @@ savelog (gpointer data)
 }
 
 void
-clear_cache (gpointer data)
+clear_cache (GtkAction * a, gpointer data)
 {
   gftp_clear_cache_files ();
 }
 
 
 void
-about_dialog (gpointer data)
+about_dialog (GtkAction * a, gpointer data)
 {
   GtkWidget * tempwid, * notebook, * box, * label, * view, * vscroll, * dialog;
   char *tempstr, *temp1str, *no_license_agreement, *str, buf[255], *share_dir;
@@ -580,13 +580,13 @@ _do_compare_windows (gftp_window_data * win1, gftp_window_data * win2)
 }
 
 void
-compare_windows (gpointer data)
+compare_windows (GtkAction * a, gpointer data)
 {
   if (!check_status (_("Compare Windows"), &window2, 1, 0, 0, 1))
     return;
 
-  deselectall (&window1);
-  deselectall (&window2);
+  deselectall (NULL, &window1);
+  deselectall (NULL, &window2);
 
   _do_compare_windows (&window1, &window2);
   _do_compare_windows (&window2, &window1);

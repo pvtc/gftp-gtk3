@@ -313,7 +313,7 @@ gftpui_run_function_cancel_callback (gftp_window_data * wdata,
 
 
 void
-gftpui_mkdir_dialog (gpointer data)
+gftpui_mkdir_dialog (GtkAction * a, gpointer data)
 {
   gftpui_callback_data * cdata;
   gftp_window_data * wdata;
@@ -335,7 +335,7 @@ gftpui_mkdir_dialog (gpointer data)
 
 
 void
-gftpui_rename_dialog (gpointer data)
+gftpui_rename_dialog (GtkAction * a, gpointer data)
 {
   gftpui_callback_data * cdata;
   GList *templist;
@@ -375,7 +375,7 @@ gftpui_rename_dialog (gpointer data)
 
 
 void
-gftpui_site_dialog (gpointer data)
+gftpui_site_dialog (GtkAction * a, gpointer data)
 {
   gftpui_callback_data * cdata;
   gftp_window_data * wdata;
@@ -424,7 +424,7 @@ gftpui_run_chdir (gpointer uidata, char *directory)
 
 
 void
-gftpui_chdir_dialog (gpointer data)
+gftpui_chdir_dialog (GtkAction * a, gpointer data)
 {
   GList *templist;
   gftp_window_data * wdata;
@@ -452,9 +452,8 @@ gftpui_chdir_dialog (gpointer data)
   g_free (tempstr);
 }
 
-
 void
-gftpui_disconnect (void *uidata)
+gftpui_disconnect (void * uidata)
 {
   gftp_window_data * wdata;
 

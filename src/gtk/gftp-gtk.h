@@ -163,17 +163,17 @@ extern GList * viewedit_processes;
 /* bookmarks.c */
 void run_bookmark               (GtkAction * a, gpointer data );
 
-void add_bookmark               ( gpointer data );
+void add_bookmark               (GtkAction * a, gpointer data );
 
-void edit_bookmarks                 ( gpointer data );
+void edit_bookmarks                 (GtkAction * a, gpointer data );
 
 void build_bookmarks_menu           ( void );
 
 /* chmod_dialog.c */
-void chmod_dialog               ( gpointer data );
+void chmod_dialog               (GtkAction * a,  gpointer data );
 
 /* delete_dialog.c */
-void delete_dialog              ( gpointer data );
+void delete_dialog              (GtkAction * a,  gpointer data );
 
 /* dnd.c */
 void openurl_get_drag_data          ( GtkWidget * widget,
@@ -225,46 +225,44 @@ void gftpui_run_function_callback       ( gftp_window_data * wdata,
 void gftpui_run_function_cancel_callback    ( gftp_window_data * wdata,
                           gftp_dialog_data * ddata );
 
-void gftpui_mkdir_dialog            ( gpointer data );
+void gftpui_mkdir_dialog            (GtkAction * a,  gpointer data );
 
-void gftpui_rename_dialog           ( gpointer data );
+void gftpui_rename_dialog           (GtkAction * a,  gpointer data );
 
-void gftpui_site_dialog             ( gpointer data );
+void gftpui_site_dialog             (GtkAction * a,  gpointer data );
 
-int gftpui_run_chdir                ( gpointer uidata,
-                          char *directory );
+int gftpui_run_chdir                ( gpointer uidata, char *directory );
 
-void gftpui_chdir_dialog            ( gpointer data );
+void gftpui_chdir_dialog            (GtkAction * a,  gpointer data );
 
 char * gftpui_gtk_get_utf8_file_pos         ( gftp_file * fle );
 
 /* menu_items.c */
-void change_filespec                ( gpointer data );
+void change_filespec                (GtkAction * a, gpointer data );
 
-void save_directory_listing             ( gpointer data );
+void save_directory_listing             (GtkAction * a, gpointer data );
 
-void show_selected              ( gpointer data );
+void show_selected              (GtkAction * a, gpointer data );
 
-void selectall                  ( gpointer data );
+void selectall                  (GtkAction * a, gpointer data );
 
-void selectallfiles                 ( gpointer data );
+void selectallfiles                 (GtkAction * a, gpointer data );
 
-void deselectall                ( gpointer data );
+void deselectall                (GtkAction * a, gpointer data );
 
-int chdir_edit                  ( GtkWidget * widget,
-                          gpointer data );
+int chdir_edit                  ( GtkWidget * widget, gpointer data );
 
-void clearlog                   ( gpointer data );
+void clearlog                   (GtkAction * a,  gpointer data );
 
-void viewlog                    ( gpointer data );
+void viewlog                    (GtkAction * a,  gpointer data );
 
-void savelog                    ( gpointer data );
+void savelog                    (GtkAction * a,  gpointer data );
 
-void clear_cache                ( gpointer data );
+void clear_cache                (GtkAction * a,  gpointer data );
 
-void compare_windows                ( gpointer data );
+void compare_windows                (GtkAction * a,  gpointer data );
 
-void about_dialog               ( gpointer data );
+void about_dialog               (GtkAction * a,  gpointer data );
 
 /* misc-gtk.c */
 void fix_display                ( void );
@@ -336,7 +334,7 @@ char * get_xpm_path                 ( char *filename,
 void gtk_combo_box_set_popdown_strings (GtkComboBoxText * combo, GList * string);
 
 /* options_dialog.c */
-void options_dialog                 ( gpointer data );
+void options_dialog                 (GtkAction * a,  gpointer data );
 
 void gftp_gtk_setup_bookmark_options        ( GtkWidget * notebook );
 void gftp_gtk_set_bookmark_options        ( gftp_bookmarks_var * bm );
@@ -351,9 +349,9 @@ int ftp_connect                 ( gftp_window_data * wdata,
 
 gint update_downloads               ( gpointer data );
 
-void get_files                  ( gpointer data );
+void get_files                  (GtkAction * a,  gpointer data );
 
-void put_files                  ( gpointer data );
+void put_files                  (GtkAction * a,  gpointer data );
 
 void transfer_window_files          ( gftp_window_data * fromwdata,
                           gftp_window_data * towdata );
@@ -362,22 +360,22 @@ int gftp_gtk_get_subdirs            ( gftp_transfer * transfer );
 
 void *do_getdir_thread              ( void * data );
 
-void start_transfer             ( gpointer data );
+void start_transfer             (GtkAction * a,  gpointer data );
 
-void stop_transfer              ( gpointer data );
+void stop_transfer              (GtkAction * a,  gpointer data );
 
-void skip_transfer              ( gpointer data );
+void skip_transfer              (GtkAction * a,  gpointer data );
 
-void remove_file_transfer           ( gpointer data );
+void remove_file_transfer           (GtkAction * a,  gpointer data );
 
-void move_transfer_up               ( gpointer data );
+void move_transfer_up               (GtkAction * a,  gpointer data );
 
-void move_transfer_down             ( gpointer data );
+void move_transfer_down             (GtkAction * a,  gpointer data );
 
 /* view_dialog.c */
-void edit_dialog                ( gpointer data );
+void edit_dialog                (GtkAction * a,  gpointer data );
 
-void view_dialog                ( gpointer data );
+void view_dialog                (GtkAction * a,  gpointer data );
 
 void view_file                  ( char *filename,
                           int fd,

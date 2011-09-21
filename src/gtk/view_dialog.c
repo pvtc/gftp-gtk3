@@ -103,14 +103,14 @@ do_view_or_edit_file (gftp_window_data * fromwdata, int is_view)
 
 
 void
-view_dialog (gpointer data)
+view_dialog (GtkAction * a, gpointer data)
 {
   do_view_or_edit_file (data, 1);
 }
 
 
 void
-edit_dialog (gpointer data)
+edit_dialog (GtkAction * a, gpointer data)
 {
   gftp_window_data * fromwdata = data;
   char *edit_program;

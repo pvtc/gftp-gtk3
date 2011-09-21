@@ -73,14 +73,14 @@ ftp_connect (gftp_window_data * wdata, gftp_request * request)
 
 
 void
-get_files (gpointer data)
+get_files (GtkAction * a, gpointer data)
 {
   transfer_window_files (&window2, &window1);
 }
 
 
 void
-put_files (gpointer data)
+put_files (GtkAction * a, gpointer data)
 {
   transfer_window_files (&window1, &window2);
 }
@@ -908,7 +908,7 @@ update_downloads (gpointer data)
 
 
 void
-start_transfer (gpointer data)
+start_transfer (GtkAction * a, gpointer data)
 {
   GtkTreeSelection *select;
   GtkTreeIter iter;
@@ -931,7 +931,7 @@ start_transfer (gpointer data)
 }
 
 void
-stop_transfer (gpointer data)
+stop_transfer (GtkAction * a, gpointer data)
 {
   gftp_transfer * transfer;
   GtkTreeSelection *select;
@@ -951,7 +951,7 @@ stop_transfer (gpointer data)
 
 
 void
-skip_transfer (gpointer data)
+skip_transfer (GtkAction * a, gpointer data)
 {
   gftp_transfer * transfer;
   GtkTreeSelection *select;
@@ -972,7 +972,7 @@ skip_transfer (gpointer data)
 
 
 void
-remove_file_transfer (gpointer data)
+remove_file_transfer (GtkAction * a, gpointer data)
 {
   gftp_transfer * transfer;
   GList * curfle;
@@ -997,7 +997,7 @@ remove_file_transfer (gpointer data)
 
 
 void
-move_transfer_up (gpointer data)
+move_transfer_up (GtkAction * a, gpointer data)
 {
   GList * firstentry, * secentry, * lastentry;
   gftp_transfer * transfer;
@@ -1063,7 +1063,7 @@ move_transfer_up (gpointer data)
 
 
 void
-move_transfer_down (gpointer data)
+move_transfer_down (GtkAction * a, gpointer data)
 {
   GList * firstentry, * secentry, * lastentry;
   gftp_transfer * transfer;

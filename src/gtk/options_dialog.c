@@ -1232,7 +1232,7 @@ _init_option_data (void)
 
 
 void
-options_dialog (gpointer data)
+options_dialog (GtkAction * a, gpointer data)
 {
   gftp_config_vars * cv;
   GList * templist;

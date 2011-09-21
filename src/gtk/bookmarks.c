@@ -161,7 +161,7 @@ doadd_bookmark (gpointer * data, gftp_dialog_data * ddata)
 }
 
 void
-add_bookmark (gpointer data)
+add_bookmark (GtkAction * a, gpointer data)
 {
   const char *edttxt;
 
@@ -682,7 +682,7 @@ bm_enter (GtkWidget * widget, GdkEventKey * event, gpointer data)
 }
 
 void
-edit_bookmarks (gpointer data)
+edit_bookmarks (GtkAction * a, gpointer data)
 {
   GtkWidget * edit_bookmarks_dialog;
   GtkWidget * scroll;

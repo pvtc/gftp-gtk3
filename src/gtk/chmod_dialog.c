@@ -119,7 +119,7 @@ chmod_action (GtkWidget * widget, gint response, gpointer wdata)
 }
 
 void
-chmod_dialog (gpointer data)
+chmod_dialog (GtkAction * a, gpointer data)
 {
   GtkWidget *tempwid, *dialog, *hbox, *vbox;
   GList * templist;

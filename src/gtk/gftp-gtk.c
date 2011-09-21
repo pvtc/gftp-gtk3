@@ -123,9 +123,14 @@ _gftp_exit (GtkWidget * widget, gpointer data)
   exit (0);
 }
 
+static void
+ui_disconnect (GtkAction * a, void * uidata)
+{
+   gftpui_disconnect (uidata);
+}
 
 static gint
-_gftp_try_close (GtkWidget * widget, GdkEvent * event, gpointer data)
+_gftp_try_close (GtkWidget * widget, void * a, gpointer data)
 {
   if (gftp_file_transfers == NULL)
     {
@@ -148,10 +153,10 @@ _gftp_force_close (GtkWidget * widget, gpointer data)
 
 
 static void
-_gftp_menu_exit (GtkWidget * widget, gpointer data)
+_gftp_menu_exit (GtkAction * a, gpointer data)
 {
-  if (!_gftp_try_close (widget, NULL, data))
-    _gftp_exit (widget, data);
+  if (!_gftp_try_close (NULL, NULL, NULL))
+    _gftp_exit (NULL, NULL);
 }
 
 
@@ -204,7 +209,7 @@ _gftpui_gtk_do_openurl (gftp_window_data * wdata, gftp_dialog_data * ddata)
 
 
 static void
-openurl_dialog (gpointer data)
+openurl_dialog (GtkAction * a, gpointer data)
 {
   gftp_window_data * wdata;
 
@@ -217,7 +222,7 @@ openurl_dialog (gpointer data)
 
 
 static void
-tb_openurl_dialog (gpointer data)
+tb_openurl_dialog (GtkToolButton *toolbutton, gpointer data)
 {
   const char *edttxt;
 
@@ -236,11 +241,11 @@ tb_openurl_dialog (gpointer data)
   else if (edttxt != NULL && *edttxt != '\0')
     toolbar_hostedit (NULL, NULL);
   else
-    openurl_dialog (current_wdata);
+    openurl_dialog (NULL, current_wdata);
 }
 
 static void
-gftp_gtk_refresh (gftp_window_data * wdata)
+gftp_gtk_refresh (GtkAction * a, gftp_window_data * wdata)
 {
   gftpui_refresh (wdata, 1);
 }
@@ -269,7 +274,7 @@ static const GtkRadioActionEntry radio_entriess[] = {
      { "PLocal", NULL, N_("_Local")},
      { "Local", NULL, N_("_Local")},
      { "local_Open Location...", GTK_STOCK_OPEN, N_("_Open Location..."), "<control><shift>O", NULL, G_CALLBACK(openurl_dialog)},
-     { "local_D_isconnect", GTK_STOCK_CLOSE, N_("D_isconnect"), "<control><shift>I", NULL, G_CALLBACK(gftpui_disconnect)},
+     { "local_D_isconnect", GTK_STOCK_CLOSE, N_("D_isconnect"), "<control><shift>I", NULL, G_CALLBACK(ui_disconnect)},
 
      { "local_Change _Filespec...", NULL, N_("Change _Filespec..."), "<control><shift>F", NULL, G_CALLBACK(change_filespec)},
      { "local_Show selected", NULL, N_("_Show selected"), NULL, NULL, G_CALLBACK(show_selected)},
@@ -293,7 +298,7 @@ static const GtkRadioActionEntry radio_entriess[] = {
      { "Remote", NULL, N_("_Remote")},
      { "PRemote", NULL, N_("_Remote")},
      { "remote_Open Location...", GTK_STOCK_OPEN, N_("_Open Location..."), "<control>O", NULL, G_CALLBACK(openurl_dialog)},
-     { "remote_D_isconnect", GTK_STOCK_CLOSE, N_("D_isconnect"), "<control>D", NULL, G_CALLBACK(gftpui_disconnect)},
+     { "remote_D_isconnect", GTK_STOCK_CLOSE, N_("D_isconnect"), "<control>D", NULL, G_CALLBACK(ui_disconnect)},
 
      { "remote_Change _Filespec...", NULL, N_("Change _Filespec..."), "<control>F", NULL, G_CALLBACK(change_filespec)},
      { "remote_Show selected", NULL, N_("_Show selected"), NULL, NULL, G_CALLBACK(show_selected)},
@@ -543,7 +548,7 @@ CreateConnectToolbar (GtkWidget * parent)
   box = gtk_toolbar_new ();
 
   openurl_btn = gtk_tool_button_new_from_stock (GTK_STOCK_NETWORK);
-  g_signal_connect_swapped (G_OBJECT (openurl_btn), "clicked", G_CALLBACK (tb_openurl_dialog), NULL);
+  g_signal_connect (G_OBJECT (openurl_btn), "clicked", G_CALLBACK (tb_openurl_dialog), NULL);
   g_signal_connect (G_OBJECT (openurl_btn), "drag_data_received", G_CALLBACK (openurl_get_drag_data), NULL);
   gtk_drag_dest_set (GTK_WIDGET(openurl_btn), GTK_DEST_DEFAULT_ALL, possible_types, 2, GDK_ACTION_COPY | GDK_ACTION_MOVE);
   gtk_toolbar_insert (GTK_TOOLBAR(box), GTK_TOOL_ITEM(openurl_btn), -1);
@@ -723,16 +728,16 @@ list_doaction (GtkTreeView * view,
       switch (list_dblclk_action)
         {
           case 0:
-            view_dialog (wdata);
+            view_dialog (NULL, wdata);
             break;
           case 1:
-            edit_dialog (wdata);
+            edit_dialog (NULL, wdata);
             break;
           case 2:
             if (wdata == &window2)
-              get_files (wdata);
+              get_files (NULL, wdata);
             else
-              put_files (wdata);
+              put_files (NULL, wdata);
             break;
         }
     }
@@ -751,7 +756,7 @@ list_enter (GtkWidget * widget, GdkEventKey * event, gpointer data)
     if (event->type == GDK_KEY_PRESS &&
       (event->keyval == GDK_KP_Delete || event->keyval == GDK_Delete))
     {
-      delete_dialog (wdata);
+      delete_dialog (NULL, wdata);
       return TRUE;
     }
   }
@@ -1125,17 +1130,14 @@ CreateFTPWindows (GtkWidget * ui)
 
   upload_right_arrow = gtk_button_new ();
   gtk_box_pack_start (GTK_BOX (dlbox), upload_right_arrow, TRUE, FALSE, 0);
-  g_signal_connect_swapped (G_OBJECT (upload_right_arrow), "clicked",
-                 G_CALLBACK (put_files), NULL);
+  g_signal_connect(G_OBJECT (upload_right_arrow), "clicked", G_CALLBACK (put_files), NULL);
   gtk_container_add (GTK_CONTAINER (upload_right_arrow), tempwid);
 
-  tempwid = gtk_image_new_from_stock (GTK_STOCK_GO_BACK,
-                                      GTK_ICON_SIZE_SMALL_TOOLBAR);
+  tempwid = gtk_image_new_from_stock (GTK_STOCK_GO_BACK, GTK_ICON_SIZE_SMALL_TOOLBAR);
 
   download_left_arrow = gtk_button_new ();
   gtk_box_pack_start (GTK_BOX (dlbox), download_left_arrow, TRUE, FALSE, 0);
-  g_signal_connect_swapped (G_OBJECT (download_left_arrow), "clicked",
-                 G_CALLBACK (get_files), NULL);
+  g_signal_connect(G_OBJECT (download_left_arrow), "clicked", G_CALLBACK (get_files), NULL);
   gtk_container_add (GTK_CONTAINER (download_left_arrow), tempwid);
 
   gtk_paned_pack1 (GTK_PANED (winpane), box, 1, 1);
