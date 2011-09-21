@@ -754,7 +754,7 @@ list_enter (GtkWidget * widget, GdkEventKey * event, gpointer data)
   if (GFTP_IS_CONNECTED (wdata->request))
   {
     if (event->type == GDK_KEY_PRESS &&
-      (event->keyval == GDK_KP_Delete || event->keyval == GDK_Delete))
+      (event->keyval == GDK_KEY_KP_Delete || event->keyval == GDK_KEY_Delete))
     {
       delete_dialog (NULL, wdata);
       return TRUE;

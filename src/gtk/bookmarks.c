@@ -672,7 +672,7 @@ bm_enter (GtkWidget * widget, GdkEventKey * event, gpointer data)
 {
   if (event->type == GDK_KEY_PRESS)
   {
-    if (event->keyval == GDK_KP_Delete || event->keyval == GDK_Delete)
+    if (event->keyval == GDK_KEY_KP_Delete || event->keyval == GDK_KEY_Delete)
     {
       delete_entry (NULL);
       return TRUE;

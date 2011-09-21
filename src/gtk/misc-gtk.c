@@ -655,12 +655,12 @@ dialog_keypress (GtkWidget * widget, GdkEventKey * event, gpointer data)
   if (event->type != GDK_KEY_PRESS)
     return (FALSE);
 
-  if (event->keyval == GDK_KP_Enter || event->keyval == GDK_Return)
+  if (event->keyval == GDK_KEY_KP_Enter || event->keyval == GDK_KEY_Return)
     {
       dialog_response (widget, GTK_RESPONSE_YES, data);
       return (TRUE);
     }
-  else if (event->keyval == GDK_Escape)
+  else if (event->keyval == GDK_KEY_Escape)
     {
       dialog_response (widget, GTK_RESPONSE_NO, data);
       return (TRUE);
