@@ -150,7 +150,7 @@ doadd_bookmark (gpointer * data, gftp_dialog_data * ddata)
 
       edttxt = gtk_entry_get_text (GTK_ENTRY (passedit));
       tempentry->pass = g_strdup (edttxt);
-      tempentry->save_password = GTK_TOGGLE_BUTTON (ddata->checkbox)->active;
+      tempentry->save_password =  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ddata->checkbox));
     }
 
   gftp_add_bookmark (tempentry);
@@ -479,9 +479,9 @@ delete_entry (gpointer data)
 static void
 set_userpass_visible (GtkWidget * checkbutton, GtkWidget * entry)
 {
-  gtk_widget_set_sensitive (bm_useredit, !GTK_TOGGLE_BUTTON (anon_chk)->active);
-  gtk_widget_set_sensitive (bm_passedit, !GTK_TOGGLE_BUTTON (anon_chk)->active);
-  gtk_widget_set_sensitive (bm_acctedit, !GTK_TOGGLE_BUTTON (anon_chk)->active);
+  gtk_widget_set_sensitive (bm_useredit, !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (anon_chk)));
+  gtk_widget_set_sensitive (bm_passedit, !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (anon_chk)));
+  gtk_widget_set_sensitive (bm_acctedit, !gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (anon_chk)));
 }
 
 static void
@@ -561,7 +561,7 @@ entry_apply_changes (gftp_bookmarks_var * entry)
     g_free (entry->local_dir);
   entry->local_dir = g_strdup (str);
 
-  if (GTK_TOGGLE_BUTTON (anon_chk)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (anon_chk)))
     str = GFTP_ANONYMOUS_USER;
   else
     str = gtk_entry_get_text (GTK_ENTRY (bm_useredit));

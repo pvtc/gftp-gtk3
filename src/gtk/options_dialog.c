@@ -567,7 +567,7 @@ _save_option_type_checkbox (gftp_config_vars * cv, void *user_data)
 
   option_data = user_data;
 
-  val = GTK_TOGGLE_BUTTON (cv->user_data)->active;
+  val = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (cv->user_data));
 
   if (option_data->bm == NULL)
     gftp_set_global_option (cv->key, GINT_TO_POINTER (val));
@@ -806,7 +806,7 @@ add_ok (GtkWidget * widget, gpointer data)
       hosts->domain = NULL;
     }
 
-  if (GTK_TOGGLE_BUTTON (domain_active)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (domain_active)))
     {
       edttxt = gtk_entry_get_text (GTK_ENTRY (new_proxy_domain));
       hosts->domain = g_strdup (edttxt);
@@ -935,11 +935,11 @@ add_proxy_host (GtkWidget * widget, gpointer data)
   gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
   gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
 
-  gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 2);
+  gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 2);
 
   vbox = gtk_vbox_new (FALSE, 6);
   gtk_container_set_border_width (GTK_CONTAINER (vbox), 5);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), vbox, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), vbox, FALSE, FALSE, 0);
   gtk_widget_show (vbox);
 
   box = gtk_hbox_new (FALSE, 12);
@@ -1250,11 +1250,11 @@ options_dialog (GtkAction * a, gpointer data)
   gtk_dialog_set_has_separator (GTK_DIALOG (gftp_option_data->dialog), FALSE);
   gtk_window_set_resizable (GTK_WINDOW (gftp_option_data->dialog), FALSE);
 
-  gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (gftp_option_data->dialog)->vbox), 2);
+  gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (gftp_option_data->dialog))), 2);
   gtk_widget_realize (gftp_option_data->dialog);
 
   gftp_option_data->notebook = gtk_notebook_new ();
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (gftp_option_data->dialog)->vbox),
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (gftp_option_data->dialog))),
                       gftp_option_data->notebook, TRUE, TRUE, 0);
   gtk_widget_show (gftp_option_data->notebook);
   gtk_container_set_border_width (GTK_CONTAINER (gftp_option_data->notebook), 5);

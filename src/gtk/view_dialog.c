@@ -317,12 +317,12 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
                                         GTK_STOCK_CLOSE,
                                         GTK_RESPONSE_CLOSE,
                                         NULL);
-  gtk_container_set_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 5);
-  gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
+  gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
+  gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
   gtk_widget_realize (dialog);
 
   table = gtk_table_new (1, 2, FALSE);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), table, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), table, TRUE, TRUE, 0);
 
   view = gtk_text_view_new ();
   gtk_text_view_set_editable (GTK_TEXT_VIEW (view), FALSE);
@@ -366,5 +366,5 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   gtk_widget_show (dialog);
 
   if (!start_pos)
-    gtk_adjustment_set_value (vadj, vadj->upper);
+    gtk_adjustment_set_value (vadj, gtk_adjustment_get_upper(vadj));
 }

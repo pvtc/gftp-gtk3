@@ -64,32 +64,32 @@ dochmod (GtkWidget * widget, gftp_window_data * wdata)
   gftpui_callback_data * cdata;
 
   mode = 0;
-  if (GTK_TOGGLE_BUTTON (suid)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (suid)))
     mode |= S_ISUID;
-  if (GTK_TOGGLE_BUTTON (sgid)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (sgid)))
     mode |= S_ISGID;
-  if (GTK_TOGGLE_BUTTON (sticky)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (sticky)))
     mode |= S_ISVTX;
 
-  if (GTK_TOGGLE_BUTTON (ur)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ur)))
     mode |= S_IRUSR;
-  if (GTK_TOGGLE_BUTTON (uw)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (uw)))
     mode |= S_IWUSR;
-  if (GTK_TOGGLE_BUTTON (ux)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ux)))
     mode |= S_IXUSR;
 
-  if (GTK_TOGGLE_BUTTON (gr)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (gr)))
     mode |= S_IRGRP;
-  if (GTK_TOGGLE_BUTTON (gw)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (gw)))
     mode |= S_IWGRP;
-  if (GTK_TOGGLE_BUTTON (gx)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (gx)))
     mode |= S_IXGRP;
 
-  if (GTK_TOGGLE_BUTTON (or)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (or)))
     mode |= S_IROTH;
-  if (GTK_TOGGLE_BUTTON (ow)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ow)))
     mode |= S_IWOTH;
-  if (GTK_TOGGLE_BUTTON (ox)->active)
+  if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ox)))
     mode |= S_IXOTH;
 
   if (check_reconnect (wdata) < 0)
@@ -136,17 +136,17 @@ chmod_dialog (GtkAction * a, gpointer data)
                                         GTK_STOCK_OK,
                                         GTK_RESPONSE_OK,
                                         NULL);
-  gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
-  gtk_container_set_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
+  gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
+  gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
   gtk_widget_realize (dialog);
 
   tempwid = gtk_label_new (_("You can now adjust the attributes of your file(s)\nNote: Not all ftp servers support the chmod feature"));
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), tempwid, FALSE,
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), tempwid, FALSE,
               FALSE, 0);
   gtk_widget_show (tempwid);
 
   hbox = gtk_hbox_new (TRUE, 5);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, FALSE, FALSE,
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), hbox, FALSE, FALSE,
               0);
   gtk_widget_show (hbox);
 

@@ -290,11 +290,11 @@ gftpui_ask_transfer (gftp_transfer * tdata)
                                         GTK_STOCK_OK,
                                         GTK_RESPONSE_OK,
                                         NULL);
-  gtk_container_set_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
-  gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
+  gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
+  gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
 
   tempwid = gtk_label_new (_("The following file(s) exist on both the local and remote computer\nPlease select what you would like to do"));
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), tempwid, FALSE,
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), tempwid, FALSE,
               FALSE, 0);
   gtk_widget_show (tempwid);
 
@@ -324,7 +324,7 @@ gftpui_ask_transfer (gftp_transfer * tdata)
   gtk_tree_view_column_set_fixed_width(c, 85);
   c = gtk_tree_view_get_column(GTK_TREE_VIEW(tdata->clist), 3);
   gtk_tree_view_column_set_fixed_width(c, 85);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), scroll, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), scroll, TRUE, TRUE, 0);
   gtk_widget_show (tdata->clist);
   gtk_widget_show (scroll);
 
@@ -346,7 +346,7 @@ gftpui_ask_transfer (gftp_transfer * tdata)
   gtk_tree_selection_select_all (select);
 
   hbox = gtk_hbox_new (TRUE, 20);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), hbox, TRUE, TRUE, 0);
   gtk_widget_show (hbox);
 
   tempwid = gtk_button_new_with_label (_("Overwrite"));
@@ -368,7 +368,7 @@ gftpui_ask_transfer (gftp_transfer * tdata)
   gtk_widget_show (tempwid);
 
   hbox = gtk_hbox_new (TRUE, 20);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), hbox, TRUE, TRUE, 0);
   gtk_widget_show (hbox);
 
   tempwid = gtk_button_new_with_label (_("Select All"));

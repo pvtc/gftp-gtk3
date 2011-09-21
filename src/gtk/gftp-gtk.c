@@ -55,18 +55,18 @@ _gftp_exit (GtkWidget * widget, gpointer data)
   const char *tempstr;
   const char * tempwid;
   intptr_t ret;
-
-  ret = GTK_WIDGET (local_frame)->allocation.width;
+/*
+  ret = gtk_widget_get_allocated_width(GTK_WIDGET (local_frame));
   gftp_set_global_option ("listbox_local_width", GINT_TO_POINTER (ret));
-  ret = GTK_WIDGET (remote_frame)->allocation.width;
+  ret = gtk_widget_get_allocated_width(GTK_WIDGET (remote_frame));
   gftp_set_global_option ("listbox_remote_width", GINT_TO_POINTER (ret));
-  ret = GTK_WIDGET (remote_frame)->allocation.height;
+  ret = gtk_widget_get_allocated_height(GTK_WIDGET (remote_frame));
   gftp_set_global_option ("listbox_file_height", GINT_TO_POINTER (ret));
-  ret = GTK_WIDGET (log_table)->allocation.height;
+  ret = gtk_widget_get_allocated_height(GTK_WIDGET (log_table));
   gftp_set_global_option ("log_height", GINT_TO_POINTER (ret));
-  ret = GTK_WIDGET (transfer_scroll)->allocation.height;
+  ret = gtk_widget_get_allocated_height(GTK_WIDGET (transfer_scroll));
   gftp_set_global_option ("transfer_height", GINT_TO_POINTER (ret));
-
+*/
   ret = get_column (GTK_TREE_VIEW (dlwdw), 0);
   gftp_set_global_option ("file_trans_column", GINT_TO_POINTER (ret));
 
@@ -1532,7 +1532,6 @@ main (int argc, char **argv)
   if (gftp_icon != NULL)
     {
       gtk_window_set_default_icon (gftp_icon->pb);
-      gdk_window_set_icon_name (window->window, gftp_version);
     }
 
   other_wdata = &window1;

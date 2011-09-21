@@ -103,7 +103,7 @@ gftpui_show_busy (gboolean busy)
   GdkCursor * busyCursor =
     (busy) ? (gdk_cursor_new_for_display (display, GDK_WATCH)) : NULL;
 
-  gdk_window_set_cursor (toplevel->window, busyCursor);
+  gdk_window_set_cursor (gtk_widget_get_window(toplevel), busyCursor);
 
   if (busy)
     gdk_cursor_unref (busyCursor);
@@ -286,7 +286,7 @@ gftpui_run_function_callback (gftp_window_data * wdata,
     }
 
   if (ddata->checkbox != NULL)
-    cdata->toggled = GTK_TOGGLE_BUTTON (ddata->checkbox)->active;
+    cdata->toggled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ddata->checkbox));
   else
     cdata->toggled = 0;
 

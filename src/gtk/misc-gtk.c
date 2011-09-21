@@ -107,7 +107,7 @@ ftp_log (gftp_logging_level level, gftp_request * request,
         }
     }
 
-  upd = logwdw_vadj->upper - logwdw_vadj->page_size == logwdw_vadj->value;
+  upd = gtk_adjustment_get_upper(logwdw_vadj) - gtk_adjustment_get_page_size(logwdw_vadj) == gtk_adjustment_get_value(logwdw_vadj);
 
   gftp_lookup_global_option ("max_log_window_size", &max_log_window_size);
 
@@ -714,15 +714,15 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
                                         yes_text,
                                         GTK_RESPONSE_YES,
                                         NULL);
-  gtk_container_set_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
-  gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
+  gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
+  gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
   gtk_grab_add (dialog);
   gtk_widget_realize (dialog);
 
   ddata->dialog = dialog;
 
   tempwid = gtk_label_new (infotxt);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), tempwid, TRUE,
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), tempwid, TRUE,
               TRUE, 0);
   gtk_widget_show (tempwid);
 
@@ -730,7 +730,7 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
   g_signal_connect (G_OBJECT (ddata->edit), "key_press_event",
                       G_CALLBACK (dialog_keypress), (gpointer) ddata);
 
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), ddata->edit, TRUE,
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), ddata->edit, TRUE,
               TRUE, 0);
   gtk_widget_grab_focus (ddata->edit);
   gtk_entry_set_visibility (GTK_ENTRY (ddata->edit), passwd_item);
@@ -745,7 +745,7 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
   if (checktext != NULL)
     {
       ddata->checkbox = gtk_check_button_new_with_label (checktext);
-      gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox),
+      gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))),
                           ddata->checkbox, TRUE, TRUE, 0);
       gtk_widget_show (ddata->checkbox);
     }
@@ -777,15 +777,15 @@ MakeYesNoDialog (char *diagtxt, char *infotxt,
                                         GTK_RESPONSE_YES,
                                         NULL);
 
-  gtk_container_set_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
-  gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
+  gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
+  gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
   gtk_grab_add (dialog);
   gtk_widget_realize (dialog);
 
   ddata->dialog = dialog;
 
   text = gtk_label_new (infotxt);
-  gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), text, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), text, TRUE, TRUE, 0);
   gtk_widget_show (text);
 
   g_signal_connect (G_OBJECT (dialog), "response",
