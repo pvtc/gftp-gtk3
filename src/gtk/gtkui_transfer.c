@@ -290,7 +290,7 @@ gftpui_ask_transfer (gftp_transfer * tdata)
                                         GTK_STOCK_OK,
                                         GTK_RESPONSE_OK,
                                         NULL);
-  gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
+  gtk_container_set_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
 
   tempwid = gtk_label_new (_("The following file(s) exist on both the local and remote computer\nPlease select what you would like to do"));

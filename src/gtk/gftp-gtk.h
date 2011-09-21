@@ -71,8 +71,6 @@ typedef struct gftp_window_data_tag
   gftp_request * request;   /* The host that we are connected to */
   GList * files,        /* Files in the listbox */
         ** history;     /* History of the directories */
-  GtkItemFactory *ifactory;     /* This is for the menus that will
-                                   come up when you right click */
   pthread_t tid;        /* Thread for the stop button */
   char *prefix_col_str;
 } gftp_window_data;
@@ -84,13 +82,11 @@ typedef struct _gftpui_gtk_thread_data
   gftpui_callback_data * cdata;
 } gftpui_gtk_thread_data;
 
-
 typedef struct gftp_graphic_tag
 {
   char * filename;
   GdkPixbuf * pb;
 } gftp_graphic;
-
 
 typedef struct gftp_dialog_data_tag
 {
@@ -123,13 +119,6 @@ typedef struct gftp_viewedit_data_tag
                     * towdata;
    gftp_request * torequest;
 } gftp_viewedit_data;
-
-
-typedef struct gftp_save_dir_struct_tag
-{
-  GtkWidget * filew;
-  gftp_window_data * wdata;
-} gftp_save_dir_struct;
 
 
 typedef struct gftp_textcomboedt_widget_data_tag
@@ -165,15 +154,14 @@ extern GtkTextMark * logwdw_textmark;
 
 extern int local_start, remote_start, trans_start;
 extern GHashTable * graphic_hash_table;
-extern GtkItemFactoryEntry * menus;
-extern GtkItemFactory * factory;
+extern GtkUIManager * ui_manager;
 extern pthread_mutex_t log_mutex;
 extern pthread_t main_thread_id;
 extern GList * viewedit_processes;
 
 
 /* bookmarks.c */
-void run_bookmark               ( gpointer data );
+void run_bookmark               (GtkAction * a, gpointer data );
 
 void add_bookmark               ( gpointer data );
 
@@ -306,16 +294,6 @@ int check_status                ( char *name,
                           unsigned int at_least_one,
                           unsigned int func );
 
-GtkItemFactory *item_factory_new                ( GType          container_type,
-                          const char          *path,
-                          GtkAccelGroup       *accel_group,
-                          const char          *strip_prefix );
-
-void create_item_factory            ( GtkItemFactory * ifactory,
-                          gint n_entries,
-                          GtkItemFactoryEntry * entries,
-                          gpointer callback_data );
-
 void add_history                ( GtkWidget * widget,
                           GList ** history,
                           unsigned int *histlen,
@@ -354,6 +332,8 @@ void display_cached_logs            ( void );
 
 char * get_xpm_path                 ( char *filename,
                           int quit_on_err );
+
+void gtk_combo_box_set_popdown_strings (GtkComboBoxText * combo, GList * string);
 
 /* options_dialog.c */
 void options_dialog                 ( gpointer data );

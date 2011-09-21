@@ -45,7 +45,6 @@ _setup_option (gftp_option_type_enum otype,
 static void *
 _gen_input_widget (gftp_options_dialog_data * option_data, char *label, char *tiptxt)
 {
-  GtkTooltips * tooltip;
   GtkWidget * tempwid;
 
   option_data->tbl_row_num++;
@@ -69,8 +68,7 @@ _gen_input_widget (gftp_options_dialog_data * option_data, char *label, char *ti
 
   if (tiptxt != NULL)
     {
-      tooltip = gtk_tooltips_new ();
-      gtk_tooltips_set_tip (GTK_TOOLTIPS(tooltip), tempwid, _(tiptxt), NULL);
+      gtk_widget_set_tooltip_text (tempwid, _(tiptxt));
     }
 
   return (tempwid);
@@ -153,8 +151,7 @@ _gen_combo_widget (gftp_options_dialog_data * option_data, char *label)
             (GtkAttachOptions) (GTK_FILL),
                     (GtkAttachOptions) (0), 0, 0);
   gtk_widget_show (tempwid);
-
-  combo = gtk_combo_new ();
+  combo = gtk_combo_box_text_new ();
   gtk_table_attach_defaults (GTK_TABLE (option_data->table), combo, 1, 2,
                              option_data->tbl_row_num - 1,
                              option_data->tbl_row_num);
@@ -165,9 +162,7 @@ static void *
 _print_option_type_textcombo (gftp_config_vars * cv, void *user_data)
 {
   gftp_options_dialog_data * option_data;
-  GtkWidget * tempwid, * combo;
-  GList * widget_list;
-  GtkTooltips * tooltip;
+  GtkWidget * combo;
   int i;
   char **clist;
 
@@ -176,21 +171,16 @@ _print_option_type_textcombo (gftp_config_vars * cv, void *user_data)
 
   if (cv->listdata != NULL)
     {
-      widget_list = NULL;
       clist = cv->listdata;
       for (i=0; clist[i] != NULL; i++)
         {
-          tempwid = gtk_list_item_new_with_label (clist[i]);
-          gtk_widget_show (tempwid);
-          widget_list = g_list_append (widget_list, tempwid);
+          gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo), clist[i]);
         }
-      gtk_list_prepend_items (GTK_LIST (GTK_COMBO (combo)->list), widget_list);
     }
   gtk_widget_show (combo);
   if (cv->comment != NULL)
     {
-      tooltip = gtk_tooltips_new ();
-      gtk_tooltips_set_tip (GTK_TOOLTIPS(tooltip), combo, _(cv->comment), NULL);
+      gtk_widget_set_tooltip_text (combo, _(cv->comment));
     }
 
   return (combo);
@@ -211,7 +201,7 @@ _set_option_type_textcombo (gftp_config_vars * cv, void *value)
           if (value != NULL && strcasecmp ((char *) value, clist[i]) == 0)
             selitem = i;
         }
-      gtk_list_select_item (GTK_LIST (GTK_COMBO (cv->user_data)->list), selitem);
+      gtk_combo_box_set_active (GTK_COMBO_BOX(cv->user_data), selitem);
     }
 }
 
@@ -223,7 +213,7 @@ _save_option_type_textcombo (gftp_config_vars * cv, void *user_data)
 
   option_data = user_data;
 
-  tempstr = gtk_entry_get_text (GTK_ENTRY (GTK_COMBO (cv->user_data)->entry));
+  tempstr = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (cv->user_data));
 
   if (option_data->bm == NULL)
     gftp_set_global_option (cv->key, tempstr);
@@ -233,7 +223,7 @@ _save_option_type_textcombo (gftp_config_vars * cv, void *user_data)
 
 
 static void
-_textcomboedt_toggle (GtkList * list, GtkWidget * child, gpointer data)
+_textcomboedt_toggle (GtkComboBox *widget, gpointer data)
 {
   gftp_textcomboedt_widget_data * widdata;
   gftp_textcomboedt_data * tedata;
@@ -246,7 +236,7 @@ _textcomboedt_toggle (GtkList * list, GtkWidget * child, gpointer data)
   widdata = data;
   tedata = widdata->cv->listdata;
 
-  num = gtk_list_child_position (list, child);
+  num = gtk_combo_box_get_active (widget);
   isedit = tedata[num].flags & GFTP_TEXTCOMBOEDT_EDITABLE;
   gtk_text_view_set_editable (GTK_TEXT_VIEW (widdata->text), isedit);
 
@@ -345,40 +335,29 @@ _print_option_type_textcomboedt (gftp_config_vars * cv, void *user_data)
   gftp_options_dialog_data * option_data;
   gftp_textcomboedt_data * tedata;
   int i;
-  GtkTooltips * tooltip;
-  GList * widget_list;
 
   option_data = user_data;
   combo = _gen_combo_widget (option_data, cv->description);
 
   if (cv->listdata != NULL)
     {
-      widget_list = NULL;
-
       tedata = cv->listdata;
       for (i=0; tedata[i].description != NULL; i++)
         {
-          tempwid = gtk_list_item_new_with_label (tedata[i].description);
-          gtk_widget_show (tempwid);
-          widget_list = g_list_append (widget_list, tempwid);
+          gtk_combo_box_text_append_text (GTK_COMBO_BOX_TEXT (combo), tedata[i].description);
         }
-
-      gtk_list_prepend_items (GTK_LIST (GTK_COMBO (combo)->list), widget_list);
     }
 
   option_data->tbl_row_num++;
   gtk_table_resize (GTK_TABLE (option_data->table),
                                option_data->tbl_row_num, 2);
 
-  box = gtk_hbox_new (FALSE, 0);
+  box = gtk_alignment_new(0, 0, 1, 1);
+  gtk_alignment_set_padding (GTK_ALIGNMENT(box), 0, 0, 24, 0);
   gtk_table_attach_defaults (GTK_TABLE (option_data->table), box, 0, 2,
                              option_data->tbl_row_num - 1,
                              option_data->tbl_row_num);
   gtk_widget_show (box);
-
-  tempwid = gtk_label_new ("    ");
-  gtk_box_pack_start (GTK_BOX (box), tempwid, FALSE, FALSE, 0);
-  gtk_widget_show (tempwid);
 
   tempwid = gtk_scrolled_window_new (NULL, NULL);
   gtk_container_set_border_width (GTK_CONTAINER (tempwid), 0);
@@ -388,7 +367,7 @@ _print_option_type_textcomboedt (gftp_config_vars * cv, void *user_data)
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (tempwid),
                                   GTK_POLICY_AUTOMATIC,
                                   GTK_POLICY_AUTOMATIC);
-  gtk_box_pack_start (GTK_BOX (box), tempwid, TRUE, TRUE, 0);
+  gtk_container_add (GTK_CONTAINER (box), tempwid);
   gtk_widget_show (tempwid);
 
   textwid = gtk_text_view_new ();
@@ -400,19 +379,13 @@ _print_option_type_textcomboedt (gftp_config_vars * cv, void *user_data)
   widdata->text = textwid;
   widdata->cv = cv;
 
-  g_signal_connect (G_OBJECT (GTK_COMBO (combo)->list),
-                      "select_child",
-                      G_CALLBACK (_textcomboedt_toggle), widdata);
+  g_signal_connect (G_OBJECT (combo), "changed", G_CALLBACK (_textcomboedt_toggle), widdata);
   gtk_widget_show (combo);
 
   if (cv->comment != NULL)
     {
-      tooltip = gtk_tooltips_new ();
-      gtk_tooltips_set_tip (GTK_TOOLTIPS(tooltip), combo, _(cv->comment), NULL);
-
-      tooltip = gtk_tooltips_new ();
-      gtk_tooltips_set_tip (GTK_TOOLTIPS(tooltip), textwid, _(cv->comment),
-                            NULL);
+      gtk_widget_set_tooltip_text (combo, _(cv->comment));
+      gtk_widget_set_tooltip_text (textwid, _(cv->comment));
     }
 
   return (widdata);
@@ -423,7 +396,7 @@ _set_option_type_textcomboedt (gftp_config_vars * cv, void *value)
 {
   gftp_textcomboedt_widget_data * widdata;
   gftp_textcomboedt_data * tedata;
-  int i, selitem, edititem;
+  int i, selitem;
   char *tempstr;
 
   widdata = cv->user_data;
@@ -434,28 +407,22 @@ _set_option_type_textcomboedt (gftp_config_vars * cv, void *value)
   if (tempstr == NULL)
     tempstr = g_strdup ("");
 
-  edititem = selitem = -1;
+  selitem = -1;
   if (cv->listdata != NULL)
     {
       tedata = cv->listdata;
       for (i=0; tedata[i].description != NULL; i++)
         {
-          if (tedata[i].flags & GFTP_TEXTCOMBOEDT_EDITABLE)
-            edititem = i;
-
           if (selitem == -1 &&
               strcasecmp (tempstr, tedata[i].text) == 0)
             selitem = i;
         }
-
-      if (selitem == -1 && edititem != -1)
-        selitem = edititem;
     }
 
   if (selitem == -1)
     selitem = 0;
 
-  gtk_list_select_item (GTK_LIST (GTK_COMBO (widdata->combo)->list), selitem);
+  gtk_combo_box_set_active (GTK_COMBO_BOX (widdata->combo), selitem);
 
   widdata->custom_edit_value = tempstr;
 }
@@ -553,7 +520,6 @@ static void *
 _print_option_type_checkbox (gftp_config_vars * cv, void *user_data)
 {
   gftp_options_dialog_data * option_data;
-  GtkTooltips * tooltip;
   GtkWidget * tempwid;
 
   option_data = user_data;
@@ -580,9 +546,7 @@ _print_option_type_checkbox (gftp_config_vars * cv, void *user_data)
 
   if (cv->comment != NULL)
     {
-      tooltip = gtk_tooltips_new ();
-      gtk_tooltips_set_tip (GTK_TOOLTIPS(tooltip), tempwid, _(cv->comment),
-                            NULL);
+      gtk_widget_set_tooltip_text (tempwid, _(cv->comment));
     }
 
   return (tempwid);
@@ -662,7 +626,7 @@ _print_option_type_notebook (gftp_config_vars * cv, void *user_data)
   option_data = user_data;
 
   option_data->box = gtk_vbox_new (FALSE, 6);
-  gtk_container_border_width (GTK_CONTAINER (option_data->box), 12);
+  gtk_container_set_border_width (GTK_CONTAINER (option_data->box), 12);
   gtk_widget_show (option_data->box);
 
   tempwid = gtk_label_new (_(cv->description));
@@ -974,7 +938,7 @@ add_proxy_host (GtkWidget * widget, gpointer data)
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 2);
 
   vbox = gtk_vbox_new (FALSE, 6);
-  gtk_container_border_width (GTK_CONTAINER (vbox), 5);
+  gtk_container_set_border_width (GTK_CONTAINER (vbox), 5);
   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (dialog)->vbox), vbox, FALSE, FALSE, 0);
   gtk_widget_show (vbox);
 
@@ -995,7 +959,7 @@ add_proxy_host (GtkWidget * widget, gpointer data)
   g_signal_connect (G_OBJECT (domain_active), "toggled",
               G_CALLBACK (add_toggle), (gpointer) 1);
 
-  nradio = gtk_radio_button_new_with_label (gtk_radio_button_group
+  nradio = gtk_radio_button_new_with_label (gtk_radio_button_get_group
                                             (GTK_RADIO_BUTTON (domain_active)),
                                            _("Network"));
   g_signal_connect (G_OBJECT (nradio), "toggled",
@@ -1175,7 +1139,7 @@ make_proxy_hosts_tab (GtkWidget * notebook)
   GtkTreeSelection * select;
 
   box = gtk_vbox_new (FALSE, 6);
-  gtk_container_border_width (GTK_CONTAINER (box), 12);
+  gtk_container_set_border_width (GTK_CONTAINER (box), 12);
   gtk_widget_show (box);
 
   tempwid = gtk_label_new (_("Local Hosts"));
@@ -1212,7 +1176,7 @@ make_proxy_hosts_tab (GtkWidget * notebook)
   gtk_widget_show (hbox);
 
   tempwid = gtk_button_new_from_stock (GTK_STOCK_ADD);
-  GTK_WIDGET_SET_FLAGS (tempwid, GTK_CAN_DEFAULT);
+  gtk_widget_set_can_default (tempwid, TRUE);
   gtk_box_pack_start (GTK_BOX (hbox), tempwid, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (tempwid), "clicked",
               G_CALLBACK (add_proxy_host), NULL);
@@ -1220,14 +1184,14 @@ make_proxy_hosts_tab (GtkWidget * notebook)
 
   tempwid = gtk_button_new_from_stock (GTK_STOCK_EDIT);
   edit_button = tempwid;
-  GTK_WIDGET_SET_FLAGS (tempwid, GTK_CAN_DEFAULT);
+  gtk_widget_set_can_default (tempwid, TRUE);
   gtk_box_pack_start (GTK_BOX (hbox), tempwid, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (tempwid), "clicked",
               G_CALLBACK (add_proxy_host), (gpointer) 1);
   gtk_widget_show (tempwid);
   tempwid = gtk_button_new_from_stock (GTK_STOCK_DELETE);
   delete_button = tempwid;
-  GTK_WIDGET_SET_FLAGS (tempwid, GTK_CAN_DEFAULT);
+  gtk_widget_set_can_default (tempwid, TRUE);
   gtk_box_pack_start (GTK_BOX (hbox), tempwid, TRUE, TRUE, 0);
   g_signal_connect (G_OBJECT (tempwid), "clicked", G_CALLBACK (delete_proxy_host), NULL);
   gtk_widget_show (tempwid);
@@ -1293,7 +1257,7 @@ options_dialog (gpointer data)
   gtk_box_pack_start (GTK_BOX (GTK_DIALOG (gftp_option_data->dialog)->vbox),
                       gftp_option_data->notebook, TRUE, TRUE, 0);
   gtk_widget_show (gftp_option_data->notebook);
-  gtk_container_border_width (GTK_CONTAINER (gftp_option_data->notebook), 5);
+  gtk_container_set_border_width (GTK_CONTAINER (gftp_option_data->notebook), 5);
 
   cv = gftp_options_list->data;
   gftp_option_data->last_option = cv[0].otype;
@@ -1337,12 +1301,11 @@ gftp_gtk_setup_bookmark_options (GtkWidget * notebook)
 {
   gftp_config_vars * cv;
   GList * templist;
-  void *value;
   int i;
 
   gftp_option_data = _init_option_data ();
   gftp_option_data->notebook = notebook;
-  gftp_option_data->last_option = cv[0].otype;
+  gftp_option_data->last_option = -1;
   for (templist = gftp_options_list;
        templist != NULL;
        templist = templist->next)

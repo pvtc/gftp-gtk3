@@ -88,26 +88,13 @@ change_filespec (gpointer data)
                   dochange_filespec, wdata, NULL, NULL);
 }
 
-
 static void
-destroy_save_directory_listing (GtkWidget * widget, gftp_save_dir_struct * str)
+dosave_directory_listing (const char *filename, GList * templist)
 {
-  gtk_widget_destroy (str->filew);
-  g_free (str);
-}
-
-
-static void
-dosave_directory_listing (GtkWidget * widget, gftp_save_dir_struct * str)
-{
-  const char *filename;
   gftp_file * tempfle;
-  GList * templist;
   char *tempstr;
   FILE * fd;
 
-
-  filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (str->filew));
   if ((fd = fopen (filename, "w")) == NULL)
     {
       ftp_log (gftp_logging_error, NULL,
@@ -116,9 +103,7 @@ dosave_directory_listing (GtkWidget * widget, gftp_save_dir_struct * str)
       return;
     }
 
-  for (templist = str->wdata->files;
-       templist != NULL;
-       templist = templist->next)
+  while (templist != NULL)
     {
       tempfle = templist->data;
 
@@ -128,6 +113,8 @@ dosave_directory_listing (GtkWidget * widget, gftp_save_dir_struct * str)
       tempstr = gftp_gen_ls_string (NULL, tempfle, NULL, NULL);
       fprintf (fd, "%s\n", tempstr);
       g_free (tempstr);
+
+      templist = templist->next;
     }
 
   fclose (fd);
@@ -137,26 +124,22 @@ dosave_directory_listing (GtkWidget * widget, gftp_save_dir_struct * str)
 void
 save_directory_listing (gpointer data)
 {
-  gftp_save_dir_struct * str;
-  GtkWidget *filew;
-
-  filew = gtk_file_selection_new (_("Save Directory Listing"));
-
-  str = g_malloc0 (sizeof (*str));
-  str->filew = filew;
-  str->wdata = data;
-
-  g_signal_connect (G_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
-                      "clicked", G_CALLBACK (dosave_directory_listing),
-                      str);
-  g_signal_connect (G_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
-                      "clicked",
-                      G_CALLBACK (destroy_save_directory_listing), str);
-  g_signal_connect (G_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button),
-                      "clicked",
-                      G_CALLBACK (destroy_save_directory_listing), str);
-
-  gtk_widget_show (filew);
+   GtkWidget *filew;
+  filew = gtk_file_chooser_dialog_new (_("Save Directory Listing"),
+    NULL,
+    GTK_FILE_CHOOSER_ACTION_SAVE,
+    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+    GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+    NULL);
+  gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (filew), TRUE);
+  if (gtk_dialog_run (GTK_DIALOG (filew)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *filename;
+    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filew));
+    dosave_directory_listing (filename, ((gftp_window_data * )data)->files);
+    g_free (filename);
+  }
+  gtk_widget_destroy (filew);
 }
 
 
@@ -240,7 +223,7 @@ chdir_edit (GtkWidget * widget, gpointer data)
   if (check_reconnect (wdata) < 0)
     return (0);
 
-  edttxt = gtk_entry_get_text (GTK_ENTRY (GTK_COMBO (wdata->combo)->entry));
+  edttxt = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (wdata->combo));
 
   if (!GFTP_IS_CONNECTED (wdata->request) && *edttxt != '\0')
     {
@@ -331,9 +314,8 @@ viewlog (gpointer data)
 
 
 static void
-dosavelog (GtkWidget * widget, GtkFileSelection * fs)
+dosavelog (const char *filename)
 {
-  const char *filename;
   char *txt, *pos;
   gint textlen;
   ssize_t len;
@@ -342,7 +324,6 @@ dosavelog (GtkWidget * widget, GtkFileSelection * fs)
   GtkTextBuffer * textbuf;
   GtkTextIter iter, iter2;
 
-  filename = gtk_file_selection_get_filename (GTK_FILE_SELECTION (fs));
   if ((fd = fopen (filename, "w")) == NULL)
     {
       ftp_log (gftp_logging_error, NULL,
@@ -391,21 +372,23 @@ void
 savelog (gpointer data)
 {
   GtkWidget *filew;
-
-  filew = gtk_file_selection_new (_("Save Log"));
-
-  g_signal_connect (G_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
-                      "clicked", G_CALLBACK (dosavelog), filew);
-  g_signal_connect_swapped (G_OBJECT (GTK_FILE_SELECTION (filew)->ok_button),
-                             "clicked", G_CALLBACK (gtk_widget_destroy),
-                             G_OBJECT (filew));
-  g_signal_connect_swapped (G_OBJECT (GTK_FILE_SELECTION (filew)->cancel_button), "clicked", G_CALLBACK (gtk_widget_destroy), G_OBJECT (filew));
-
-  gtk_file_selection_set_filename (GTK_FILE_SELECTION (filew), "gftp.log");
-
-  gtk_widget_show (filew);
+  filew = gtk_file_chooser_dialog_new (_("Save Log"),
+    NULL,
+    GTK_FILE_CHOOSER_ACTION_SAVE,
+    GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+    GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+    NULL);
+  gtk_file_chooser_set_do_overwrite_confirmation (GTK_FILE_CHOOSER (filew), TRUE);
+  gtk_file_chooser_set_current_name (GTK_FILE_CHOOSER (filew), "gftp.log");
+  if (gtk_dialog_run (GTK_DIALOG (filew)) == GTK_RESPONSE_ACCEPT)
+  {
+    char *filename;
+    filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (filew));
+    dosavelog (filename);
+    g_free (filename);
+  }
+  gtk_widget_destroy (filew);
 }
-
 
 void
 clear_cache (gpointer data)
@@ -432,7 +415,7 @@ about_dialog (gpointer data)
                                         GTK_STOCK_CLOSE,
                                         GTK_RESPONSE_CLOSE,
                                         NULL);
-  gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
+  gtk_container_set_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
   gtk_widget_realize (dialog);
 
@@ -442,7 +425,7 @@ about_dialog (gpointer data)
   gtk_widget_show (notebook);
 
   box = gtk_vbox_new (TRUE, 5);
-  gtk_container_border_width (GTK_CONTAINER (box), 10);
+  gtk_container_set_border_width (GTK_CONTAINER (box), 10);
   gtk_widget_show (box);
 
   tempwid = toolbar_pixmap ("gftp-logo.xpm");
@@ -468,7 +451,7 @@ about_dialog (gpointer data)
   gtk_notebook_append_page (GTK_NOTEBOOK (notebook), box, label);
 
   box = gtk_vbox_new (FALSE, 5);
-  gtk_container_border_width (GTK_CONTAINER (box), 10);
+  gtk_container_set_border_width (GTK_CONTAINER (box), 10);
   gtk_widget_show (box);
 
   tempwid = gtk_table_new (1, 2, FALSE);

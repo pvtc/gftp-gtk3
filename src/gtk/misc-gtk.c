@@ -162,7 +162,7 @@ update_window_info (void)
 {
   char *tempstr, empty[] = "";
   unsigned int port, i, j;
-  GtkWidget * tempwid;
+  GtkAction * a;
 
   if (current_wdata->request != NULL)
     {
@@ -170,11 +170,11 @@ update_window_info (void)
         {
           if ((tempstr = current_wdata->request->hostname) == NULL)
             tempstr = empty;
-          gtk_entry_set_text (GTK_ENTRY (GTK_COMBO (hostedit)->entry), tempstr);
+          gtk_entry_set_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (hostedit))), tempstr);
 
           if ((tempstr = current_wdata->request->username) == NULL)
             tempstr = empty;
-          gtk_entry_set_text (GTK_ENTRY (GTK_COMBO (useredit)->entry), tempstr);
+          gtk_entry_set_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (useredit))), tempstr);
 
           if ((tempstr = current_wdata->request->password) == NULL)
             tempstr = empty;
@@ -185,11 +185,11 @@ update_window_info (void)
               port != current_wdata->request->port)
             {
               tempstr = g_strdup_printf ("%d", current_wdata->request->port);
-              gtk_entry_set_text (GTK_ENTRY (GTK_COMBO (portedit)->entry), tempstr);
+              gtk_entry_set_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (portedit))), tempstr);
               g_free (tempstr);
             }
           else
-            gtk_entry_set_text (GTK_ENTRY (GTK_COMBO (portedit)->entry), "");
+            gtk_entry_set_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (portedit))), "");
 
           for (i=0, j=0; gftp_protocols[i].init != NULL; i++)
             {
@@ -198,7 +198,7 @@ update_window_info (void)
 
               if (current_wdata->request->init == gftp_protocols[i].init)
                 {
-                  gtk_option_menu_set_history (GTK_OPTION_MENU (optionmenu), i);
+                  gtk_combo_box_set_active (GTK_COMBO_BOX (optionmenu), i);
                   break;
                 }
               j++;
@@ -215,35 +215,18 @@ update_window_info (void)
   update_window (&window1);
   update_window (&window2);
 
-  tempwid = gtk_item_factory_get_widget (factory, "/Tools/Compare Windows");
-  gtk_widget_set_sensitive (tempwid, GFTP_IS_CONNECTED (window1.request)
+  a = gtk_ui_manager_get_action (ui_manager, "/MainMenu/Tools/Compare Windows");
+  gtk_action_set_sensitive (a,  GFTP_IS_CONNECTED (window1.request)
                 && GFTP_IS_CONNECTED (window2.request));
 }
 
 
 static void
-set_menu_sensitive (gftp_window_data * wdata, char *path, int sensitive)
+set_menu_sensitive (char *path, int sensitive)
 {
-  GtkWidget * tempwid;
-  char * pos;
-
-  tempwid = NULL;
-
-  if (factory != NULL)
-    tempwid = gtk_item_factory_get_widget (factory, path);
-  if (tempwid)
-    gtk_widget_set_sensitive (tempwid, sensitive);
-
-  if (wdata != NULL)
-    {
-      if ((pos = strchr (path + 1, '/')) == NULL)
-        pos = path;
-
-      if (wdata->ifactory)
-        tempwid = gtk_item_factory_get_widget (wdata->ifactory, pos);
-      if (tempwid)
-        gtk_widget_set_sensitive (tempwid, sensitive);
-    }
+  GtkAction * a;
+  a = gtk_ui_manager_get_action (ui_manager, path);
+  gtk_action_set_sensitive (a, sensitive);
 }
 
 
@@ -251,7 +234,7 @@ void
 update_window (gftp_window_data * wdata)
 {
   char *tempstr, *hostname, *fspec;
-  int connected, start;
+  int connected;
 
   connected = GFTP_IS_CONNECTED (wdata->request);
   if (connected)
@@ -268,66 +251,70 @@ update_window (gftp_window_data * wdata)
                              gftp_protocols[wdata->request->protonum].name,
                              wdata->request->cached ? _("] (Cached) [") : "] [",
                              fspec, "]", current_wdata == wdata ? "*" : "", NULL);
-      gtk_label_set (GTK_LABEL (wdata->hoststxt), tempstr);
+      gtk_label_set_text (GTK_LABEL (wdata->hoststxt), tempstr);
       g_free (tempstr);
 
       if (wdata->request->directory != NULL)
-        gtk_entry_set_text (GTK_ENTRY (GTK_COMBO (wdata->combo)->entry),
+        gtk_entry_set_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (wdata->combo))),
                             wdata->request->directory);
     }
   else if (wdata->hoststxt != NULL)
     {
       tempstr = g_strconcat (_("Not connected"),
                              current_wdata == wdata ? "*" : "", NULL);
-      gtk_label_set (GTK_LABEL (wdata->hoststxt), tempstr);
+      gtk_label_set_text (GTK_LABEL (wdata->hoststxt), tempstr);
       g_free (tempstr);
     }
 
   if (wdata == &window1)
-    start = local_start;
+  {
+    set_menu_sensitive ("/MainMenu/Local/local_D_isconnect", connected && strcmp (wdata->request->url_prefix, "file") != 0);
+    set_menu_sensitive ("/MainMenu/Local/local_Change _Filespec...", connected);
+    set_menu_sensitive ("/MainMenu/Local/local_Show selected", connected);
+    set_menu_sensitive ("/MainMenu/Local/local_Select _All", connected);
+    set_menu_sensitive ("/MainMenu/Local/local_Select All Files", connected);
+    set_menu_sensitive ("/MainMenu/Local/local_Deselect All", connected);
+    set_menu_sensitive ("/MainMenu/Local/local_Save Directory Listing...", connected);
+    set_menu_sensitive ("/MainMenu/Local/local_Send SITE Command...", connected && wdata->request->site != NULL);
+    set_menu_sensitive ("/MainMenu/Local/local_Change Directory", connected && wdata->request->chdir!= NULL);
+    set_menu_sensitive ("/MainMenu/Local/local_Permissions...", connected && wdata->request->chmod != NULL);
+    set_menu_sensitive ("/MainMenu/Local/local_New Folder...", connected && wdata->request->mkdir != NULL);
+    set_menu_sensitive ("/MainMenu/Local/local_Rena_me...", connected && wdata->request->rename != NULL);
+    set_menu_sensitive ("/MainMenu/Local/local_Delete...", connected && wdata->request->rmdir != NULL && wdata->request->rmfile != NULL);
+    set_menu_sensitive ("/MainMenu/Local/local_Edit...", connected && wdata->request->get_file != NULL);
+    set_menu_sensitive ("/MainMenu/Local/local_View...", connected && wdata->request->get_file != NULL);
+    set_menu_sensitive ("/MainMenu/Local/local_Refresh", connected);
+  }
   else
-    start = remote_start;
-
-  set_menu_sensitive (wdata, menus[start + 3].path, connected &&
-                      strcmp (wdata->request->url_prefix, "file") != 0);
-  set_menu_sensitive (wdata, menus[start + 5].path, connected);
-  set_menu_sensitive (wdata, menus[start + 6].path, connected);
-  set_menu_sensitive (wdata, menus[start + 7].path, connected);
-  set_menu_sensitive (wdata, menus[start + 8].path, connected);
-  set_menu_sensitive (wdata, menus[start + 9].path, connected);
-  set_menu_sensitive (wdata, menus[start + 11].path, connected);
-  set_menu_sensitive (wdata, menus[start + 12].path, connected &&
-                      wdata->request->site != NULL);
-  set_menu_sensitive (wdata, menus[start + 13].path, connected &&
-                      wdata->request->chdir!= NULL);
-  set_menu_sensitive (wdata, menus[start + 14].path, connected &&
-                      wdata->request->chmod != NULL);
-  set_menu_sensitive (wdata, menus[start + 15].path, connected &&
-                      wdata->request->mkdir != NULL);
-  set_menu_sensitive (wdata, menus[start + 16].path, connected &&
-                      wdata->request->rename != NULL);
-  set_menu_sensitive (wdata, menus[start + 17].path, connected &&
-                      wdata->request->rmdir != NULL &&
-                      wdata->request->rmfile != NULL);
-  set_menu_sensitive (wdata, menus[start + 18].path, connected &&
-                      wdata->request->get_file != NULL);
-  set_menu_sensitive (wdata, menus[start + 19].path, connected &&
-                      wdata->request->get_file != NULL);
-  set_menu_sensitive (wdata, menus[start + 20].path, connected);
-
+  {
+    set_menu_sensitive ("/MainMenu/Remote/remote_D_isconnect", connected && strcmp (wdata->request->url_prefix, "file") != 0);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Change _Filespec...", connected);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Show selected", connected);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Select _All", connected);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Select All Files", connected);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Deselect All", connected);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Save Directory Listing...", connected);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Send SITE Command...", connected && wdata->request->site != NULL);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Change Directory", connected && wdata->request->chdir!= NULL);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Permissions...", connected && wdata->request->chmod != NULL);
+    set_menu_sensitive ("/MainMenu/Remote/remote_New Folder...", connected && wdata->request->mkdir != NULL);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Rena_me...", connected && wdata->request->rename != NULL);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Delete...", connected && wdata->request->rmdir != NULL && wdata->request->rmfile != NULL);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Edit...", connected && wdata->request->get_file != NULL);
+    set_menu_sensitive ("/MainMenu/Remote/remote_View...", connected && wdata->request->get_file != NULL);
+    set_menu_sensitive ("/MainMenu/Remote/remote_Refresh", connected);
+  }
   connected = GFTP_IS_CONNECTED (window1.request) && GFTP_IS_CONNECTED (window2.request);
 
-  start = trans_start;
-  set_menu_sensitive (NULL, menus[start + 2].path, connected);
-  set_menu_sensitive (NULL, menus[start + 3].path, connected);
-  set_menu_sensitive (NULL, menus[start + 5].path, connected);
-  set_menu_sensitive (NULL, menus[start + 6].path, connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Start", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_St_op", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Skip _Current File", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Remove File", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Move File _Up", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Move File _Down", connected);
 
-  set_menu_sensitive (NULL, menus[start + 7].path, connected);
-  set_menu_sensitive (NULL, menus[start + 8].path, connected);
-
-  set_menu_sensitive (NULL, menus[start + 10].path, connected);
-  set_menu_sensitive (NULL, menus[start + 11].path, connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Retrieve Files", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Put Files", connected);
 
   gtk_widget_set_sensitive (download_left_arrow, connected);
   gtk_widget_set_sensitive (upload_right_arrow, connected);
@@ -482,70 +469,6 @@ check_status (char *name, gftp_window_data *wdata,
   return (1);
 }
 
-
-static gchar *
-gftp_item_factory_translate (const char *path, gpointer func_data)
-{
-  const gchar *strip_prefix = func_data;
-  const char *result;
-
-  if (strip_prefix)
-    {
-      char *tmp_path = g_strconcat (strip_prefix, path, NULL);
-      result = gettext (tmp_path);
-      if (result == tmp_path)
-        result = path;
-      g_free (tmp_path);
-    }
-  else
-    result = gettext (path);
-
-  return (char *)result;
-}
-
-
-GtkItemFactory *
-item_factory_new (GType container_type, const char *path,
-          GtkAccelGroup *accel_group, const char *strip_prefix)
-{
-  GtkItemFactory *result = gtk_item_factory_new (container_type, path, accel_group);
-  gchar *strip_prefix_dup = g_strdup (strip_prefix);
-
-  gtk_item_factory_set_translate_func (result, gftp_item_factory_translate,
-                       strip_prefix_dup, NULL);
-
-  if (strip_prefix_dup)
-    g_object_set_data_full (G_OBJECT (result), "gftp-strip-prefix",
-                  strip_prefix_dup, (GDestroyNotify)g_free);
-
-  return result;
-}
-
-
-void
-create_item_factory (GtkItemFactory * ifactory, gint n_entries,
-                     GtkItemFactoryEntry * entries, gpointer callback_data)
-{
-  const char *strip_prefix;
-  size_t strip_prefix_len;
-  int i;
-
-  strip_prefix = g_object_get_data (G_OBJECT (ifactory), "gftp-strip-prefix");
-  if (strip_prefix)
-    strip_prefix_len = strlen (strip_prefix);
-  else
-    strip_prefix_len = 0;
-
-  for (i = 0; i < n_entries; i++)
-    {
-      GtkItemFactoryEntry dummy_item = entries[i];
-      if (strip_prefix && strncmp (entries[i].path, strip_prefix, strip_prefix_len) == 0)
-    dummy_item.path += strip_prefix_len;
-
-      gtk_item_factory_create_item (ifactory, &dummy_item, callback_data, 1);
-    }
-}
-
 void
 add_history (GtkWidget * widget, GList ** history, unsigned int *histlen,
              const char *str)
@@ -596,7 +519,7 @@ add_history (GtkWidget * widget, GList ** history, unsigned int *histlen,
     node->next->prev = node;
       *history = node;
     }
-  gtk_combo_set_popdown_strings (GTK_COMBO (widget), *history);
+  gtk_combo_box_set_popdown_strings (GTK_COMBO_BOX_TEXT (widget), *history);
 }
 
 
@@ -791,7 +714,7 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
                                         yes_text,
                                         GTK_RESPONSE_YES,
                                         NULL);
-  gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
+  gtk_container_set_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
   gtk_grab_add (dialog);
   gtk_widget_realize (dialog);
@@ -854,7 +777,7 @@ MakeYesNoDialog (char *diagtxt, char *infotxt,
                                         GTK_RESPONSE_YES,
                                         NULL);
 
-  gtk_container_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
+  gtk_container_set_border_width (GTK_CONTAINER (GTK_DIALOG (dialog)->vbox), 10);
   gtk_box_set_spacing (GTK_BOX (GTK_DIALOG (dialog)->vbox), 5);
   gtk_grab_add (dialog);
   gtk_widget_realize (dialog);
@@ -915,7 +838,7 @@ update_directory_download_progress (gftp_transfer * transfer)
                 _("Getting directory listings"));
 
       vbox = gtk_vbox_new (FALSE, 5);
-      gtk_container_border_width (GTK_CONTAINER (vbox), 10);
+      gtk_container_set_border_width (GTK_CONTAINER (vbox), 10);
       gtk_container_add (GTK_CONTAINER (dialog), vbox);
       gtk_widget_show (vbox);
 
@@ -924,9 +847,6 @@ update_directory_download_progress (gftp_transfer * transfer)
       gtk_widget_show (textwid);
 
       statuswid = gtk_progress_bar_new ();
-      gtk_progress_set_activity_mode (GTK_PROGRESS (statuswid), 1);
-      gtk_progress_bar_set_activity_step (GTK_PROGRESS_BAR (statuswid), 3);
-      gtk_progress_bar_set_activity_blocks (GTK_PROGRESS_BAR (statuswid), 5);
       gtk_box_pack_start (GTK_BOX (vbox), statuswid, TRUE, TRUE, 0);
       gtk_widget_show (statuswid);
 
@@ -950,18 +870,12 @@ int
 progress_timeout (gpointer data)
 {
   gftp_transfer * tdata;
-  double val;
 
   tdata = data;
 
   update_directory_download_progress (tdata);
 
-  val = gtk_progress_get_value (GTK_PROGRESS (statuswid));
-  if (val >= 1.0)
-    val = 0.0;
-  else
-    val += 0.10;
-  gtk_progress_bar_update (GTK_PROGRESS_BAR (statuswid), val);
+  gtk_progress_bar_pulse (GTK_PROGRESS_BAR (statuswid));
 
   return (1);
 }
@@ -1023,4 +937,14 @@ get_xpm_path (char *filename, int quit_on_err)
     }
     }
   return (exfile);
+}
+
+void
+gtk_combo_box_set_popdown_strings (GtkComboBoxText * combo, GList * string)
+{
+  while (string != NULL)
+    {
+      gtk_combo_box_text_append_text (combo, string->data);
+      string = string->next;
+    }
 }
