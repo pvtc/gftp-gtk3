@@ -360,7 +360,6 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   if (!start_pos)
     gtk_adjustment_set_value (vadj, gtk_adjustment_get_upper(vadj));
 
-  gtk_dialog_run (GTK_DIALOG(dialog));
-  gtk_widget_destroy (dialog);
-
+  g_signal_connect (G_OBJECT (dialog), "response", G_CALLBACK (gtk_widget_destroy), NULL);
+  gtk_widget_show (dialog);
 }
