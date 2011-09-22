@@ -283,7 +283,6 @@ GHashTable * gftp_global_options_htable = NULL,
 char gftp_version[] = "gFTP " VERSION;
 
 GList * gftp_file_transfers = NULL, 
-      * gftp_file_transfer_logs = NULL,
       * gftp_options_list = NULL;
       
 gftp_bookmarks_var * gftp_bookmarks = NULL;

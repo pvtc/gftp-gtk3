@@ -932,7 +932,6 @@ add_proxy_host (GtkWidget * widget, gpointer data)
                                         GTK_RESPONSE_OK,
                                         NULL);
   gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
-  gtk_dialog_set_has_separator (GTK_DIALOG (dialog), FALSE);
   gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
 
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 2);
@@ -1247,7 +1246,6 @@ options_dialog (GtkAction * a, gpointer data)
                                         GTK_RESPONSE_OK,
                                         NULL);
   gtk_container_set_border_width (GTK_CONTAINER (gftp_option_data->dialog), 5);
-  gtk_dialog_set_has_separator (GTK_DIALOG (gftp_option_data->dialog), FALSE);
   gtk_window_set_resizable (GTK_WINDOW (gftp_option_data->dialog), FALSE);
 
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (gftp_option_data->dialog))), 2);

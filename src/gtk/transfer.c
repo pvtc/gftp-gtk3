@@ -246,9 +246,9 @@ gftp_gtk_get_subdirs (gftp_transfer * transfer)
   cdata->dont_check_connection = 1;
   cdata->dont_refresh = 1;
 
-  timeout_num = gtk_timeout_add (100, progress_timeout, transfer);
+  timeout_num = g_timeout_add (100, progress_timeout, transfer);
   ret = gftpui_common_run_callback_function (cdata);
-  gtk_timeout_remove (timeout_num);
+  g_source_remove (timeout_num);
 
   numfiles = transfer->numfiles;
   numdirs = transfer->numdirs;
@@ -627,21 +627,10 @@ transfer_done (GList * node, GtkTreeModel * model, GtkTreeIter * iter)
   free_tdata (tdata);
 }
 
-
-static void *
-_gftpui_transfer_files (void *data)
-{
-  int ret;
-
-  pthread_detach (pthread_self ());
-  ret = gftpui_common_transfer_files (data);
-  return (GINT_TO_POINTER(ret));
-}
-
-
 static void
 create_transfer (gftp_transfer * tdata, GtkTreeModel * model, GtkTreeIter * iter)
 {
+  GError * error;
   if (tdata->fromreq->stopable)
     return;
 
@@ -667,10 +656,7 @@ create_transfer (gftp_transfer * tdata, GtkTreeModel * model, GtkTreeIter * iter
 
   gtk_tree_store_set(GTK_TREE_STORE(model), iter, 1, _("Connecting"), -1);
 
-  if (tdata->thread_id == NULL)
-    tdata->thread_id = g_malloc0 (sizeof (pthread_t));
-
-  pthread_create (tdata->thread_id, NULL, _gftpui_transfer_files, tdata);
+  g_thread_create (gftpui_common_transfer_files, tdata, FALSE, &error);
 }
 
 
@@ -851,9 +837,6 @@ update_downloads (gpointer data)
   gftp_transfer * tdata;
   GtkTreeModel * model;
   GtkTreeIter iter;
-
-  if (gftp_file_transfer_logs != NULL)
-    display_cached_logs ();
 
   if (window1.request->gotbytes != 0)
     update_window_transfer_bytes (&window1);

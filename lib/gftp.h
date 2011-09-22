@@ -551,7 +551,6 @@ typedef struct gftp_transfer_tag
                structmutex;
 
   void *user_data;
-  void *thread_id;
   void *clist;
 } gftp_transfer;
 
@@ -637,8 +636,7 @@ typedef struct gftp_getline_buffer_tag
 
 
 /* Global config options. These are defined in options.h */
-/*@null@*/ extern GList * gftp_file_transfers, * gftp_file_transfer_logs,
-                        * gftp_options_list;
+/*@null@*/ extern GList * gftp_file_transfers, * gftp_options_list;
 /*@null@*/ extern GHashTable * gftp_global_options_htable, * gftp_bookmarks_htable, 
                              * gftp_config_list_htable;
 /*@null@*/ extern gftp_bookmarks_var * gftp_bookmarks;

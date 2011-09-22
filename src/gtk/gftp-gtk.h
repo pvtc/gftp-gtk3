@@ -17,8 +17,6 @@
 /*  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.                */
 /*****************************************************************************/
 
-/* $Id$ */
-
 #ifndef __GFTP_GTK_H
 #define __GFTP_GTK_H
 
@@ -26,7 +24,6 @@
 #include "../uicommon/gftpui.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
-#include <pthread.h>
 
 #define GFTP_MENU_ITEM_ASCII    1
 #define GFTP_MENU_ITEM_BINARY   2
@@ -71,16 +68,8 @@ typedef struct gftp_window_data_tag
   gftp_request * request;   /* The host that we are connected to */
   GList * files,        /* Files in the listbox */
         ** history;     /* History of the directories */
-  pthread_t tid;        /* Thread for the stop button */
   char *prefix_col_str;
 } gftp_window_data;
-
-
-typedef struct _gftpui_gtk_thread_data
-{
-  void * (*func) (void *);
-  gftpui_callback_data * cdata;
-} gftpui_gtk_thread_data;
 
 typedef struct gftp_graphic_tag
 {
@@ -155,8 +144,6 @@ extern GtkTextMark * logwdw_textmark;
 extern int local_start, remote_start, trans_start;
 extern GHashTable * graphic_hash_table;
 extern GtkUIManager * ui_manager;
-extern pthread_mutex_t log_mutex;
-extern pthread_t main_thread_id;
 extern GList * viewedit_processes;
 
 
@@ -325,8 +312,6 @@ void MakeYesNoDialog                ( char *diagtxt,
 void update_directory_download_progress     ( gftp_transfer * transfer );
 
 int progress_timeout                ( gpointer data );
-
-void display_cached_logs            ( void );
 
 char * get_xpm_path                 ( char *filename,
                           int quit_on_err );

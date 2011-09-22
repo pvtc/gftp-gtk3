@@ -41,7 +41,7 @@ _gftpui_common_thread_callback (void * data)
                               &sleep_time);
 
   success = GFTP_ERETRYABLE;
-  while (1)
+  while (! cdata->request->cancel)
     {
       if (network_timeout > 0)
         alarm (network_timeout);
@@ -51,8 +51,6 @@ _gftpui_common_thread_callback (void * data)
 
       if (cdata->request->cancel)
         {
-          cdata->request->logging_function (gftp_logging_error, cdata->request,
-                                            _("Operation canceled\n"));
           break;
         }
         
@@ -68,7 +66,11 @@ _gftpui_common_thread_callback (void * data)
       ts.tv_nsec = 0;
       nanosleep (&ts, NULL);
     }
-
+ if (cdata->request->cancel)
+   {
+     cdata->request->logging_function (gftp_logging_error, cdata->request,
+                                       _("Operation canceled\n"));
+  }
   cdata->request->stopable = 0;
   gftpui_common_num_child_threads--;
 

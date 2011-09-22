@@ -33,65 +33,28 @@ remove_files_window (gftp_window_data * wdata)
   wdata->files = NULL;
 }
 
-
-void
-ftp_log (gftp_logging_level level, gftp_request * request,
-         const char *string, ...)
+struct ftp_log_line
 {
+    gftp_logging_level level;
+    char * logstr;
+};
+
+static int
+do_ftp_log (void * idata)
+{
+  struct ftp_log_line * data;
   uintptr_t max_log_window_size;
-  int upd, free_logstr;
-  gftp_log * newlog;
+  int upd;
   gint delsize;
-  char *logstr;
-  va_list argp;
   size_t len;
   GtkTextBuffer * textbuf;
   GtkTextIter iter, iter2;
   const char *descr;
-  char *utf8_str;
-  size_t destlen;
 
-  va_start (argp, string);
-  if (strcmp (string, "%s") == 0)
+  data = idata;
+  if (gftp_logfd != NULL && data->level != gftp_logging_misc_nolog)
     {
-      logstr = va_arg (argp, char *);
-      free_logstr = 0;
-    }
-  else
-    {
-      logstr = g_strdup_vprintf (string, argp);
-      free_logstr = 1;
-    }
-  va_end (argp);
-
-  if ((utf8_str = gftp_string_to_utf8 (request, logstr, &destlen)) != NULL)
-    {
-      if (free_logstr)
-        g_free (logstr);
-      else
-        free_logstr = 1;
-
-      logstr = utf8_str;
-    }
-
-  if (pthread_self () != main_thread_id)
-    {
-      newlog = g_malloc0 (sizeof (*newlog));
-      newlog->type = level;
-      if (free_logstr)
-        newlog->msg = logstr;
-      else
-        newlog->msg = g_strdup (logstr);
-
-      pthread_mutex_lock (&log_mutex);
-      gftp_file_transfer_logs = g_list_append (gftp_file_transfer_logs, newlog);
-      pthread_mutex_unlock (&log_mutex);
-      return;
-    }
-
-  if (gftp_logfd != NULL && level != gftp_logging_misc_nolog)
-    {
-      if (fwrite (logstr, strlen (logstr), 1, gftp_logfd) != 1)
+      if (fwrite (data->logstr, strlen (data->logstr), 1, gftp_logfd) != 1)
         {
           fclose (gftp_logfd);
           gftp_logfd = NULL;
@@ -111,7 +74,7 @@ ftp_log (gftp_logging_level level, gftp_request * request,
 
   gftp_lookup_global_option ("max_log_window_size", &max_log_window_size);
 
-  switch (level)
+  switch (data->level)
     {
       case gftp_logging_send:
         descr = "send";
@@ -130,7 +93,7 @@ ftp_log (gftp_logging_level level, gftp_request * request,
   textbuf = gtk_text_view_get_buffer (GTK_TEXT_VIEW (logwdw));
   len = gtk_text_buffer_get_char_count (textbuf);
   gtk_text_buffer_get_iter_at_offset (textbuf, &iter, len);
-  gtk_text_buffer_insert_with_tags_by_name (textbuf, &iter, logstr, -1,
+  gtk_text_buffer_insert_with_tags_by_name (textbuf, &iter, data->logstr, -1,
                                             descr, NULL);
 
   if (upd)
@@ -142,7 +105,7 @@ ftp_log (gftp_logging_level level, gftp_request * request,
 
   if (max_log_window_size > 0)
     {
-      delsize = len + g_utf8_strlen (logstr, -1) - max_log_window_size;
+      delsize = len + g_utf8_strlen (data->logstr, -1) - max_log_window_size;
 
       if (delsize > 0)
         {
@@ -151,11 +114,35 @@ ftp_log (gftp_logging_level level, gftp_request * request,
           gtk_text_buffer_delete (textbuf, &iter, &iter2);
         }
     }
-
-  if (free_logstr)
-    g_free (logstr);
+  g_free (data->logstr);
+  g_free (data);
+  return FALSE;
 }
 
+void
+ftp_log (gftp_logging_level level, gftp_request * request,
+         const char *string, ...)
+{
+  struct ftp_log_line * data;
+  va_list argp;
+  char *utf8_str;
+  size_t destlen;
+
+  data = g_malloc(sizeof(* data));
+  data->level = level;
+
+  va_start (argp, string);
+  data->logstr = g_strdup_vprintf (string, argp);
+  va_end (argp);
+
+  if ((utf8_str = gftp_string_to_utf8 (request, data->logstr, &destlen)) != NULL)
+    {
+     g_free (data->logstr);
+     data->logstr = utf8_str;
+    }
+
+ g_idle_add (do_ftp_log, data);
+}
 
 void
 update_window_info (void)
@@ -738,7 +725,7 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
   if (deftext != NULL)
     {
       gtk_entry_set_text (GTK_ENTRY (ddata->edit), deftext);
-      gtk_entry_select_region (GTK_ENTRY (ddata->edit), 0, strlen (deftext));
+      gtk_editable_select_region (GTK_EDITABLE (ddata->edit), 0, strlen (deftext));
     }
   gtk_widget_show (ddata->edit);
 
@@ -808,7 +795,7 @@ trans_stop_button (GtkWidget * widget, gpointer data)
   gftp_transfer * transfer;
 
   transfer = data;
-  pthread_kill (((gftp_window_data *) transfer->fromwdata)->tid, SIGINT);
+  transfer->cancel = 1;
 }
 
 
@@ -878,29 +865,6 @@ progress_timeout (gpointer data)
   gtk_progress_bar_pulse (GTK_PROGRESS_BAR (statuswid));
 
   return (1);
-}
-
-
-void
-display_cached_logs (void)
-{
-  gftp_log * templog;
-  GList * templist;
-
-  pthread_mutex_lock (&log_mutex);
-  templist = gftp_file_transfer_logs;
-  while (templist != NULL)
-    {
-      templog = (gftp_log *) templist->data;
-      ftp_log (templog->type, NULL, "%s", templog->msg);
-      g_free (templog->msg);
-      g_free (templog);
-      templist->data = NULL;
-      templist = templist->next;
-    }
-  g_list_free (gftp_file_transfer_logs);
-  gftp_file_transfer_logs = NULL;
-  pthread_mutex_unlock (&log_mutex);
 }
 
 

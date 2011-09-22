@@ -144,10 +144,7 @@ gftpui_add_file_to_transfer (gftp_transfer * tdata, GList * curfle)
 void
 gftpui_cancel_file_transfer (gftp_transfer * tdata)
 {
-  if (tdata->thread_id != NULL)
-    pthread_kill (*(pthread_t *) tdata->thread_id, SIGINT);
-
-  tdata->cancel = 1; /* FIXME */
+  tdata->cancel = 1;
   tdata->fromreq->cancel = 1;
   tdata->toreq->cancel = 1;
 }

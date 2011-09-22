@@ -21,7 +21,7 @@
 
 static GtkWidget * bm_hostedit, * bm_portedit, * bm_localdiredit,
                  * bm_remotediredit, * bm_useredit, * bm_passedit, * tree,
-                 * bm_acctedit, * anon_chk, * bm_pathedit, * bm_protocol, * menu;
+                 * bm_acctedit, * anon_chk, * bm_pathedit, * bm_protocol;
 static gftp_bookmarks_var * curentry;
 static guint book_mid;
 static GtkActionGroup * book_group;

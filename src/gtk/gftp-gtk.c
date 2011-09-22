@@ -31,8 +31,6 @@ GtkTextMark * logwdw_textmark;
 int local_start, remote_start, trans_start;
 GHashTable * graphic_hash_table = NULL;
 GtkUIManager * ui_manager;
-pthread_mutex_t log_mutex = PTHREAD_MUTEX_INITIALIZER;
-pthread_t main_thread_id;
 GList * viewedit_processes = NULL;
 
 static int
@@ -55,6 +53,7 @@ _gftp_exit (GtkWidget * widget, gpointer data)
   const char *tempstr;
   const char * tempwid;
   intptr_t ret;
+
 /*
   ret = gtk_widget_get_allocated_width(GTK_WIDGET (local_frame));
   gftp_set_global_option ("listbox_local_width", GINT_TO_POINTER (ret));
@@ -981,7 +980,7 @@ CreateFTPWindow (gftp_window_data * wdata)
 
   GtkTreeSelection *select;
   select = gtk_tree_view_get_selection (GTK_TREE_VIEW (wdata->listbox));
-  gtk_tree_selection_set_mode (select, GTK_SELECTION_EXTENDED);
+  gtk_tree_selection_set_mode (select, GTK_SELECTION_MULTIPLE);
 
   cell = gtk_cell_renderer_pixbuf_new ();
   gtk_tree_view_insert_column_with_data_func(GTK_TREE_VIEW(wdata->listbox), -1, "", cell, data_col_pb, wdata, NULL);
@@ -1391,19 +1390,8 @@ sortrows (GtkTreeViewColumn * col, gpointer data)
 void
 stop_button (GtkWidget * widget, gpointer data)
 {
-  pthread_t comptid;
-
-  memset (&comptid, 0, sizeof (comptid));
-  if (!pthread_equal (comptid, window1.tid))
-    {
-      window1.request->cancel = 1;
-      pthread_kill (window1.tid, SIGINT);
-    }
-  else if (!pthread_equal (comptid, window2.tid))
-    {
-      window2.request->cancel = 1;
-      pthread_kill (window2.tid, SIGINT);
-    }
+  window1.request->cancel = 1;
+  window2.request->cancel = 1;
 }
 
 
@@ -1509,11 +1497,8 @@ main (int argc, char **argv)
   gftpui_common_child_process_done = 0;
 
   g_thread_init (NULL);
-
   gdk_threads_init();
-  GDK_THREADS_ENTER ();
-  main_thread_id = pthread_self ();
-  gtk_set_locale ();
+  gdk_threads_enter ();
   gtk_init (&argc, &argv);
 
   graphic_hash_table = g_hash_table_new (string_hash_function,
@@ -1526,7 +1511,6 @@ main (int argc, char **argv)
               G_CALLBACK (_gftp_force_close), NULL);
   gtk_window_set_title (GTK_WINDOW (window), gftp_version);
   gtk_widget_set_name (window, gftp_version);
-  gtk_window_set_policy (GTK_WINDOW (window), TRUE, TRUE, FALSE);
   gtk_widget_realize (window);
   gftp_icon = open_xpm ("gftp.xpm");
   if (gftp_icon != NULL)
@@ -1548,7 +1532,7 @@ main (int argc, char **argv)
   _setup_window2 (argc, argv);
 
   gtk_main ();
-  GDK_THREADS_LEAVE ();
+  gdk_threads_leave ();
 
   return (0);
 }
