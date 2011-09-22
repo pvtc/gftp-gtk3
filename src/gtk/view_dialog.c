@@ -313,9 +313,8 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   if (non_utf8 != filename && non_utf8)
     g_free (non_utf8);
 
-  dialog = gtk_dialog_new_with_buttons (filename, window, 0,
-                                        GTK_STOCK_CLOSE,
-                                        GTK_RESPONSE_CLOSE,
+  dialog = gtk_dialog_new_with_buttons (filename, GTK_WINDOW(window), 0,
+                                        GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
                                         NULL);
   gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
@@ -347,10 +346,6 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   gtk_window_set_default_size(GTK_WINDOW (dialog), 500, 400);
   gtk_widget_show (table);
 
-  g_signal_connect_swapped (G_OBJECT (dialog), "response",
-                            G_CALLBACK (gtk_widget_destroy),
-                            G_OBJECT (dialog));
-
   buf[sizeof (buf) - 1] = '\0';
   while ((n = read (fd, buf, sizeof (buf) - 1)) > 0)
     {
@@ -363,8 +358,10 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   if (doclose)
     close (fd);
 
-  gtk_widget_show (dialog);
-
   if (!start_pos)
     gtk_adjustment_set_value (vadj, gtk_adjustment_get_upper(vadj));
+
+  gtk_dialog_run (GTK_DIALOG(dialog));
+  gtk_widget_destroy (dialog);
+
 }

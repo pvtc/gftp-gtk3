@@ -255,24 +255,6 @@ gftpui_gtk_cancel (GtkWidget * widget, gpointer data)
   g_static_mutex_unlock (&tdata->structmutex);
 }
 
-static void
-gftpui_gtk_transfer_action (GtkWidget * widget, gint response,
-                            gpointer user_data)
-{
-  switch (response)
-    {
-      case GTK_RESPONSE_OK:
-        gftpui_gtk_ok (widget, user_data);
-        gtk_widget_destroy (widget);
-        break;
-      case GTK_RESPONSE_CANCEL:
-        gftpui_gtk_cancel (widget, user_data);
-        /* no break */
-      default:
-        gtk_widget_destroy (widget);
-    }
-}
-
 void
 gftpui_ask_transfer (gftp_transfer * tdata)
 {
@@ -281,11 +263,9 @@ gftpui_ask_transfer (gftp_transfer * tdata)
   GList * templist;
   GtkTreeIter iter;
 
-  dialog = gtk_dialog_new_with_buttons (_("Transfer Files"), window, 0,
-                                        GTK_STOCK_CANCEL,
-                                        GTK_RESPONSE_CANCEL,
-                                        GTK_STOCK_OK,
-                                        GTK_RESPONSE_OK,
+  dialog = gtk_dialog_new_with_buttons (_("Transfer Files"), GTK_WINDOW(window), 0,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         NULL);
   gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
@@ -380,9 +360,15 @@ gftpui_ask_transfer (gftp_transfer * tdata)
               G_CALLBACK (gftpui_gtk_trans_unselectall), (gpointer) tdata);
   gtk_widget_show (tempwid);
 
-  g_signal_connect (G_OBJECT (dialog), "response",
-                    G_CALLBACK (gftpui_gtk_transfer_action),(gpointer) tdata);
-
-  gtk_widget_show (dialog);
-  dialog = NULL;
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+  gint response = gtk_dialog_run (GTK_DIALOG(dialog));
+  if (response == GTK_RESPONSE_OK)
+    {
+      gftpui_gtk_ok (dialog, tdata);
+    }
+  else
+    {
+      gftpui_gtk_cancel (dialog, tdata);
+    }
+  gtk_widget_destroy (dialog);
 }

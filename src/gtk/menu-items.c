@@ -126,7 +126,7 @@ save_directory_listing (GtkAction * a, gpointer data)
 {
    GtkWidget *filew;
   filew = gtk_file_chooser_dialog_new (_("Save Directory Listing"),
-    NULL,
+    GTK_WINDOW(window),
     GTK_FILE_CHOOSER_ACTION_SAVE,
     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
     GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
@@ -373,7 +373,7 @@ savelog (GtkAction * a, gpointer data)
 {
   GtkWidget *filew;
   filew = gtk_file_chooser_dialog_new (_("Save Log"),
-    NULL,
+    GTK_WINDOW(window),
     GTK_FILE_CHOOSER_ACTION_SAVE,
     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
     GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
@@ -411,9 +411,8 @@ about_dialog (GtkAction * a, gpointer data)
   share_dir = gftp_get_share_dir ();
   no_license_agreement = g_strdup_printf (_("Cannot find the license agreement file COPYING. Please make sure it is in either %s or in %s"), BASE_CONF_DIR, share_dir);
 
-  dialog = gtk_dialog_new_with_buttons (_("About gFTP"), window, 0,
-                                        GTK_STOCK_CLOSE,
-                                        GTK_RESPONSE_CLOSE,
+  dialog = gtk_dialog_new_with_buttons (_("About gFTP"), GTK_WINDOW(window), 0,
+                                        GTK_STOCK_CLOSE, GTK_RESPONSE_CLOSE,
                                         NULL);
   gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
@@ -482,9 +481,6 @@ about_dialog (GtkAction * a, gpointer data)
   gtk_widget_show (label);
 
   gtk_notebook_append_page (GTK_NOTEBOOK (notebook), box, label);
-  g_signal_connect_swapped (G_OBJECT (dialog), "response",
-                            G_CALLBACK (gtk_widget_destroy),
-                            G_OBJECT (dialog));
 
   tempstr = g_strconcat ("/usr/share/common-licenses/GPL", NULL);
   if (access (tempstr, F_OK) != 0)
@@ -529,7 +525,10 @@ about_dialog (GtkAction * a, gpointer data)
       gtk_text_buffer_insert (textbuf, &iter, buf, -1);
     }
   fclose (fd);
-  gtk_widget_show (dialog);
+
+  gtk_dialog_run (GTK_DIALOG(dialog));
+  gtk_widget_destroy (dialog);
+
   g_free (no_license_agreement);
   gftp_free_pixmap ("gftp-logo.xpm");
 }

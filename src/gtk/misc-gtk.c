@@ -558,101 +558,6 @@ destroy_dialog (gftp_dialog_data * ddata)
     }
 }
 
-
-#if GTK_MAJOR_VERSION == 1
-static void
-ok_dialog_response (GtkWidget * widget, gftp_dialog_data * ddata)
-{
-  if (ddata->edit == NULL)
-    {
-      gtk_widget_destroy (ddata->dialog);
-      ddata->dialog = NULL;
-      ddata->checkbox = NULL;
-    }
-
-  if (ddata->yesfunc != NULL)
-    ddata->yesfunc (ddata->yespointer, ddata);
-
-  if (ddata->edit != NULL &&
-      ddata->dialog != NULL)
-    gtk_widget_destroy (ddata->dialog);
-
-  g_free (ddata);
-}
-
-
-static void
-cancel_dialog_response (GtkWidget * widget, gftp_dialog_data * ddata)
-{
-  if (ddata->edit == NULL)
-    {
-      gtk_widget_destroy (ddata->dialog);
-      ddata->dialog = NULL;
-      ddata->checkbox = NULL;
-    }
-
-  if (ddata->nofunc != NULL)
-    ddata->nofunc (ddata->nopointer, ddata);
-
-  if (ddata->edit != NULL &&
-      ddata->dialog != NULL)
-    gtk_widget_destroy (ddata->dialog);
-
-  g_free (ddata);
-}
-#else
-static void
-dialog_response (GtkWidget * widget, gint response, gftp_dialog_data * ddata)
-{
-  if (ddata->edit == NULL)
-    {
-      gtk_widget_destroy (ddata->dialog);
-      ddata->dialog = NULL;
-      ddata->checkbox = NULL;
-    }
-
-  switch (response)
-    {
-      case GTK_RESPONSE_YES:
-        if (ddata->yesfunc != NULL)
-          ddata->yesfunc (ddata->yespointer, ddata);
-        break;
-      default:
-        if (ddata->nofunc != NULL)
-          ddata->nofunc (ddata->nopointer, ddata);
-        break;
-    }
-
-  if (ddata->edit != NULL &&
-      ddata->dialog != NULL)
-    gtk_widget_destroy (ddata->dialog);
-
-  g_free (ddata);
-}
-#endif
-
-
-static gint
-dialog_keypress (GtkWidget * widget, GdkEventKey * event, gpointer data)
-{
-  if (event->type != GDK_KEY_PRESS)
-    return (FALSE);
-
-  if (event->keyval == GDK_KEY_KP_Enter || event->keyval == GDK_KEY_Return)
-    {
-      dialog_response (widget, GTK_RESPONSE_YES, data);
-      return (TRUE);
-    }
-  else if (event->keyval == GDK_KEY_Escape)
-    {
-      dialog_response (widget, GTK_RESPONSE_NO, data);
-      return (TRUE);
-    }
-
-  return (FALSE);
-}
-
-
 void
 MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
         char *checktext,
@@ -691,11 +596,9 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
         break;
     }
 
-  dialog = gtk_dialog_new_with_buttons (_(diagtxt), window, 0,
-                                        GTK_STOCK_CANCEL,
-                                        GTK_RESPONSE_NO,
-                                        yes_text,
-                                        GTK_RESPONSE_YES,
+  dialog = gtk_dialog_new_with_buttons (_(diagtxt), GTK_WINDOW(window), 0,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_NO,
+                                        yes_text, GTK_RESPONSE_YES,
                                         NULL);
   gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
@@ -710,9 +613,6 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
   gtk_widget_show (tempwid);
 
   ddata->edit = gtk_entry_new ();
-  g_signal_connect (G_OBJECT (ddata->edit), "key_press_event",
-                      G_CALLBACK (dialog_keypress), (gpointer) ddata);
-
   gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), ddata->edit, TRUE,
               TRUE, 0);
   gtk_widget_grab_focus (ddata->edit);
@@ -733,10 +633,20 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
       gtk_widget_show (ddata->checkbox);
     }
 
-  g_signal_connect (G_OBJECT (dialog), "response",
-                    G_CALLBACK (dialog_response), ddata);
-
-  gtk_widget_show (dialog);
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_YES);
+  gint response = gtk_dialog_run (GTK_DIALOG(dialog));
+  if (response == GTK_RESPONSE_YES)
+    {
+      if (ddata->yesfunc != NULL)
+        ddata->yesfunc (ddata->yespointer, ddata);
+    }
+  else
+    {
+      if (ddata->nofunc != NULL)
+        ddata->nofunc (ddata->nopointer, ddata);
+    }
+  g_free (ddata);
+  gtk_widget_destroy (dialog);
 }
 
 
@@ -753,11 +663,9 @@ MakeYesNoDialog (char *diagtxt, char *infotxt,
   ddata->yespointer = yespointer;
   ddata->nofunc = nofunc;
   ddata->nopointer = nopointer;
-  dialog = gtk_dialog_new_with_buttons (_(diagtxt), window, 0,
-                                        GTK_STOCK_NO,
-                                        GTK_RESPONSE_NO,
-                                        GTK_STOCK_YES,
-                                        GTK_RESPONSE_YES,
+  dialog = gtk_dialog_new_with_buttons (_(diagtxt), GTK_WINDOW(window), 0,
+                                        GTK_STOCK_NO, GTK_RESPONSE_NO,
+                                        GTK_STOCK_YES, GTK_RESPONSE_YES,
                                         NULL);
 
   gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
@@ -771,10 +679,20 @@ MakeYesNoDialog (char *diagtxt, char *infotxt,
   gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), text, TRUE, TRUE, 0);
   gtk_widget_show (text);
 
-  g_signal_connect (G_OBJECT (dialog), "response",
-                    G_CALLBACK (dialog_response), ddata);
-
-  gtk_widget_show (dialog);
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_YES);
+  gint response = gtk_dialog_run (GTK_DIALOG(dialog));
+  if (response == GTK_RESPONSE_YES)
+    {
+      if (ddata->yesfunc != NULL)
+        ddata->yesfunc (ddata->yespointer, ddata);
+    }
+  else
+    {
+      if (ddata->nofunc != NULL)
+        ddata->nofunc (ddata->nopointer, ddata);
+    }
+  g_free (ddata);
+  gtk_widget_destroy (dialog);
 }
 
 

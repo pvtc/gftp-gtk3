@@ -59,7 +59,7 @@ do_chmod_thread (gftpui_callback_data * cdata)
 
 
 static void
-dochmod (GtkWidget * widget, gftp_window_data * wdata)
+dochmod (gftp_window_data * wdata)
 {
   gftpui_callback_data * cdata;
 
@@ -105,19 +105,6 @@ dochmod (GtkWidget * widget, gftp_window_data * wdata)
   g_free (cdata);
 }
 
-static void
-chmod_action (GtkWidget * widget, gint response, gpointer wdata)
-{
-  switch (response)
-    {
-      case GTK_RESPONSE_OK:
-        dochmod (widget, wdata);
-        /* no break */
-      default:
-        gtk_widget_destroy (widget);
-    }
-}
-
 void
 chmod_dialog (GtkAction * a, gpointer data)
 {
@@ -130,11 +117,9 @@ chmod_dialog (GtkAction * a, gpointer data)
   if (!check_status (_("Chmod"), wdata, gftpui_common_use_threads (wdata->request), 0, 1, wdata->request->chmod != NULL))
     return;
 
-  dialog = gtk_dialog_new_with_buttons (_("Chmod"), window, 0,
-                                        GTK_STOCK_CANCEL,
-                                        GTK_RESPONSE_CANCEL,
-                                        GTK_STOCK_OK,
-                                        GTK_RESPONSE_OK,
+  dialog = gtk_dialog_new_with_buttons (_("Chmod"), GTK_WINDOW(window), 0,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         NULL);
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
   gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
@@ -230,9 +215,6 @@ chmod_dialog (GtkAction * a, gpointer data)
   gtk_box_pack_start (GTK_BOX (vbox), ox, FALSE, FALSE, 0);
   gtk_widget_show (ox);
 
-  g_signal_connect (G_OBJECT (dialog), "response",
-                    G_CALLBACK (chmod_action), wdata);
-
   GtkTreeSelection *select;
   GtkTreeIter iter;
   GtkTreeModel * model;
@@ -272,6 +254,11 @@ chmod_dialog (GtkAction * a, gpointer data)
       gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (ox),
                                     tempfle->st_mode & S_IXOTH);
     }
-
-  gtk_widget_show (dialog);
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+  gint response = gtk_dialog_run (GTK_DIALOG(dialog));
+  if (response == GTK_RESPONSE_OK)
+  {
+     dochmod (wdata);
+  }
+  gtk_widget_destroy (dialog);
 }

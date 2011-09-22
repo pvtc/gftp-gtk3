@@ -714,7 +714,7 @@ edit_bookmarks (GtkAction * a, gpointer data)
 
   curentry = NULL;
   edit_bookmarks_dialog = gtk_dialog_new_with_buttons (
-    _("Edit Bookmarks"), window, 0,
+    _("Edit Bookmarks"), GTK_WINDOW(window), 0,
     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
     GTK_STOCK_SAVE, GTK_RESPONSE_OK,
     NULL);
@@ -865,8 +865,8 @@ edit_bookmarks (GtkAction * a, gpointer data)
 
   build_bookmarks_tree (gftp_bookmarks);
   gtk_widget_show (tree);
-  gtk_widget_show (edit_bookmarks_dialog);
 
+  gtk_dialog_set_default_response (GTK_DIALOG(edit_bookmarks_dialog), GTK_RESPONSE_OK);
   gint response = gtk_dialog_run (GTK_DIALOG(edit_bookmarks_dialog));
   if (response == GTK_RESPONSE_OK)
   {

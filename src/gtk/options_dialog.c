@@ -641,7 +641,7 @@ _print_option_type_notebook (gftp_config_vars * cv, void *user_data)
 
 
 static void
-clean_old_changes (GtkWidget * widget, gpointer data)
+clean_old_changes (void)
 {
   gftp_textcomboedt_widget_data * widdata;
   gftp_config_vars * cv;
@@ -676,7 +676,7 @@ clean_old_changes (GtkWidget * widget, gpointer data)
 
 
 static void
-apply_changes (GtkWidget * widget, gpointer data)
+apply_changes (void)
 {
   gftp_config_list_vars * proxy_hosts;
   gftp_config_vars * cv;
@@ -709,20 +709,6 @@ apply_changes (GtkWidget * widget, gpointer data)
   proxy_hosts->list = new_proxy_hosts;
   new_proxy_hosts = NULL;
   gftpui_show_or_hide_command ();
-}
-
-static void
-options_action (GtkWidget * widget, gint response, gpointer user_data)
-{
-  switch (response)
-    {
-      case GTK_RESPONSE_OK:
-        apply_changes (widget, NULL);
-        /* no break */
-      default:
-        clean_old_changes (widget, user_data);
-        gtk_widget_destroy (widget);
-    }
 }
 
 static void data_col_0 (GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
@@ -772,14 +758,12 @@ static void data_col_1 (GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
 }
 
 static void
-add_ok (GtkWidget * widget, gpointer data)
+add_ok (gftp_proxy_hosts *hosts)
 {
-  gftp_proxy_hosts *hosts;
   const char *edttxt;
   GtkTreeIter iter;
   GtkTreeModel * l;
 
-  hosts = data;
   if (hosts == NULL)
     {
       GList *templist;
@@ -837,19 +821,6 @@ add_ok (GtkWidget * widget, gpointer data)
 
       edttxt = gtk_entry_get_text (GTK_ENTRY (netmask4));
       hosts->ipv4_netmask |= strtol (edttxt, NULL, 10) & 0xff;
-    }
-}
-
-static void
-proxyhosts_action (GtkWidget * widget, gint response, gpointer user_data)
-{
-  switch (response)
-    {
-      case GTK_RESPONSE_OK:
-        add_ok (widget, user_data);
-        /* no break */
-      default:
-        gtk_widget_destroy (widget);
     }
 }
 
@@ -925,11 +896,9 @@ add_proxy_host (GtkWidget * widget, gpointer data)
 
   title = hosts ? _("Edit Host") : _("Add Host");
 
-  dialog = gtk_dialog_new_with_buttons (title, window, 0,
-                                        GTK_STOCK_CANCEL,
-                                        GTK_RESPONSE_CANCEL,
-                                        GTK_STOCK_SAVE,
-                                        GTK_RESPONSE_OK,
+  dialog = gtk_dialog_new_with_buttons (title, GTK_WINDOW(gftp_option_data->dialog), 0,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                        GTK_STOCK_SAVE, GTK_RESPONSE_OK,
                                         NULL);
   gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
   gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
@@ -1125,9 +1094,13 @@ add_proxy_host (GtkWidget * widget, gpointer data)
       g_free (tempstr);
     }
     }
-  g_signal_connect (G_OBJECT (dialog), "response", G_CALLBACK (proxyhosts_action), hosts);
-
-  gtk_widget_show (dialog);
+  gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_OK);
+  gint response = gtk_dialog_run (GTK_DIALOG(dialog));
+  if (response == GTK_RESPONSE_OK)
+    {
+      add_ok (hosts);
+    }
+  gtk_widget_destroy (dialog);
 }
 
 static void
@@ -1241,11 +1214,9 @@ options_dialog (GtkAction * a, gpointer data)
   int i;
 
   gftp_option_data = _init_option_data ();
-  gftp_option_data->dialog = gtk_dialog_new_with_buttons (_("Options"), window, 0,
-                                        GTK_STOCK_CANCEL,
-                                        GTK_RESPONSE_CANCEL,
-                                        GTK_STOCK_OK,
-                                        GTK_RESPONSE_OK,
+  gftp_option_data->dialog = gtk_dialog_new_with_buttons (_("Options"), GTK_WINDOW(window), 0,
+                                        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                        GTK_STOCK_OK, GTK_RESPONSE_OK,
                                         NULL);
   gtk_container_set_border_width (GTK_CONTAINER (gftp_option_data->dialog), 5);
   gtk_window_set_resizable (GTK_WINDOW (gftp_option_data->dialog), FALSE);
@@ -1289,10 +1260,14 @@ options_dialog (GtkAction * a, gpointer data)
 
   make_proxy_hosts_tab (gftp_option_data->notebook);
 
-  g_signal_connect (G_OBJECT (gftp_option_data->dialog), "response",
-                    G_CALLBACK (options_action), NULL);
-
-  gtk_widget_show (gftp_option_data->dialog);
+  gtk_dialog_set_default_response (GTK_DIALOG(gftp_option_data->dialog), GTK_RESPONSE_OK);
+  gint response = gtk_dialog_run (GTK_DIALOG(gftp_option_data->dialog));
+  if (response == GTK_RESPONSE_OK)
+    {
+        apply_changes ();
+    }
+  clean_old_changes ();
+  gtk_widget_destroy (gftp_option_data->dialog);
 }
 
 
