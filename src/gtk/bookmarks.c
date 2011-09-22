@@ -129,22 +129,22 @@ doadd_bookmark (gpointer * data, gftp_dialog_data * ddata)
     }
   *dpos = '\0';
 
-  edttxt = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (hostedit));
+  edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (hostedit)))));
   tempentry->hostname = g_strdup (edttxt);
 
-  edttxt = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (portedit));
+  edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (portedit)))));
   tempentry->port = strtol (edttxt, NULL, 10);
 
   proto = gftp_protocols[current_wdata->request->protonum].name;
   tempentry->protocol = g_strdup (proto);
 
-  edttxt = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (other_wdata->combo));
+  edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (other_wdata->combo)))));
   tempentry->local_dir = g_strdup (edttxt);
 
-  edttxt = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (current_wdata->combo));
+  edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (current_wdata->combo)))));
   tempentry->remote_dir = g_strdup (edttxt);
 
-  if ((edttxt = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (useredit))) != NULL)
+  if ((edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (useredit)))))) != NULL)
     {
       tempentry->user = g_strdup (edttxt);
 
@@ -168,7 +168,7 @@ add_bookmark (GtkAction * a, gpointer data)
   if (!check_status (_("Add Bookmark"), current_wdata, 0, 0, 0, 1))
     return;
 
-  edttxt = gtk_combo_box_text_get_active_text (GTK_COMBO_BOX_TEXT (hostedit));
+  edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (hostedit)))));
   if (*edttxt == '\0')
     {
       ftp_log (gftp_logging_error, NULL,
@@ -616,10 +616,14 @@ static void sel_change (GtkTreeSelection * selection, gpointer user_data)
     pos++;
   if (pos)
     gtk_entry_set_text (GTK_ENTRY (bm_pathedit), pos);
+  else
+    gtk_entry_set_text (GTK_ENTRY (bm_pathedit), "");
 
   gtk_widget_set_sensitive (bm_hostedit, ! entry->isfolder);
   if (entry->hostname)
     gtk_entry_set_text (GTK_ENTRY (bm_hostedit), entry->hostname);
+  else
+    gtk_entry_set_text (GTK_ENTRY (bm_hostedit), "");
 
   gtk_widget_set_sensitive (bm_portedit, ! entry->isfolder);
   if (entry->port)
@@ -628,6 +632,10 @@ static void sel_change (GtkTreeSelection * selection, gpointer user_data)
       gtk_entry_set_text (GTK_ENTRY (bm_portedit), pos);
       g_free (pos);
     }
+  else
+  {
+    gtk_entry_set_text (GTK_ENTRY (bm_portedit), pos);
+  }
 
   gtk_widget_set_sensitive (bm_protocol, ! entry->isfolder);
   num = 0;
@@ -642,23 +650,38 @@ static void sel_change (GtkTreeSelection * selection, gpointer user_data)
   gtk_widget_set_sensitive (bm_remotediredit, ! entry->isfolder);
   if (entry->remote_dir)
     gtk_entry_set_text (GTK_ENTRY (bm_remotediredit), entry->remote_dir);
-
+  else
+  {
+    gtk_entry_set_text (GTK_ENTRY (bm_remotediredit), pos);
+  }
   gtk_widget_set_sensitive (bm_localdiredit, ! entry->isfolder);
   if (entry->local_dir)
     gtk_entry_set_text (GTK_ENTRY (bm_localdiredit), entry->local_dir);
-
+  else
+  {
+    gtk_entry_set_text (GTK_ENTRY (bm_localdiredit), pos);
+  }
   gtk_widget_set_sensitive (bm_useredit, ! entry->isfolder);
   if (entry->user)
     gtk_entry_set_text (GTK_ENTRY (bm_useredit), entry->user);
-
+  else
+  {
+    gtk_entry_set_text (GTK_ENTRY (bm_useredit), pos);
+  }
   gtk_widget_set_sensitive (bm_passedit, ! entry->isfolder);
   if (entry->pass)
     gtk_entry_set_text (GTK_ENTRY (bm_passedit), entry->pass);
-
+  else
+  {
+    gtk_entry_set_text (GTK_ENTRY (bm_passedit), pos);
+  }
   gtk_widget_set_sensitive (bm_acctedit, ! entry->isfolder);
   if (entry->acct)
     gtk_entry_set_text (GTK_ENTRY (bm_acctedit), entry->acct);
-
+  else
+  {
+    gtk_entry_set_text (GTK_ENTRY (bm_acctedit), pos);
+  }
   gtk_widget_set_sensitive (anon_chk, ! entry->isfolder);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (anon_chk), entry->user
                 && strcmp (entry->user, "anonymous") == 0);
