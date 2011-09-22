@@ -129,22 +129,22 @@ doadd_bookmark (gpointer * data, gftp_dialog_data * ddata)
     }
   *dpos = '\0';
 
-  edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (hostedit)))));
+  edttxt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT (hostedit));
   tempentry->hostname = g_strdup (edttxt);
 
-  edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (portedit)))));
+  edttxt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT (portedit));
   tempentry->port = strtol (edttxt, NULL, 10);
 
   proto = gftp_protocols[current_wdata->request->protonum].name;
   tempentry->protocol = g_strdup (proto);
 
-  edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (other_wdata->combo)))));
+  edttxt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT (other_wdata->combo));
   tempentry->local_dir = g_strdup (edttxt);
 
-  edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (current_wdata->combo)))));
+  edttxt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT (current_wdata->combo));
   tempentry->remote_dir = g_strdup (edttxt);
 
-  if ((edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (useredit)))))) != NULL)
+  if ((edttxt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT (useredit))) != NULL)
     {
       tempentry->user = g_strdup (edttxt);
 
@@ -168,7 +168,7 @@ add_bookmark (GtkAction * a, gpointer data)
   if (!check_status (_("Add Bookmark"), current_wdata, 0, 0, 0, 1))
     return;
 
-  edttxt = gtk_entry_get_text (GTK_ENTRY (gtk_bin_get_child (GTK_BIN (GTK_COMBO_BOX_TEXT (hostedit)))));
+  edttxt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT (hostedit));
   if (*edttxt == '\0')
     {
       ftp_log (gftp_logging_error, NULL,
