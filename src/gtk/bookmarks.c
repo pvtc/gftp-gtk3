@@ -634,7 +634,7 @@ static void sel_change (GtkTreeSelection * selection, gpointer user_data)
     }
   else
   {
-    gtk_entry_set_text (GTK_ENTRY (bm_portedit), pos);
+    gtk_entry_set_text (GTK_ENTRY (bm_portedit), "");
   }
 
   gtk_widget_set_sensitive (bm_protocol, ! entry->isfolder);
@@ -652,35 +652,35 @@ static void sel_change (GtkTreeSelection * selection, gpointer user_data)
     gtk_entry_set_text (GTK_ENTRY (bm_remotediredit), entry->remote_dir);
   else
   {
-    gtk_entry_set_text (GTK_ENTRY (bm_remotediredit), pos);
+    gtk_entry_set_text (GTK_ENTRY (bm_remotediredit), "");
   }
   gtk_widget_set_sensitive (bm_localdiredit, ! entry->isfolder);
   if (entry->local_dir)
     gtk_entry_set_text (GTK_ENTRY (bm_localdiredit), entry->local_dir);
   else
   {
-    gtk_entry_set_text (GTK_ENTRY (bm_localdiredit), pos);
+    gtk_entry_set_text (GTK_ENTRY (bm_localdiredit), "");
   }
   gtk_widget_set_sensitive (bm_useredit, ! entry->isfolder);
   if (entry->user)
     gtk_entry_set_text (GTK_ENTRY (bm_useredit), entry->user);
   else
   {
-    gtk_entry_set_text (GTK_ENTRY (bm_useredit), pos);
+    gtk_entry_set_text (GTK_ENTRY (bm_useredit), "");
   }
   gtk_widget_set_sensitive (bm_passedit, ! entry->isfolder);
   if (entry->pass)
     gtk_entry_set_text (GTK_ENTRY (bm_passedit), entry->pass);
   else
   {
-    gtk_entry_set_text (GTK_ENTRY (bm_passedit), pos);
+    gtk_entry_set_text (GTK_ENTRY (bm_passedit), "");
   }
   gtk_widget_set_sensitive (bm_acctedit, ! entry->isfolder);
   if (entry->acct)
     gtk_entry_set_text (GTK_ENTRY (bm_acctedit), entry->acct);
   else
   {
-    gtk_entry_set_text (GTK_ENTRY (bm_acctedit), pos);
+    gtk_entry_set_text (GTK_ENTRY (bm_acctedit), "");
   }
   gtk_widget_set_sensitive (anon_chk, ! entry->isfolder);
   gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (anon_chk), entry->user

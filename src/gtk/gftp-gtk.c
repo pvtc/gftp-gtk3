@@ -346,7 +346,7 @@ static const GtkRadioActionEntry radio_entriess[] = {
      { "Log_View", NULL, N_("_View"), NULL, NULL, G_CALLBACK(viewlog)},
      { "Log_Save...", GTK_STOCK_SAVE, N_("_Save..."), NULL, NULL, G_CALLBACK(savelog)},
      { "Tools", NULL, N_("Tool_s")},
-     { "C_ompare Windows", NULL, N_("C_ompare Windows"), NULL, NULL, G_CALLBACK(compare_windows)},
+     { "Compare Windows", NULL, N_("C_ompare Windows"), NULL, NULL, G_CALLBACK(compare_windows)},
      { "Clear Cache", GTK_STOCK_CLEAR, N_("_Clear Cache"), NULL, NULL, G_CALLBACK(clear_cache)},
      { "Help", NULL, N_("Help")},
      { "About", GTK_STOCK_ABOUT, N_("_About"), NULL, NULL, G_CALLBACK(about_dialog) }
@@ -432,7 +432,7 @@ static const char *ui_description =
 "      <menuitem action='Log_Save...'/>"
 "    </menu>"
 "    <menu action='Tools'>"
-"      <menuitem action='C_ompare Windows'/>"
+"      <menuitem action='Compare Windows'/>"
 "      <menuitem action='Clear Cache'/>"
 "    </menu>"
 "    <menu action='Help'>"
@@ -1244,8 +1244,14 @@ toolbar_hostedit (GtkWidget * widget, gpointer data)
   if (GFTP_IS_CONNECTED (current_wdata->request))
     gftp_disconnect (current_wdata->request);
 
-  num = gtk_combo_box_get_active (GTK_COMBO_BOX (optionmenu));
-
+  txt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT (optionmenu));
+  for (num = 0; gftp_protocols[num].name != NULL; num++)
+    {
+      if (strstr(gftp_protocols[num].name, txt) != NULL)
+        {
+          break;
+        }
+    }
   init = gftp_protocols[num].init;
   if (init (current_wdata->request) < 0)
     return;
@@ -1451,6 +1457,8 @@ _setup_window1 ()
 static void
 _setup_window2 (int argc, char **argv)
 {
+  const char * txt;
+  int num;
   intptr_t connect_to_remote_on_startup;
 
   gftp_lookup_request_option (window2.request, "connect_to_remote_on_startup",
@@ -1465,7 +1473,15 @@ _setup_window2 (int argc, char **argv)
     }
   else if (connect_to_remote_on_startup)
     {
-      if (gftp_protocols[gtk_combo_box_get_active (GTK_COMBO_BOX (optionmenu))].init (current_wdata->request) == 0)
+      txt = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT (optionmenu));
+      for (num = 0; gftp_protocols[num].name != NULL; num++)
+        {
+          if (strstr(gftp_protocols[num].name, txt) != NULL)
+            {
+              break;
+            }
+        }
+      if (gftp_protocols[num].init (current_wdata->request) == 0)
         {
           gftp_setup_startup_directory (window2.request,
                                         "remote_startup_directory");

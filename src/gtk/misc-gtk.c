@@ -906,6 +906,7 @@ get_xpm_path (char *filename, int quit_on_err)
 void
 gtk_combo_box_set_popdown_strings (GtkComboBoxText * combo, GList * string)
 {
+  gtk_combo_box_text_remove_all (combo);
   while (string != NULL)
     {
       gtk_combo_box_text_append_text (combo, string->data);
