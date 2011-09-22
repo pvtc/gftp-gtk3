@@ -120,8 +120,6 @@ gftpui_add_file_to_transfer (gftp_transfer * tdata, GList * curfle)
   gftp_file * fle;
   GtkTreeIter iter;
 
-  g_print("%s\n", "gftpui_common_add_file_transfer");
-
   fle = curfle->data;
   if (fle->transfer_action == GFTP_TRANS_ACTION_SKIP)
     status = _("Skipped");
