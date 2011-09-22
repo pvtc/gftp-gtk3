@@ -411,7 +411,7 @@ about_dialog (GtkAction * a, gpointer data)
   share_dir = gftp_get_share_dir ();
   no_license_agreement = g_strdup_printf (_("Cannot find the license agreement file COPYING. Please make sure it is in either %s or in %s"), BASE_CONF_DIR, share_dir);
 
-  dialog = gtk_dialog_new_with_buttons (_("About gFTP"), NULL, 0,
+  dialog = gtk_dialog_new_with_buttons (_("About gFTP"), window, 0,
                                         GTK_STOCK_CLOSE,
                                         GTK_RESPONSE_CLOSE,
                                         NULL);

@@ -925,7 +925,7 @@ add_proxy_host (GtkWidget * widget, gpointer data)
 
   title = hosts ? _("Edit Host") : _("Add Host");
 
-  dialog = gtk_dialog_new_with_buttons (title, NULL, 0,
+  dialog = gtk_dialog_new_with_buttons (title, window, 0,
                                         GTK_STOCK_CANCEL,
                                         GTK_RESPONSE_CANCEL,
                                         GTK_STOCK_SAVE,
@@ -1241,7 +1241,7 @@ options_dialog (GtkAction * a, gpointer data)
   int i;
 
   gftp_option_data = _init_option_data ();
-  gftp_option_data->dialog = gtk_dialog_new_with_buttons (_("Options"), NULL, 0,
+  gftp_option_data->dialog = gtk_dialog_new_with_buttons (_("Options"), window, 0,
                                         GTK_STOCK_CANCEL,
                                         GTK_RESPONSE_CANCEL,
                                         GTK_STOCK_OK,

@@ -27,6 +27,7 @@ GtkWidget * stop_btn, * hostedit, * useredit, * passedit, * portedit, * logwdw,
           * dlwdw, * optionmenu, * gftpui_command_widget, * openurl_btn;
 GtkWidget *winpane, *dlpane, *logpane, *window;
 GtkAdjustment * logwdw_vadj;
+
 GtkTextMark * logwdw_textmark;
 int local_start, remote_start, trans_start;
 GHashTable * graphic_hash_table = NULL;

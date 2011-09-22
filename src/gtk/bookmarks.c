@@ -714,7 +714,7 @@ edit_bookmarks (GtkAction * a, gpointer data)
 
   curentry = NULL;
   edit_bookmarks_dialog = gtk_dialog_new_with_buttons (
-    _("Edit Bookmarks"), NULL, 0,
+    _("Edit Bookmarks"), window, 0,
     GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
     GTK_STOCK_SAVE, GTK_RESPONSE_OK,
     NULL);

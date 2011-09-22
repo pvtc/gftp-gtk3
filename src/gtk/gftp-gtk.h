@@ -135,7 +135,7 @@ typedef struct gftp_options_dialog_data_tag
 extern gftp_window_data window1, window2, * other_wdata, * current_wdata;
 extern GtkWidget * stop_btn, * hostedit, * useredit, * passedit,
                  * portedit, * logwdw, * dlwdw, * optionmenu,
-                 * gftpui_command_widget, * openurl_btn;
+                 * gftpui_command_widget, * openurl_btn, *window;
 extern GtkAdjustment * logwdw_vadj;
 
 extern GtkTextMark * logwdw_textmark;

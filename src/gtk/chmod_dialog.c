@@ -130,7 +130,7 @@ chmod_dialog (GtkAction * a, gpointer data)
   if (!check_status (_("Chmod"), wdata, gftpui_common_use_threads (wdata->request), 0, 1, wdata->request->chmod != NULL))
     return;
 
-  dialog = gtk_dialog_new_with_buttons (_("Chmod"), NULL, 0,
+  dialog = gtk_dialog_new_with_buttons (_("Chmod"), window, 0,
                                         GTK_STOCK_CANCEL,
                                         GTK_RESPONSE_CANCEL,
                                         GTK_STOCK_OK,

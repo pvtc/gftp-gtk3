@@ -281,7 +281,7 @@ gftpui_ask_transfer (gftp_transfer * tdata)
   GList * templist;
   GtkTreeIter iter;
 
-  dialog = gtk_dialog_new_with_buttons (_("Transfer Files"), NULL, 0,
+  dialog = gtk_dialog_new_with_buttons (_("Transfer Files"), window, 0,
                                         GTK_STOCK_CANCEL,
                                         GTK_RESPONSE_CANCEL,
                                         GTK_STOCK_OK,

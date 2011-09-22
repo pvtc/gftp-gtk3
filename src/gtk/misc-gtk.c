@@ -691,7 +691,7 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
         break;
     }
 
-  dialog = gtk_dialog_new_with_buttons (_(diagtxt), NULL, 0,
+  dialog = gtk_dialog_new_with_buttons (_(diagtxt), window, 0,
                                         GTK_STOCK_CANCEL,
                                         GTK_RESPONSE_NO,
                                         yes_text,
@@ -753,7 +753,7 @@ MakeYesNoDialog (char *diagtxt, char *infotxt,
   ddata->yespointer = yespointer;
   ddata->nofunc = nofunc;
   ddata->nopointer = nopointer;
-  dialog = gtk_dialog_new_with_buttons (_(diagtxt), NULL, 0,
+  dialog = gtk_dialog_new_with_buttons (_(diagtxt), window, 0,
                                         GTK_STOCK_NO,
                                         GTK_RESPONSE_NO,
                                         GTK_STOCK_YES,

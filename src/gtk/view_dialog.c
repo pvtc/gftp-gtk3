@@ -313,7 +313,7 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
   if (non_utf8 != filename && non_utf8)
     g_free (non_utf8);
 
-  dialog = gtk_dialog_new_with_buttons (filename, NULL, 0,
+  dialog = gtk_dialog_new_with_buttons (filename, window, 0,
                                         GTK_STOCK_CLOSE,
                                         GTK_RESPONSE_CLOSE,
                                         NULL);
