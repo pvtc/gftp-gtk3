@@ -291,20 +291,16 @@ update_window (gftp_window_data * wdata)
     set_menu_sensitive ("/MainMenu/Remote/remote_View...", connected && wdata->request->get_file != NULL);
     set_menu_sensitive ("/MainMenu/Remote/remote_Refresh", connected);
   }
+
   connected = GFTP_IS_CONNECTED (window1.request) && GFTP_IS_CONNECTED (window2.request);
-
   set_menu_sensitive ("/MainMenu/Transfer/t_Start", connected);
-  set_menu_sensitive ("/MainMenu/Transfer/t_St_op", connected);
-  set_menu_sensitive ("/MainMenu/Transfer/t_Skip _Current File", connected);
-  set_menu_sensitive ("/MainMenu/Transfer/t_Remove File", connected);
-  set_menu_sensitive ("/MainMenu/Transfer/t_Move File _Up", connected);
-  set_menu_sensitive ("/MainMenu/Transfer/t_Move File _Down", connected);
-
-  set_menu_sensitive ("/MainMenu/Transfer/t_Retrieve Files", connected);
-  set_menu_sensitive ("/MainMenu/Transfer/t_Put Files", connected);
-
-  gtk_widget_set_sensitive (download_left_arrow, connected);
-  gtk_widget_set_sensitive (upload_right_arrow, connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Stop", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Skip", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Remove", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Up", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Down", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Retrieve", connected);
+  set_menu_sensitive ("/MainMenu/Transfer/t_Put", connected);
 }
 
 

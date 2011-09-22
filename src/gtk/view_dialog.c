@@ -344,7 +344,7 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
 
   vadj = gtk_scrolled_window_get_vadjustment (GTK_SCROLLED_WINDOW (tempwid));
 
-  gtk_widget_set_size_request (table, 500, 400);
+  gtk_window_set_default_size(GTK_WINDOW (dialog), 500, 400);
   gtk_widget_show (table);
 
   g_signal_connect_swapped (G_OBJECT (dialog), "response",

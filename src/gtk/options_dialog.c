@@ -995,27 +995,28 @@ add_proxy_host (GtkWidget * widget, gpointer data)
   gtk_widget_show (box);
 
   network1 = gtk_entry_new ();
-  gtk_widget_set_size_request (network1, 36, -1);
+  gtk_entry_set_max_length(GTK_ENTRY(network1), 3);
+  gtk_entry_set_width_chars(GTK_ENTRY(network1), 3);
   gtk_label_set_mnemonic_widget (GTK_LABEL (tempwid), network1);
 
   gtk_box_pack_start (GTK_BOX (box), network1, TRUE, TRUE, 0);
   gtk_widget_show (network1);
 
   network2 = gtk_entry_new ();
-  gtk_widget_set_size_request (network2, 36, -1);
-
+  gtk_entry_set_max_length(GTK_ENTRY(network2), 3);
+  gtk_entry_set_width_chars(GTK_ENTRY(network2), 3);
   gtk_box_pack_start (GTK_BOX (box), network2, TRUE, TRUE, 0);
   gtk_widget_show (network2);
 
   network3 = gtk_entry_new ();
-  gtk_widget_set_size_request (network3, 36, -1);
-
+  gtk_entry_set_max_length(GTK_ENTRY(network3), 3);
+  gtk_entry_set_width_chars(GTK_ENTRY(network3), 3);
   gtk_box_pack_start (GTK_BOX (box), network3, TRUE, TRUE, 0);
   gtk_widget_show (network3);
 
   network4 = gtk_entry_new ();
-  gtk_widget_set_size_request (network4, 36, -1);
-
+  gtk_entry_set_max_length(GTK_ENTRY(network4), 3);
+  gtk_entry_set_width_chars(GTK_ENTRY(network4), 3);
   gtk_box_pack_start (GTK_BOX (box), network4, TRUE, TRUE, 0);
   gtk_widget_show (network4);
 
@@ -1030,27 +1031,28 @@ add_proxy_host (GtkWidget * widget, gpointer data)
   gtk_widget_show (box);
 
   netmask1 = gtk_entry_new ();
-  gtk_widget_set_size_request (netmask1, 36, -1);
+  gtk_entry_set_max_length(GTK_ENTRY(netmask1), 3);
+  gtk_entry_set_width_chars(GTK_ENTRY(netmask1), 3);
   gtk_label_set_mnemonic_widget (GTK_LABEL (tempwid), netmask1);
 
   gtk_box_pack_start (GTK_BOX (box), netmask1, TRUE, TRUE, 0);
   gtk_widget_show (netmask1);
 
   netmask2 = gtk_entry_new ();
-  gtk_widget_set_size_request (netmask2, 36, -1);
-
+  gtk_entry_set_max_length(GTK_ENTRY(netmask2), 3);
+  gtk_entry_set_width_chars(GTK_ENTRY(netmask2), 3);
   gtk_box_pack_start (GTK_BOX (box), netmask2, TRUE, TRUE, 0);
   gtk_widget_show (netmask2);
 
   netmask3 = gtk_entry_new ();
-  gtk_widget_set_size_request (netmask3, 36, -1);
-
+  gtk_entry_set_max_length(GTK_ENTRY(netmask3), 3);
+  gtk_entry_set_width_chars(GTK_ENTRY(netmask3), 3);
   gtk_box_pack_start (GTK_BOX (box), netmask3, TRUE, TRUE, 0);
   gtk_widget_show (netmask3);
 
   netmask4 = gtk_entry_new ();
-  gtk_widget_set_size_request (netmask4, 36, -1);
-
+  gtk_entry_set_max_length(GTK_ENTRY(netmask4), 3);
+  gtk_entry_set_width_chars(GTK_ENTRY(netmask4), 3);
   gtk_box_pack_start (GTK_BOX (box), netmask4, TRUE, TRUE, 0);
   gtk_widget_show (netmask4);
 

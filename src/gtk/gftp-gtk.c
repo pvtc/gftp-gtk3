@@ -24,8 +24,8 @@ static GtkWidget * local_frame, * remote_frame, * log_table, * transfer_scroll,
 
 gftp_window_data window1, window2, *other_wdata, *current_wdata;
 GtkWidget * stop_btn, * hostedit, * useredit, * passedit, * portedit, * logwdw,
-          * dlwdw, * optionmenu, * gftpui_command_widget, * download_left_arrow,
-          * upload_right_arrow, * openurl_btn;
+          * dlwdw, * optionmenu, * gftpui_command_widget, * openurl_btn;
+GtkWidget *winpane, *dlpane, *logpane, *window;
 GtkAdjustment * logwdw_vadj;
 GtkTextMark * logwdw_textmark;
 int local_start, remote_start, trans_start;
@@ -49,23 +49,23 @@ get_column (GtkTreeView * listbox, int column)
 static void
 _gftp_exit (GtkWidget * widget, gpointer data)
 {
-  intptr_t remember_last_directory;
+  gint remember_last_directory;
   const char *tempstr;
   const char * tempwid;
-  intptr_t ret;
+  gint ret, reth;
 
-#if GTK_MAJOR_VERSION == 3
-  ret = gtk_widget_get_allocated_width(GTK_WIDGET (local_frame));
+  ret = gtk_paned_get_position(GTK_PANED(winpane));
   gftp_set_global_option ("listbox_local_width", GINT_TO_POINTER (ret));
-  ret = gtk_widget_get_allocated_width(GTK_WIDGET (remote_frame));
+
+  gtk_window_get_size (GTK_WINDOW(window), &ret, &reth);
   gftp_set_global_option ("listbox_remote_width", GINT_TO_POINTER (ret));
-  ret = gtk_widget_get_allocated_height(GTK_WIDGET (remote_frame));
-  gftp_set_global_option ("listbox_file_height", GINT_TO_POINTER (ret));
-  ret = gtk_widget_get_allocated_height(GTK_WIDGET (log_table));
+  gftp_set_global_option ("listbox_file_height", GINT_TO_POINTER (reth));
+
+  ret = gtk_paned_get_position(GTK_PANED(logpane));
   gftp_set_global_option ("log_height", GINT_TO_POINTER (ret));
-  ret = gtk_widget_get_allocated_height(GTK_WIDGET (transfer_scroll));
+
+  ret = gtk_paned_get_position(GTK_PANED(dlpane));
   gftp_set_global_option ("transfer_height", GINT_TO_POINTER (ret));
-#endif
 
   ret = get_column (GTK_TREE_VIEW (dlwdw), 0);
   gftp_set_global_option ("file_trans_column", GINT_TO_POINTER (ret));
@@ -329,16 +329,17 @@ static const GtkRadioActionEntry radio_entriess[] = {
 
      { "PTransfer", NULL, N_("_Transfer")},
      { "Transfer", NULL, N_("_Transfer")},
+     { "TTransfer", NULL, N_("_Transfer")},
      { "t_Start", NULL, N_("_Start"), NULL, NULL, G_CALLBACK(start_transfer)},
-     { "t_St_op", GTK_STOCK_STOP, N_("St_op"), NULL, NULL, G_CALLBACK(stop_transfer)},
+     { "t_Stop", GTK_STOCK_STOP, N_("St_op"), NULL, NULL, G_CALLBACK(stop_transfer)},
 
-     { "t_Skip _Current File", NULL, N_("Skip _Current File"), NULL, NULL, G_CALLBACK(skip_transfer)},
-     { "t_Remove File", GTK_STOCK_DELETE, N_("_Remove File"), NULL, NULL, G_CALLBACK(remove_file_transfer)},
-     { "t_Move File _Up", GTK_STOCK_GO_UP, N_("Move File _Up"), NULL, NULL, G_CALLBACK(move_transfer_up)},
-     { "t_Move File _Down", GTK_STOCK_GO_DOWN, N_("Move File _Down"), NULL, NULL, G_CALLBACK(move_transfer_down)},
+     { "t_Skip", NULL, N_("Skip _Current File"), NULL, NULL, G_CALLBACK(skip_transfer)},
+     { "t_Remove", GTK_STOCK_DELETE, N_("_Remove File"), NULL, NULL, G_CALLBACK(remove_file_transfer)},
+     { "t_Up", GTK_STOCK_GO_UP, N_("Move File _Up"), NULL, NULL, G_CALLBACK(move_transfer_up)},
+     { "t_Down", GTK_STOCK_GO_DOWN, N_("Move File _Down"), NULL, NULL, G_CALLBACK(move_transfer_down)},
 
-     { "t_Retrieve Files", NULL, N_("_Retrieve Files"), "<control>R", NULL, G_CALLBACK(get_files)},
-     { "t_Put Files", NULL, N_("_Put Files"), "<control>P", NULL, G_CALLBACK(put_files)},
+     { "t_Retrieve", GTK_STOCK_GO_BACK, N_("_Retrieve Files"), "<control>R", NULL, G_CALLBACK(get_files)},
+     { "t_Put", GTK_STOCK_GO_FORWARD, N_("_Put Files"), "<control>P", NULL, G_CALLBACK(put_files)},
 
      { "Log", NULL, N_("L_og")},
      { "PLog", NULL, N_("L_og")},
@@ -416,15 +417,15 @@ static const char *ui_description =
 "    </menu>"
 "    <menu action='Transfer'>"
 "      <menuitem action='t_Start'/>"
-"      <menuitem action='t_St_op'/>"
+"      <menuitem action='t_Stop'/>"
 "      <separator/>"
-"      <menuitem action='t_Skip _Current File'/>"
-"      <menuitem action='t_Remove File'/>"
-"      <menuitem action='t_Move File _Up'/>"
-"      <menuitem action='t_Move File _Down'/>"
+"      <menuitem action='t_Skip'/>"
+"      <menuitem action='t_Remove'/>"
+"      <menuitem action='t_Up'/>"
+"      <menuitem action='t_Down'/>"
 "      <separator/>"
-"      <menuitem action='t_Retrieve Files'/>"
-"      <menuitem action='t_Put Files'/>"
+"      <menuitem action='t_Retrieve'/>"
+"      <menuitem action='t_Put'/>"
 "    </menu>"
 "    <menu action='Log'>"
 "      <menuitem action='Log_Clear'/>"
@@ -485,16 +486,19 @@ static const char *ui_description =
 
 "    <popup action='PTransfer'>"
 "      <menuitem action='t_Start'/>"
-"      <menuitem action='t_St_op'/>"
+"      <menuitem action='t_Stop'/>"
 "      <separator/>"
-"      <menuitem action='t_Skip _Current File'/>"
-"      <menuitem action='t_Remove File'/>"
-"      <menuitem action='t_Move File _Up'/>"
-"      <menuitem action='t_Move File _Down'/>"
-"      <separator/>"
-"      <menuitem action='t_Retrieve Files'/>"
-"      <menuitem action='t_Put Files'/>"
+"      <menuitem action='t_Skip'/>"
+"      <menuitem action='t_Remove'/>"
+"      <menuitem action='t_Up'/>"
+"      <menuitem action='t_Down'/>"
 "    </popup>"
+
+"    <toolbar action='TTransfer'>"
+"      <toolitem action='t_Retrieve'/>"
+"      <toolitem action='t_Put'/>"
+"    </toolbar>"
+
 "    <popup action='PLog'>"
 "      <menuitem action='Log_Clear'/>"
 "      <menuitem action='Log_View'/>"
@@ -546,6 +550,7 @@ CreateConnectToolbar (GtkWidget * parent)
   int i, j, num;
 
   box = gtk_toolbar_new ();
+  gtk_toolbar_set_show_arrow(GTK_TOOLBAR(box), FALSE);
 
   openurl_btn = gtk_tool_button_new_from_stock (GTK_STOCK_NETWORK);
   g_signal_connect (G_OBJECT (openurl_btn), "clicked", G_CALLBACK (tb_openurl_dialog), NULL);
@@ -561,7 +566,7 @@ CreateConnectToolbar (GtkWidget * parent)
   item = gtk_tool_item_new ();
   gtk_tool_item_set_expand (item, TRUE);
   hostedit = gtk_combo_box_text_new_with_entry ();
-  gtk_widget_set_size_request (hostedit, 130, -1);
+  gtk_entry_set_width_chars(GTK_ENTRY(gtk_bin_get_child (GTK_BIN (hostedit))), 12);
   g_signal_connect (G_OBJECT (gtk_bin_get_child (GTK_BIN (hostedit))), "activate", G_CALLBACK (toolbar_hostedit), NULL);
   gftp_lookup_global_option ("hosthistory", &tmplistvar);
   if (tmplistvar->list)
@@ -580,7 +585,7 @@ CreateConnectToolbar (GtkWidget * parent)
 
   item = gtk_tool_item_new ();
   portedit = gtk_combo_box_text_new_with_entry ();
-  gtk_widget_set_size_request (portedit, 50, -1);
+  gtk_entry_set_width_chars(GTK_ENTRY(gtk_bin_get_child (GTK_BIN (portedit))), 4);
   g_signal_connect (G_OBJECT (gtk_bin_get_child (GTK_BIN (portedit))), "activate", G_CALLBACK (toolbar_hostedit), NULL);
   gftp_lookup_global_option ("porthistory", &tmplistvar);
   if (tmplistvar->list)
@@ -599,7 +604,7 @@ CreateConnectToolbar (GtkWidget * parent)
   item = gtk_tool_item_new ();
   gtk_tool_item_set_expand (item, TRUE);
   useredit = gtk_combo_box_text_new_with_entry ();
-  gtk_widget_set_size_request (useredit, 75, -1);
+  gtk_entry_set_width_chars(GTK_ENTRY(gtk_bin_get_child (GTK_BIN (useredit))), 7);
   g_signal_connect (G_OBJECT (gtk_bin_get_child (GTK_BIN (useredit))), "activate", G_CALLBACK (toolbar_hostedit), NULL);
   gftp_lookup_global_option ("userhistory", &tmplistvar);
   if (tmplistvar->list)
@@ -619,7 +624,7 @@ CreateConnectToolbar (GtkWidget * parent)
   item = gtk_tool_item_new ();
   gtk_tool_item_set_expand (item, TRUE);
   passedit = gtk_entry_new ();
-  gtk_widget_set_size_request (passedit, 55, -1);
+  gtk_entry_set_width_chars(GTK_ENTRY(passedit), 6);
   gtk_entry_set_visibility (GTK_ENTRY (passedit), FALSE);
   g_signal_connect (G_OBJECT (passedit), "activate", G_CALLBACK (toolbar_hostedit), NULL);
   gtk_container_add (GTK_CONTAINER(item), passedit);
@@ -928,7 +933,7 @@ CreateFTPWindow (gftp_window_data * wdata)
   };
   char tempstr[50], *startup_directory;
   GtkWidget *box, *scroll_list, *parent;
-  intptr_t listbox_file_height, colwidth;
+  intptr_t colwidth;
   GtkCellRenderer * cell;
   GtkTreeViewColumn * c;
 
@@ -936,12 +941,6 @@ CreateFTPWindow (gftp_window_data * wdata)
   gftp_gtk_init_request (wdata);
 
   parent = gtk_frame_new (NULL);
-
-  gftp_lookup_global_option ("listbox_file_height", &listbox_file_height);
-  g_snprintf (tempstr, sizeof (tempstr), "listbox_%s_width", wdata->prefix_col_str);
-  gftp_lookup_global_option (tempstr, &colwidth);
-  gtk_widget_set_size_request (parent, colwidth, listbox_file_height);
-
   gtk_container_set_border_width (GTK_CONTAINER (parent), 5);
 
   box = gtk_vbox_new (FALSE, 0);
@@ -1083,7 +1082,8 @@ menu_mouse_click (GtkWidget * widget, GdkEventButton * event, gpointer data)
 static GtkWidget *
 CreateFTPWindows (GtkWidget * ui)
 {
-  GtkWidget *box, *dlbox, *winpane, *dlpane, *logpane, *mainvbox, *tempwid;
+  gint w, h;
+  GtkWidget *box, *dlbox, *mainvbox, *tempwid;
   gftp_config_list_vars * tmplistvar;
   intptr_t tmplookup;
   GtkTextBuffer * textbuf;
@@ -1114,31 +1114,23 @@ CreateFTPWindows (GtkWidget * ui)
   gtk_box_pack_start (GTK_BOX (mainvbox), tempwid, FALSE, FALSE, 0);
 
   winpane = gtk_hpaned_new ();
-
   box = gtk_hbox_new (FALSE, 0);
 
   window1.prefix_col_str = "local";
   local_frame = CreateFTPWindow (&window1);
   gtk_box_pack_start (GTK_BOX (box), local_frame, TRUE, TRUE, 0);
 
-  dlbox = gtk_vbox_new (FALSE, 0);
-  gtk_container_set_border_width (GTK_CONTAINER (dlbox), 5);
+  dlbox = gtk_ui_manager_get_widget (ui_manager, "/TTransfer");;
+  gtk_orientable_set_orientation (GTK_ORIENTABLE(dlbox), GTK_ORIENTATION_VERTICAL);
+  gtk_toolbar_set_style(GTK_TOOLBAR(dlbox), GTK_TOOLBAR_ICONS);
+  gtk_toolbar_set_show_arrow(GTK_TOOLBAR(dlbox), FALSE);
   gtk_box_pack_start (GTK_BOX (box), dlbox, FALSE, FALSE, 0);
 
-  tempwid = gtk_image_new_from_stock (GTK_STOCK_GO_FORWARD,
-                                      GTK_ICON_SIZE_SMALL_TOOLBAR);
-
-  upload_right_arrow = gtk_button_new ();
-  gtk_box_pack_start (GTK_BOX (dlbox), upload_right_arrow, TRUE, FALSE, 0);
-  g_signal_connect(G_OBJECT (upload_right_arrow), "clicked", G_CALLBACK (put_files), NULL);
-  gtk_container_add (GTK_CONTAINER (upload_right_arrow), tempwid);
-
-  tempwid = gtk_image_new_from_stock (GTK_STOCK_GO_BACK, GTK_ICON_SIZE_SMALL_TOOLBAR);
-
-  download_left_arrow = gtk_button_new ();
-  gtk_box_pack_start (GTK_BOX (dlbox), download_left_arrow, TRUE, FALSE, 0);
-  g_signal_connect(G_OBJECT (download_left_arrow), "clicked", G_CALLBACK (get_files), NULL);
-  gtk_container_add (GTK_CONTAINER (download_left_arrow), tempwid);
+  GtkToolItem * i;
+  i = gtk_toolbar_get_nth_item(GTK_TOOLBAR(dlbox), 0);
+  gtk_tool_item_set_expand(i, TRUE);
+  i = gtk_toolbar_get_nth_item(GTK_TOOLBAR(dlbox), 1);
+  gtk_tool_item_set_expand(i, TRUE);
 
   gtk_paned_pack1 (GTK_PANED (winpane), box, 1, 1);
 
@@ -1151,8 +1143,6 @@ CreateFTPWindows (GtkWidget * ui)
   gtk_paned_pack1 (GTK_PANED (dlpane), winpane, 1, 1);
 
   transfer_scroll = gtk_scrolled_window_new (NULL, NULL);
-  gftp_lookup_global_option ("transfer_height", &tmplookup);
-  gtk_widget_set_size_request (transfer_scroll, -1, tmplookup);
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (transfer_scroll),
                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
 
@@ -1179,8 +1169,6 @@ CreateFTPWindows (GtkWidget * ui)
   gtk_paned_pack1 (GTK_PANED (logpane), dlpane, 1, 1);
 
   log_table = gtk_table_new (1, 2, FALSE);
-  gftp_lookup_global_option ("log_height", &tmplookup);
-  gtk_widget_set_size_request (log_table, -1, tmplookup);
 
   logwdw = gtk_text_view_new ();
   gtk_text_view_set_editable (GTK_TEXT_VIEW (logwdw), FALSE);
@@ -1219,6 +1207,19 @@ CreateFTPWindows (GtkWidget * ui)
 
   gtk_paned_pack2 (GTK_PANED (logpane), log_table, 1, 1);
   gtk_box_pack_start (GTK_BOX (mainvbox), logpane, TRUE, TRUE, 0);
+
+  gftp_lookup_global_option ("listbox_remote_width", &w);
+  gftp_lookup_global_option ("listbox_file_height", &h);
+  gtk_window_set_default_size (GTK_WINDOW(window), w, h);
+
+  gftp_lookup_global_option ("listbox_local_width", &tmplookup);
+  gtk_paned_set_position(GTK_PANED(winpane), tmplookup);
+
+  gftp_lookup_global_option ("log_height", &tmplookup);
+  gtk_paned_set_position(GTK_PANED(logpane), tmplookup);
+
+  gftp_lookup_global_option ("transfer_height", &tmplookup);
+  gtk_paned_set_position(GTK_PANED(dlpane), tmplookup);
 
   gtk_widget_show_all (mainvbox);
   gftpui_show_or_hide_command ();
@@ -1501,8 +1502,9 @@ _setup_window2 (int argc, char **argv)
 int
 main (int argc, char **argv)
 {
-  GtkWidget *window, *ui;
+  GtkWidget *ui;
   gftp_graphic * gftp_icon;
+
 
   /* We override the read color functions because we are using a GdkColor
      structures to store the color. If I put this in lib/config_file.c, then

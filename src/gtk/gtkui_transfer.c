@@ -296,7 +296,7 @@ gftpui_ask_transfer (gftp_transfer * tdata)
   gtk_widget_show (tempwid);
 
   scroll = gtk_scrolled_window_new (NULL, NULL);
-  gtk_widget_set_size_request (scroll, 450, 200);
+  gtk_window_set_default_size(GTK_WINDOW (dialog), 450, 200);
 
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll),
                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
