@@ -54,7 +54,7 @@ _gftp_exit (GtkWidget * widget, gpointer data)
   const char * tempwid;
   intptr_t ret;
 
-/*
+#if GTK_MAJOR_VERSION == 3
   ret = gtk_widget_get_allocated_width(GTK_WIDGET (local_frame));
   gftp_set_global_option ("listbox_local_width", GINT_TO_POINTER (ret));
   ret = gtk_widget_get_allocated_width(GTK_WIDGET (remote_frame));
@@ -65,7 +65,8 @@ _gftp_exit (GtkWidget * widget, gpointer data)
   gftp_set_global_option ("log_height", GINT_TO_POINTER (ret));
   ret = gtk_widget_get_allocated_height(GTK_WIDGET (transfer_scroll));
   gftp_set_global_option ("transfer_height", GINT_TO_POINTER (ret));
-*/
+#endif
+
   ret = get_column (GTK_TREE_VIEW (dlwdw), 0);
   gftp_set_global_option ("file_trans_column", GINT_TO_POINTER (ret));
 
