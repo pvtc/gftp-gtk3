@@ -84,8 +84,7 @@ change_filespec (GtkAction * a, gpointer data)
     return;
 
   MakeEditDialog (_("Change Filespec"), _("Enter the new file specification"),
-                  wdata->filespec, 1, NULL, gftp_dialog_button_change,
-                  dochange_filespec, wdata, NULL, NULL);
+    wdata->filespec, 1, NULL, _("Change"), dochange_filespec, wdata, NULL, NULL);
 }
 
 static void

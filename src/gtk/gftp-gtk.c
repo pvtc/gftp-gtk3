@@ -216,9 +216,7 @@ openurl_dialog (GtkAction * a, gpointer data)
 
   wdata = data;
   MakeEditDialog (_("Open Location"), _("Enter a URL to connect to"),
-                  NULL, 1, NULL, gftp_dialog_button_connect,
-                  _gftpui_gtk_do_openurl, wdata,
-                  NULL, NULL);
+    NULL, 1, NULL, _("Connect"), _gftpui_gtk_do_openurl, wdata, NULL, NULL);
 }
 
 

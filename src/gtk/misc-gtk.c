@@ -560,41 +560,17 @@ destroy_dialog (gftp_dialog_data * ddata)
 
 void
 MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
-        char *checktext,
-                gftp_dialog_button okbutton, void (*okfunc) (), void *okptr,
+        char *checktext, const gchar * yes_text, void (*okfunc) (), void *okptr,
         void (*cancelfunc) (), void *cancelptr)
 {
   GtkWidget * tempwid, * dialog;
   gftp_dialog_data * ddata;
-  const gchar * yes_text;
 
   ddata = g_malloc0 (sizeof (*ddata));
   ddata->yesfunc = okfunc;
   ddata->yespointer = okptr;
   ddata->nofunc = cancelfunc;
   ddata->nopointer = cancelptr;
-
-  switch (okbutton)
-    {
-      case gftp_dialog_button_ok:
-        yes_text = GTK_STOCK_OK;
-        break;
-      case gftp_dialog_button_create:
-        yes_text = GTK_STOCK_ADD;
-        break;
-      case gftp_dialog_button_change:
-        yes_text = _("Change");
-        break;
-      case gftp_dialog_button_connect:
-        yes_text = _("Connect");
-        break;
-      case gftp_dialog_button_rename:
-        yes_text = _("Rename");
-        break;
-      default:
-        yes_text = GTK_STOCK_MISSING_IMAGE;
-        break;
-    }
 
   dialog = gtk_dialog_new_with_buttons (_(diagtxt), GTK_WINDOW(window), 0,
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_NO,

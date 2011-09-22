@@ -176,7 +176,9 @@ add_bookmark (GtkAction * a, gpointer data)
       return;
     }
 
-  MakeEditDialog (_("Add Bookmark"), _("Enter the name of the bookmark you want to add\nYou can separate items by a / to put it into a submenu\n(ex: Linux Sites/Debian)"), NULL, 1, _("Remember password"), gftp_dialog_button_create, doadd_bookmark, data, NULL, NULL);
+  MakeEditDialog (_("Add Bookmark"),
+    _("Enter the name of the bookmark you want to add\nYou can separate items by a / to put it into a submenu\n(ex: Linux Sites/Debian)"),
+    NULL, 1, _("Remember password"), GTK_STOCK_ADD, doadd_bookmark, data, NULL, NULL);
 }
 
 
@@ -404,8 +406,7 @@ new_folder_entry (gpointer data)
 {
   MakeEditDialog (_("New Folder"),
           _("Enter the name of the new folder to create"), NULL, 1,
-          NULL, gftp_dialog_button_create,
-                  do_make_new, (gpointer) 0x1, NULL, NULL);
+          NULL, GTK_STOCK_ADD, do_make_new, (gpointer) 0x1, NULL, NULL);
 }
 
 
@@ -414,8 +415,7 @@ new_item_entry (gpointer data)
 {
   MakeEditDialog (_("New Item"),
           _("Enter the name of the new item to create"), NULL, 1,
-          NULL, gftp_dialog_button_create,
-                  do_make_new, NULL, NULL, NULL);
+          NULL, GTK_STOCK_ADD, do_make_new, NULL, NULL, NULL);
 }
 
 

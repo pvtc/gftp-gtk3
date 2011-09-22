@@ -179,49 +179,6 @@ transfer_window_files (gftp_window_data * fromwdata, gftp_window_data * towdata)
 
 
 static int
-gftpui_gtk_tdata_connect (gftpui_callback_data * cdata)
-{
-  gftp_transfer * tdata;
-  int ret;
-
-  tdata = cdata->user_data;
-
-  if (tdata->fromreq != NULL)
-    {
-      ret = gftp_connect (tdata->fromreq);
-      if (ret < 0)
-        return (ret);
-    }
-
-  if (tdata->toreq != NULL)
-    {
-      ret = gftp_connect (tdata->toreq);
-      if (ret < 0)
-        return (ret);
-    }
-
-  return (0);
-}
-
-
-static void
-gftpui_gtk_tdata_disconnect (gftpui_callback_data * cdata)
-{
-  gftp_transfer * tdata;
-
-  tdata = cdata->user_data;
-
-  if (tdata->fromreq != NULL)
-    gftp_disconnect (tdata->fromreq);
-
-  if (tdata->toreq != NULL)
-    gftp_disconnect (tdata->toreq);
-
-  cdata->request->datafd = -1;
-}
-
-
-static int
 _gftp_getdir_thread (gftpui_callback_data * cdata)
 {
   return (gftp_get_all_subdirs (cdata->user_data, NULL));
@@ -241,8 +198,6 @@ gftp_gtk_get_subdirs (gftp_transfer * transfer)
   cdata->uidata = transfer->fromwdata;
   cdata->request = ((gftp_window_data *) transfer->fromwdata)->request;
   cdata->run_function = _gftp_getdir_thread;
-  cdata->connect_function = gftpui_gtk_tdata_connect;
-  cdata->disconnect_function = gftpui_gtk_tdata_disconnect;
   cdata->dont_check_connection = 1;
   cdata->dont_refresh = 1;
 
@@ -555,8 +510,7 @@ show_transfer (gftp_transfer * tdata, GtkTreeModel * model, GtkTreeIter * iter)
       tdata->toreq->stopable = 1;
       MakeEditDialog (_("Enter Password"),
               _("Please enter your password for this site"), NULL, 0,
-              NULL, gftp_dialog_button_connect,
-                      get_trans_password, tdata->toreq,
+              NULL, _("Connect"), get_trans_password, tdata->toreq,
               cancel_get_trans_password, tdata);
     }
 
@@ -565,8 +519,7 @@ show_transfer (gftp_transfer * tdata, GtkTreeModel * model, GtkTreeIter * iter)
       tdata->fromreq->stopable = 1;
       MakeEditDialog (_("Enter Password"),
               _("Please enter your password for this site"), NULL, 0,
-              NULL, gftp_dialog_button_connect,
-                      get_trans_password, tdata->fromreq,
+              NULL, _("Connect"), get_trans_password, tdata->fromreq,
               cancel_get_trans_password, tdata);
     }
 }

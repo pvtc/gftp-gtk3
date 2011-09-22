@@ -43,18 +43,6 @@
   trequest->datafd > 0 && !trequest->always_connected && \
   compare_request (trequest, (wdata)->request, 0))
 
-/* These are used for the MakeEditDialog function. I have these types to make
-   it easier for creating dialogs with GTK+ 1.2 and GTK+ 2.0 */
-
-typedef enum gftp_dialog_button_tag
-{
-  gftp_dialog_button_create,
-  gftp_dialog_button_change,
-  gftp_dialog_button_connect,
-  gftp_dialog_button_rename,
-  gftp_dialog_button_ok
-} gftp_dialog_button;
-
 typedef struct gftp_window_data_tag
 {
   GtkWidget *combo,         /* Entry widget/history for the user to enter
@@ -295,7 +283,7 @@ void MakeEditDialog                 ( char *diagtxt,
                           char *deftext,
                           int passwd_item,
                           char *checktext,
-                          gftp_dialog_button okbutton,
+                          const char * yestext,
                           void (*okfunc) (),
                           void *okptr,
                           void (*cancelfunc) (),

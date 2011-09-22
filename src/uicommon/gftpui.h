@@ -36,8 +36,6 @@ struct _gftpui_callback_data
   void *user_data;
   int retries;
   int (*run_function) (gftpui_callback_data * cdata);
-  int (*connect_function) (gftpui_callback_data * cdata);
-  void (*disconnect_function) (gftpui_callback_data * cdata);
   unsigned int dont_check_connection : 1,
                dont_refresh : 1,
                dont_clear_cache : 1,
