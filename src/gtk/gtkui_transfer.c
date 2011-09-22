@@ -138,16 +138,6 @@ gftpui_add_file_to_transfer (gftp_transfer * tdata, GList * curfle)
     -1);
 }
 
-
-void
-gftpui_cancel_file_transfer (gftp_transfer * tdata)
-{
-  tdata->cancel = 1;
-  tdata->fromreq->cancel = 1;
-  tdata->toreq->cancel = 1;
-}
-
-
 static void
 gftpui_gtk_trans_selectall (GtkWidget * widget, gpointer data)
 {
@@ -174,12 +164,11 @@ gftpui_gtk_set_action (gftp_transfer * tdata, int transfer_action)
 {
   GList * templist, * filelist;
   gftp_file * tempfle;
-
-  g_static_mutex_lock (&tdata->structmutex);
-
   GtkTreeSelection *select;
   GtkTreeIter iter;
   GtkTreeModel * model;
+
+  g_static_mutex_lock (&tdata->structmutex);
   select = gtk_tree_view_get_selection (GTK_TREE_VIEW (tdata->clist));
   templist = gtk_tree_selection_get_selected_rows(select, &model);
   for (filelist = templist ; filelist != NULL; filelist = g_list_next(filelist))
@@ -212,47 +201,6 @@ gftpui_gtk_skip (GtkWidget * widget, gpointer data)
   gftpui_gtk_set_action (data, GFTP_TRANS_ACTION_SKIP);
 }
 
-static void
-gftpui_gtk_ok (GtkWidget * widget, gpointer data)
-{
-  gftp_transfer * tdata;
-  gftp_file * tempfle;
-  GList * templist;
-
-  tdata = data;
-  g_static_mutex_lock (&tdata->structmutex);
-  for (templist = tdata->files; templist != NULL; templist = templist->next)
-    {
-      tempfle = templist->data;
-      if (tempfle->transfer_action != GFTP_TRANS_ACTION_SKIP)
-        break;
-    }
-
-  tdata->ready = 1;
-  if (templist == NULL)
-    {
-      tdata->show = 0;
-      tdata->done = 1;
-    }
-  else
-    tdata->show = 1;
-
-  g_static_mutex_unlock (&tdata->structmutex);
-}
-
-
-static void
-gftpui_gtk_cancel (GtkWidget * widget, gpointer data)
-{
-  gftp_transfer * tdata;
-
-  tdata = data;
-  g_static_mutex_lock (&tdata->structmutex);
-  tdata->show = 0;
-  tdata->done = tdata->ready = 1;
-  g_static_mutex_unlock (&tdata->structmutex);
-}
-
 void
 gftpui_ask_transfer (gftp_transfer * tdata)
 {
@@ -274,7 +222,7 @@ gftpui_ask_transfer (gftp_transfer * tdata)
   gtk_widget_show (tempwid);
 
   scroll = gtk_scrolled_window_new (NULL, NULL);
-  gtk_window_set_default_size(GTK_WINDOW (dialog), 450, 200);
+  gtk_window_set_default_size(GTK_WINDOW (dialog), 450, 350);
 
   gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scroll),
                   GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -321,7 +269,7 @@ gftpui_ask_transfer (gftp_transfer * tdata)
   gtk_tree_selection_select_all (select);
 
   hbox = gtk_hbox_new (TRUE, 20);
-  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), hbox, FALSE, TRUE, 0);
   gtk_widget_show (hbox);
 
   tempwid = gtk_button_new_with_label (_("Overwrite"));
@@ -343,7 +291,7 @@ gftpui_ask_transfer (gftp_transfer * tdata)
   gtk_widget_show (tempwid);
 
   hbox = gtk_hbox_new (TRUE, 20);
-  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), hbox, FALSE, TRUE, 0);
   gtk_widget_show (hbox);
 
   tempwid = gtk_button_new_with_label (_("Select All"));
@@ -360,13 +308,32 @@ gftpui_ask_transfer (gftp_transfer * tdata)
 
   gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_OK);
   gint response = gtk_dialog_run (GTK_DIALOG(dialog));
+
+  g_static_mutex_lock (&tdata->structmutex);
   if (response == GTK_RESPONSE_OK)
     {
-      gftpui_gtk_ok (dialog, tdata);
+      for (templist = tdata->files; templist != NULL; templist = templist->next)
+        {
+          tempfle = templist->data;
+          if (tempfle->transfer_action != GFTP_TRANS_ACTION_SKIP)
+            break;
+        }
+
+      tdata->ready = 1;
+      if (templist == NULL)
+        {
+          tdata->show = 0;
+          tdata->done = 1;
+        }
+      else
+        tdata->show = 1;
     }
   else
     {
-      gftpui_gtk_cancel (dialog, tdata);
+      tdata->show = 0;
+      tdata->done = tdata->ready = 1;
     }
+  g_static_mutex_unlock (&tdata->structmutex);
+
   gtk_widget_destroy (dialog);
 }
