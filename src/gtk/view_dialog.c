@@ -318,7 +318,6 @@ view_file (char *filename, int fd, unsigned int viewedit, unsigned int del_file,
                                         NULL);
   gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
-  gtk_widget_realize (dialog);
 
   table = gtk_table_new (1, 2, FALSE);
   gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), table, TRUE, TRUE, 0);

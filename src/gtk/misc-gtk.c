@@ -602,8 +602,6 @@ MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
                                         NULL);
   gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
-  gtk_grab_add (dialog);
-  gtk_widget_realize (dialog);
 
   ddata->dialog = dialog;
 
@@ -670,8 +668,6 @@ MakeYesNoDialog (char *diagtxt, char *infotxt,
 
   gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
-  gtk_grab_add (dialog);
-  gtk_widget_realize (dialog);
 
   ddata->dialog = dialog;
 
@@ -733,6 +729,8 @@ update_directory_download_progress (gftp_transfer * transfer)
       dialog = gtk_window_new (GTK_WINDOW_TOPLEVEL);
       gtk_window_set_decorated (GTK_WINDOW (dialog), 0);
       gtk_grab_add (dialog);
+      gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(window));
+      gtk_window_set_modal(GTK_WINDOW(dialog), TRUE);
       g_signal_connect (G_OBJECT (dialog), "delete_event",
                           G_CALLBACK (delete_event), NULL);
       gtk_window_set_title (GTK_WINDOW (dialog),

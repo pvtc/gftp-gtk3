@@ -1506,7 +1506,6 @@ main (int argc, char **argv)
   GtkWidget *ui;
   gftp_graphic * gftp_icon;
 
-
   /* We override the read color functions because we are using a GdkColor
      structures to store the color. If I put this in lib/config_file.c, then
      the core library would be dependant on Gtk+ being present */
@@ -1531,7 +1530,7 @@ main (int argc, char **argv)
               G_CALLBACK (_gftp_force_close), NULL);
   gtk_window_set_title (GTK_WINDOW (window), gftp_version);
   gtk_widget_set_name (window, gftp_version);
-  gtk_widget_realize (window);
+
   gftp_icon = open_xpm ("gftp.xpm");
   if (gftp_icon != NULL)
     {

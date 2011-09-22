@@ -416,7 +416,6 @@ about_dialog (GtkAction * a, gpointer data)
                                         NULL);
   gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
-  gtk_widget_realize (dialog);
 
   notebook = gtk_notebook_new ();
   gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), notebook, TRUE,

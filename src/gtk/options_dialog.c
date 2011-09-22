@@ -1222,7 +1222,6 @@ options_dialog (GtkAction * a, gpointer data)
   gtk_window_set_resizable (GTK_WINDOW (gftp_option_data->dialog), FALSE);
 
   gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (gftp_option_data->dialog))), 2);
-  gtk_widget_realize (gftp_option_data->dialog);
 
   gftp_option_data->notebook = gtk_notebook_new ();
   gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (gftp_option_data->dialog))),
