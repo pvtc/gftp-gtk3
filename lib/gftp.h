@@ -791,10 +791,7 @@ GList * gftp_sort_filelist 		( GList * filelist,
 					  int column, 
 					  int asds );
 
-char * gftp_gen_ls_string 		( gftp_request * request,
-					  gftp_file * fle, 
-					  char *file_prefixstr, 
-					  char *file_suffixstr );
+char * gftp_gen_ls_string 		( gftp_request * request, gftp_file * fle);
 
 char * base64_encode 			( char *str );
 
@@ -1071,10 +1068,6 @@ char *gftpui_protocol_ask_user_input	( gftp_request * request,
 					  char *question,
 					  int shown );
 
-void gftpui_protocol_update_timeout 	( gftp_request * request );
-
-#endif
-
 /* socket-connect.c */
 int gftp_connect_server 		( gftp_request * request, 
 					  char *service,
@@ -1137,3 +1130,4 @@ struct servent * r_getservbyname	( const char *name,
 					  struct servent *result_buf,
 					  int *h_errnop );
 
+#endif

@@ -708,7 +708,6 @@ apply_changes (void)
 
   proxy_hosts->list = new_proxy_hosts;
   new_proxy_hosts = NULL;
-  gftpui_show_or_hide_command ();
 }
 
 static void data_col_0 (GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,

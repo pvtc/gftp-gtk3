@@ -885,6 +885,32 @@ stop_transfer (GtkAction * a, gpointer data)
   gftpui_common_cancel_file_transfer (transfer);
 }
 
+static void
+gftpui_common_skip_file_transfer (gftp_transfer * tdata, gftp_file * curfle)
+{
+  g_static_mutex_lock (&tdata->structmutex);
+
+  if (tdata->started && !(curfle->transfer_action & GFTP_TRANS_ACTION_SKIP))
+    {
+      curfle->transfer_action = GFTP_TRANS_ACTION_SKIP;
+      if (tdata->curfle != NULL && curfle == tdata->curfle->data)
+        {
+          tdata->cancel = 1;
+          tdata->fromreq->cancel = 1;
+          tdata->toreq->cancel = 1;
+          tdata->skip_file = 1;
+        }
+      else if (!curfle->transfer_done)
+        tdata->total_bytes -= curfle->size;
+    }
+
+  g_static_mutex_unlock (&tdata->structmutex);
+
+  if (curfle != NULL)
+    tdata->fromreq->logging_function (gftp_logging_misc, tdata->fromreq,
+                                      _("Skipping file %s on host %s\n"),
+                                      curfle->file, tdata->toreq->hostname);
+}
 
 void
 skip_transfer (GtkAction * a, gpointer data)

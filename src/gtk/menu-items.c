@@ -109,7 +109,7 @@ dosave_directory_listing (const char *filename, GList * templist)
       if (!tempfle->shown)
         continue;
 
-      tempstr = gftp_gen_ls_string (NULL, tempfle, NULL, NULL);
+      tempstr = gftp_gen_ls_string (NULL, tempfle);
       fprintf (fd, "%s\n", tempstr);
       g_free (tempstr);
 

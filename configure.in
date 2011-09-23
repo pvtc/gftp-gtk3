@@ -304,9 +304,7 @@ AC_CONFIG_FILES(po/Makefile.in
 	lib/fsplib/Makefile
 	src/gftp
 	src/Makefile
-	src/uicommon/Makefile
 	src/gtk/Makefile
-	src/text/Makefile
 	gftp.spec
 )
 AC_OUTPUT

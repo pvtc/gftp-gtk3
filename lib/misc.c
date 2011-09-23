@@ -869,8 +869,7 @@ gftp_sort_filelist (GList * filelist, int column, int asds)
 
 
 char *
-gftp_gen_ls_string (gftp_request * request, gftp_file * fle,
-                    char *file_prefixstr, char *file_suffixstr)
+gftp_gen_ls_string (gftp_request * request, gftp_file * fle)
 {
   char *tempstr1, *tempstr2, *ret, tstr[50], *attribs, *utf8;
   size_t destlen;
@@ -895,21 +894,14 @@ gftp_gen_ls_string (gftp_request * request, gftp_file * fle,
   else
     strftime (tstr, sizeof (tstr), "%b %d %H:%M", lt);
 
-  if (file_prefixstr == NULL)
-    file_prefixstr = "";
-  if (file_suffixstr == NULL)
-    file_suffixstr = "";
-
   utf8 = gftp_string_from_utf8 (request, 1, fle->file, &destlen);
   if (utf8 != NULL)
     {
-      ret = g_strdup_printf ("%s %s %s %s%s%s", tempstr1, tempstr2, tstr,
-                             file_prefixstr, utf8, file_suffixstr);
+      ret = g_strdup_printf ("%s %s %s %s", tempstr1, tempstr2, tstr, utf8);
       g_free (utf8);
     }
   else
-    ret = g_strdup_printf ("%s %s %s %s%s%s", tempstr1, tempstr2, tstr,
-                           file_prefixstr, fle->file, file_suffixstr);
+    ret = g_strdup_printf ("%s %s %s %s", tempstr1, tempstr2, tstr, fle->file);
 
   g_free (tempstr1);
   g_free (tempstr2);

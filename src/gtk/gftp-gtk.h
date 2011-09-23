@@ -21,7 +21,6 @@
 #define __GFTP_GTK_H
 
 #include "../../lib/gftp.h"
-#include "../uicommon/gftpui.h"
 #include <gtk/gtk.h>
 #include <gdk/gdkkeysyms.h>
 
@@ -122,8 +121,7 @@ typedef struct gftp_options_dialog_data_tag
 
 extern gftp_window_data window1, window2, * other_wdata, * current_wdata;
 extern GtkWidget * stop_btn, * hostedit, * useredit, * passedit,
-                 * portedit, * logwdw, * dlwdw, * optionmenu,
-                 * gftpui_command_widget, * openurl_btn, *window;
+                 * portedit, * logwdw, * dlwdw, * optionmenu, * openurl_btn, *window;
 extern GtkAdjustment * logwdw_vadj;
 
 extern GtkTextMark * logwdw_textmark;
@@ -187,8 +185,6 @@ void sortrows                   ( GtkTreeViewColumn * col,
 void stop_button                ( GtkWidget * widget,
                           gpointer data );
 
-void gftpui_show_or_hide_command        ( void );
-
 /* gtkui.c */
 void gftpui_run_command             ( GtkWidget * widget,
                           gpointer data );
@@ -237,9 +233,6 @@ void clear_cache                (GtkAction * a,  gpointer data );
 void compare_windows                (GtkAction * a,  gpointer data );
 
 void about_dialog               (GtkAction * a,  gpointer data );
-
-/* misc-gtk.c */
-void fix_display                ( void );
 
 void remove_files_window            ( gftp_window_data * wdata );
 
@@ -357,5 +350,88 @@ void view_file                  ( char *filename,
                           unsigned int dontupload,
                           char *remote_filename,
                           gftp_window_data * wdata );
+
+
+typedef struct _gftpui_callback_data gftpui_callback_data;
+
+struct _gftpui_callback_data
+{
+  gftp_request * request;
+  void *uidata;
+  char *input_string,
+       *source_string;
+  GList * files;
+  void *user_data;
+  int retries;
+  int (*run_function) (gftpui_callback_data * cdata);
+  unsigned int dont_check_connection : 1,
+               dont_refresh : 1,
+               dont_clear_cache : 1,
+               toggled : 1;
+};
+
+
+typedef enum _gftpui_common_request_type
+{
+  gftpui_common_request_none,
+  gftpui_common_request_local,
+  gftpui_common_request_remote
+} gftpui_common_request_type;
+
+
+#define gftpui_common_use_threads(request)  (gftp_protocols[(request)->protonum].use_threads)
+
+extern sigjmp_buf gftpui_common_jmp_environment;
+extern volatile int gftpui_common_use_jmp_environment;
+extern GStaticMutex gftpui_common_transfer_mutex;
+extern volatile sig_atomic_t gftpui_common_child_process_done;
+
+/* gftpui.c */
+int gftpui_run_callback_function    ( gftpui_callback_data * cdata );
+
+int gftpui_common_run_callback_function ( gftpui_callback_data * cdata );
+
+int gftpui_common_cmd_open      ( void *uidata,
+                      gftp_request * request,
+                      void *other_uidata,
+                      gftp_request * other_request,
+                      const char *command );
+
+gftp_transfer * gftpui_common_add_file_transfer ( gftp_request * fromreq,
+                          gftp_request * toreq,
+                          void *fromuidata,
+                          void *touidata,
+                          GList * files );
+
+void gftpui_common_cancel_file_transfer ( gftp_transfer * tdata );
+
+int gftpui_common_transfer_files    ( gftp_transfer * tdata );
+
+/* gftpuicallback.c */
+int gftpui_common_run_mkdir         ( gftpui_callback_data * cdata );
+
+int gftpui_common_run_rename        ( gftpui_callback_data * cdata );
+
+int gftpui_common_run_site      ( gftpui_callback_data * cdata );
+
+int gftpui_common_run_chdir         ( gftpui_callback_data * cdata );
+
+int gftpui_common_run_chmod     ( gftpui_callback_data * cdata );
+
+int gftpui_common_run_ls        ( gftpui_callback_data * cdata );
+
+int gftpui_common_run_delete        ( gftpui_callback_data * cdata );
+
+void gftpui_refresh             ( void *uidata,  int clear_cache_entry );
+
+void gftpui_prompt_username     ( void *uidata, gftp_request * request );
+
+void gftpui_prompt_password         ( void *uidata, gftp_request * request );
+
+void gftpui_add_file_to_transfer    ( gftp_transfer * tdata, GList * curfle );
+
+void gftpui_ask_transfer        ( gftp_transfer * tdata );
+
+void gftpui_disconnect          ( void *uidata );
 
 #endif
