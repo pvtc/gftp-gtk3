@@ -20,12 +20,6 @@
 #include "gftp-gtk.h"
 
 static void
-_gftp_gtk_free_del_data (gftp_transfer * transfer, gftp_dialog_data * ddata)
-{
-  free_tdata (transfer);
-}
-
-static void
 _gftpui_common_del_purge_cache (gpointer key, gpointer value,
                                 gpointer user_data)
 {
@@ -88,34 +82,10 @@ gftpui_common_run_delete (gftpui_callback_data * cdata)
 }
 
 static void
-yesCB (gftp_transfer * transfer, gftp_dialog_data * ddata)
-{
-  gftpui_callback_data * cdata;
-  gftp_window_data * wdata;
-
-  g_return_if_fail (transfer != NULL);
-  g_return_if_fail (transfer->files != NULL);
-
-  wdata = transfer->fromwdata;
-
-  cdata = g_malloc0 (sizeof (*cdata));
-  cdata->request = wdata->request;
-  cdata->files = transfer->files;
-  cdata->uidata = wdata;
-  cdata->run_function = gftpui_common_run_delete;
-
-  gftpui_common_run_callback_function (cdata);
-
-  g_free (cdata);
-  _gftp_gtk_free_del_data (transfer, ddata);
-}
-
-
-static void
 askdel (gftp_transfer * transfer)
 {
   char *tempstr;
-
+  int ok;
   if (transfer->numfiles > 0 && transfer->numdirs > 0)
     {
       tempstr = g_strdup_printf (_("Are you sure you want to delete these %ld files and %ld directories"), transfer->numfiles, transfer->numdirs);
@@ -130,12 +100,27 @@ askdel (gftp_transfer * transfer)
     }
   else
     return;
-
-  MakeYesNoDialog (_("Delete Files/Directories"), tempstr,
-                   yesCB, transfer, _gftp_gtk_free_del_data, transfer);
+  ok = MakeYesNoDialog (_("Delete Files/Directories"), tempstr);
   g_free (tempstr);
-}
+  if (ok)
+    {
+      gftpui_callback_data * cdata;
 
+      g_return_if_fail (transfer != NULL);
+      g_return_if_fail (transfer->files != NULL);
+
+      cdata = g_malloc0 (sizeof (*cdata));
+      cdata->request = ((gftp_window_data *)transfer->fromwdata)->request;
+      cdata->files = transfer->files;
+      cdata->uidata = transfer->fromwdata;
+      cdata->run_function = gftpui_common_run_delete;
+
+      gftpui_common_run_callback_function (cdata);
+
+      g_free (cdata);
+    }
+  free_tdata (transfer);
+}
 
 void
 delete_dialog (GtkAction * a, gpointer data)

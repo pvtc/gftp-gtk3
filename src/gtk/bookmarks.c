@@ -94,13 +94,12 @@ append_bookmark (gftp_bookmarks_var * b, const char * up, GtkActionGroup * g)
 }
 
 static void
-doadd_bookmark (gpointer * data, gftp_dialog_data * ddata)
+doadd_bookmark (const char *edttxt, int check)
 {
-  const char *edttxt, *spos;
+  const char *spos;
   gftp_bookmarks_var * tempentry;
   char *dpos, *proto;
 
-  edttxt = gtk_entry_get_text (GTK_ENTRY (ddata->edit));
   if (*edttxt == '\0')
     {
       ftp_log (gftp_logging_error, NULL,
@@ -150,7 +149,7 @@ doadd_bookmark (gpointer * data, gftp_dialog_data * ddata)
 
       edttxt = gtk_entry_get_text (GTK_ENTRY (passedit));
       tempentry->pass = g_strdup (edttxt);
-      tempentry->save_password =  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ddata->checkbox));
+      tempentry->save_password = check;
     }
 
   gftp_add_bookmark (tempentry);
@@ -164,6 +163,8 @@ void
 add_bookmark (GtkAction * a, gpointer data)
 {
   const char *edttxt;
+  char * text;
+  int check;
 
   if (!check_status (_("Add Bookmark"), current_wdata, 0, 0, 0, 1))
     return;
@@ -176,9 +177,15 @@ add_bookmark (GtkAction * a, gpointer data)
       return;
     }
 
-  MakeEditDialog (_("Add Bookmark"),
+  check = 0;
+  text = MakeEditDialog (_("Add Bookmark"),
     _("Enter the name of the bookmark you want to add\nYou can separate items by a / to put it into a submenu\n(ex: Linux Sites/Debian)"),
-    NULL, 1, _("Remember password"), GTK_STOCK_ADD, doadd_bookmark, data, NULL, NULL);
+    NULL, 1, _("Remember password"), GTK_STOCK_ADD, &check);
+  if (text != NULL)
+    {
+      doadd_bookmark(text, check);
+      g_free(text);
+    }
 }
 
 
@@ -374,15 +381,13 @@ static void data_col_0 (GtkTreeViewColumn *tree_column, GtkCellRenderer *cell,
 
 
 static void
-do_make_new (gpointer data, gftp_dialog_data * ddata)
+do_make_new (const char *str, int data)
 {
   gftp_bookmarks_var * newentry = NULL;
-  const char *str;
   GtkTreeModel * model;
   GtkTreeIter iter;
   GtkTreeIter parent;
 
-  str = gtk_entry_get_text (GTK_ENTRY (ddata->edit));
   if (*str == '\0')
     {
       ftp_log (gftp_logging_misc, NULL, _("You must specify a name for the bookmark."));
@@ -404,48 +409,31 @@ do_make_new (gpointer data, gftp_dialog_data * ddata)
 static void
 new_folder_entry (gpointer data)
 {
-  MakeEditDialog (_("New Folder"),
+  char * text;
+
+  text = MakeEditDialog (_("New Folder"),
           _("Enter the name of the new folder to create"), NULL, 1,
-          NULL, GTK_STOCK_ADD, do_make_new, (gpointer) 0x1, NULL, NULL);
+          NULL, GTK_STOCK_ADD, NULL);
+  if (text != NULL)
+  {
+    do_make_new(text, 1);
+  }
 }
 
 
 static void
 new_item_entry (gpointer data)
 {
-  MakeEditDialog (_("New Item"),
+  char * text;
+
+  text = MakeEditDialog (_("New Item"),
           _("Enter the name of the new item to create"), NULL, 1,
-          NULL, GTK_STOCK_ADD, do_make_new, NULL, NULL, NULL);
+          NULL, GTK_STOCK_ADD, NULL);
+  if (text != NULL)
+  {
+    do_make_new(text, 0);
+  }
 }
-
-
-static void
-do_delete_entry (void * e, void * f)
-{
-  int valid;
-  gftp_bookmarks_var * entry;
-  gftp_bookmarks_var * entry0;
-  GtkTreeSelection *select;
-  GtkTreeIter iter;
-  GtkTreeIter iter0;
-  GtkTreeModel * model;
-
-  select = gtk_tree_view_get_selection (GTK_TREE_VIEW (tree));
-  if (! gtk_tree_selection_get_selected (select, &model, &iter))
-    return;
-  gtk_tree_model_get(model, &iter, 0, &entry, -1);
-  valid = gtk_tree_model_iter_children (model, &iter0, &iter);
-  while (valid)
-    {
-      gtk_tree_model_get(model, &iter0, 0, &entry0, -1);
-      gtk_tree_store_remove (GTK_TREE_STORE(model), &iter0);
-      gftp_free_bookmark (entry0, 1);
-      valid = gtk_tree_model_iter_next (model, &iter0);
-    }
-  gtk_tree_store_remove (GTK_TREE_STORE(model), &iter);
-  gftp_free_bookmark (entry, 1);
-}
-
 
 static void
 delete_entry (gpointer data)
@@ -464,15 +452,33 @@ delete_entry (gpointer data)
   if (entry == NULL || entry->prev == NULL)
     return;
 
-  if (!entry->isfolder)
-    do_delete_entry (entry, NULL);
-  else
+  if (entry->isfolder)
     {
       tempstr = g_strdup_printf (_("Are you sure you want to erase the bookmark\n%s and all its children?"), entry->path);
-      MakeYesNoDialog (_("Delete Bookmark"), tempstr, do_delete_entry, entry,
-                       NULL, NULL);
+      if (MakeYesNoDialog (_("Delete Bookmark"), tempstr))
+      {
+        int valid;
+        gftp_bookmarks_var * entry0;
+        GtkTreeIter iter0;
+
+        valid = gtk_tree_model_iter_children (model, &iter0, &iter);
+        while (valid)
+          {
+            gtk_tree_model_get(model, &iter0, 0, &entry0, -1);
+            gtk_tree_store_remove (GTK_TREE_STORE(model), &iter0);
+            gftp_free_bookmark (entry0, 1);
+            valid = gtk_tree_model_iter_next (model, &iter0);
+          }
+          gtk_tree_store_remove (GTK_TREE_STORE(model), &iter);
+          gftp_free_bookmark (entry, 1);
+      }
       g_free (tempstr);
     }
+  else
+  {
+    gtk_tree_store_remove (GTK_TREE_STORE(model), &iter);
+    gftp_free_bookmark (entry, 1);
+  }
 }
 
 

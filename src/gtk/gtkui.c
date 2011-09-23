@@ -48,79 +48,6 @@ gftpui_refresh (void *uidata, int clear_cache_entry)
   wdata->request->refreshing = 0;
 }
 
-
-#define _GFTPUI_GTK_USER_PW_SIZE    256
-
-static void
-_gftpui_gtk_set_username (gftp_request * request, gftp_dialog_data * ddata)
-{
-  gftp_set_username (request, gtk_entry_get_text (GTK_ENTRY (ddata->edit)));
-  request->stopable = 0;
-}
-
-
-static void
-_gftpui_gtk_set_password (gftp_request * request, gftp_dialog_data * ddata)
-{
-  gftp_set_password (request, gtk_entry_get_text (GTK_ENTRY (ddata->edit)));
-  request->stopable = 0;
-}
-
-
-static void
-_gftpui_gtk_abort (gftp_request * request, gftp_dialog_data * ddata)
-{
-  request->stopable = 0;
-}
-
-void
-gftpui_run_function_callback (gftp_window_data * wdata,
-                              gftp_dialog_data * ddata)
-{
-  gftpui_callback_data * cdata;
-  const char *edttext;
-
-  cdata = ddata->yespointer;
-  if (ddata->edit != NULL)
-    {
-      edttext = gtk_entry_get_text (GTK_ENTRY (ddata->edit));
-      if (*edttext == '\0')
-        {
-          ftp_log (gftp_logging_error, NULL,
-                   _("Operation canceled...you must enter a string\n"));
-          return;
-        }
-
-      cdata->input_string = g_strdup (edttext);
-    }
-
-  if (ddata->checkbox != NULL)
-    cdata->toggled = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (ddata->checkbox));
-  else
-    cdata->toggled = 0;
-
-  gtk_widget_destroy (ddata->dialog);
-  ddata->dialog = NULL;
-
-  gftpui_common_run_callback_function (cdata);
-}
-
-
-void
-gftpui_run_function_cancel_callback (gftp_window_data * wdata,
-                                     gftp_dialog_data * ddata)
-{
-  gftpui_callback_data * cdata;
-
-  cdata = ddata->yespointer;
-  if (cdata->input_string != NULL)
-    g_free (cdata->input_string);
-  if (cdata->source_string != NULL)
-    g_free (cdata->source_string);
-  g_free (cdata);
-}
-
-
 static int
 gftpui_common_run_mkdir (gftpui_callback_data * cdata)
 {
@@ -142,10 +69,14 @@ gftpui_mkdir_dialog (GtkAction * a, gpointer data)
   if (!check_status (_("Mkdir"), wdata, gftpui_common_use_threads (wdata->request), 0, 0, wdata->request->mkdir != NULL))
     return;
 
-  MakeEditDialog (_("Make Directory"), _("Enter name of directory to create"),
-                  NULL, 1, NULL, GTK_STOCK_ADD,
-                  gftpui_run_function_callback, cdata,
-                  gftpui_run_function_cancel_callback, cdata);
+  cdata->input_string = MakeEditDialog (_("Make Directory"), _("Enter name of directory to create"),
+                  NULL, 1, NULL, GTK_STOCK_ADD, NULL);
+  if (cdata->input_string != NULL)
+    {
+      gftpui_common_run_callback_function (cdata);
+      g_free (cdata->input_string);
+    }
+  g_free (cdata);
 }
 
 static int
@@ -187,10 +118,17 @@ gftpui_rename_dialog (GtkAction * a, gpointer data)
 
   tempstr = g_strdup_printf (_("What would you like to rename %s to?"),
                              cdata->source_string);
-  MakeEditDialog (_("Rename"), tempstr, cdata->source_string, 1, NULL, _("Rename"),
-                  gftpui_run_function_callback, cdata,
-                  gftpui_run_function_cancel_callback, cdata);
+
+  cdata->input_string = MakeEditDialog (_("Rename"), tempstr, cdata->source_string, 1, NULL, _("Rename"), NULL);
   g_free (tempstr);
+
+  if (cdata->input_string != NULL)
+    {
+      gftpui_common_run_callback_function (cdata);
+      g_free (cdata->input_string);
+    }
+  g_free (cdata->source_string);
+  g_free (cdata);
 }
 
 static int
@@ -214,10 +152,15 @@ gftpui_site_dialog (GtkAction * a, gpointer data)
   if (!check_status (_("Site"), wdata, 0, 0, 0, wdata->request->site != NULL))
     return;
 
-  MakeEditDialog (_("Site"), _("Enter site-specific command"), NULL, 1,
-                  _("Prepend with SITE"), GTK_STOCK_OK,
-                  gftpui_run_function_callback, cdata,
-                  gftpui_run_function_cancel_callback, cdata);
+  cdata->input_string = MakeEditDialog (_("Site"), _("Enter site-specific command"), NULL, 1,
+                  _("Prepend with SITE"), GTK_STOCK_OK, &(cdata->toggled));
+  if (cdata->input_string != NULL)
+  {
+    gftpui_common_run_callback_function (cdata);
+    g_free (cdata->input_string);
+  }
+
+  g_free (cdata);
 }
 
 static int
@@ -313,107 +256,30 @@ gftpui_gtk_get_utf8_file_pos (gftp_file * fle)
   return (pos);
 }
 
-
-static void
-_protocol_yes_answer (gpointer answer, gftp_dialog_data * ddata)
-{
-  *(int *) answer = 1;
-}
-
-
-static void
-_protocol_no_answer (gpointer answer, gftp_dialog_data * ddata)
-{
-  *(int *) answer = 0;
-}
-
-
 int
 gftpui_protocol_ask_yes_no (gftp_request * request, char *title,
                             char *question)
 {
-  int answer = -1;
+  int answer;
 
   GDK_THREADS_ENTER ();
-
-  MakeYesNoDialog (title, question, _protocol_yes_answer, &answer,
-                   _protocol_no_answer, &answer);
-
-  if (gftp_protocols[request->protonum].use_threads)
-    {
-      /* Let the main loop in the main thread run the events */
-      GDK_THREADS_LEAVE ();
-
-      while (answer == -1)
-        {
-          sleep (1);
-        }
-    }
-  else
-    {
-      while (answer == -1)
-        {
-          GDK_THREADS_LEAVE ();
-          g_main_context_iteration (NULL, TRUE);
-        }
-    }
+  answer = MakeYesNoDialog (title, question);
+  GDK_THREADS_LEAVE ();
 
   return (answer);
 }
-
-
-static void
-_protocol_ok_answer (char *buf, gftp_dialog_data * ddata)
-{
-  buf[1] = ' '; /* In case this is an empty string entered */
-  strncpy (buf, gtk_entry_get_text (GTK_ENTRY (ddata->edit)), BUFSIZ);
-}
-
-
-static void
-_protocol_cancel_answer (char *buf, gftp_dialog_data * ddata)
-{
-  buf[0] = '\0';
-  buf[1] = '\0';
-}
-
 
 char *
 gftpui_protocol_ask_user_input (gftp_request * request, char *title,
                                 char *question, int shown)
 {
-  char buf[BUFSIZ];
+  char * text;
 
   GDK_THREADS_ENTER ();
+  text = MakeEditDialog (title, question, NULL, shown, NULL, GTK_STOCK_OK, NULL);
+  GDK_THREADS_LEAVE ();
 
-  *buf = '\0';
-  *(buf + 1) = ' ';
-  MakeEditDialog (title, question, NULL, shown, NULL, GTK_STOCK_OK,
-                  _protocol_ok_answer, &buf, _protocol_cancel_answer, &buf);
-
-  if (gftp_protocols[request->protonum].use_threads)
-    {
-      /* Let the main loop in the main thread run the events */
-      GDK_THREADS_LEAVE ();
-
-      while (*buf == '\0' && *(buf + 1) == ' ')
-        {
-          sleep (1);
-        }
-    }
-  else
-    {
-      while (*buf == '\0' && *(buf + 1) == ' ')
-        {
-          GDK_THREADS_LEAVE ();
-          g_main_context_iteration (NULL, TRUE);
-        }
-    }
-
-  if (*buf != '\0')
-    return (g_strdup (buf));
-  else
-    return (NULL);
+  return text;
 }
 
 static int
@@ -425,34 +291,30 @@ gftpui_common_run_connect (gftpui_callback_data * cdata)
 static void
 gftpui_prompt_username (void *uidata, gftp_request * request)
 {
-  MakeEditDialog (_("Enter Username"),
-                  _("Please enter your username for this site"), NULL,
-                  1, NULL, _("Connect"),
-                  _gftpui_gtk_set_username, request,
-                  _gftpui_gtk_abort, request);
+  char * text;
 
-  request->stopable = 1;
-  while (request->stopable)
+  text = MakeEditDialog (_("Enter Username"),
+                  _("Please enter your username for this site"), NULL,
+                  1, NULL, _("Connect"), NULL);
+  if (text != NULL)
     {
-      GDK_THREADS_LEAVE ();
-      g_main_context_iteration (NULL, TRUE);
+      gftp_set_username (request, text);
+      g_free(text);
     }
 }
 
 static void
 gftpui_prompt_password (void *uidata, gftp_request * request)
 {
-  MakeEditDialog (_("Enter Password"),
-                  _("Please enter your password for this site"), NULL,
-                  0, NULL, _("Connect"),
-                  _gftpui_gtk_set_password, request,
-                  _gftpui_gtk_abort, request);
+  char * text;
 
-  request->stopable = 1;
-  while (request->stopable)
+  text = MakeEditDialog (_("Enter Password"),
+                  _("Please enter your password for this site"), NULL,
+                  0, NULL, _("Connect"), NULL);
+  if (text != NULL)
     {
-      GDK_THREADS_LEAVE ();
-      g_main_context_iteration (NULL, TRUE);
+      gftp_set_password (request, text);
+      g_free(text);
     }
 }
 

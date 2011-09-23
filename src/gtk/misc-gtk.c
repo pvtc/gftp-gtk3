@@ -303,29 +303,6 @@ update_window (gftp_window_data * wdata)
   set_menu_sensitive ("/MainMenu/Transfer/t_Put", connected);
 }
 
-
-GtkWidget *
-toolbar_pixmap (char *filename)
-{
-  gftp_graphic * graphic;
-  GtkWidget *pix;
-
-  if (filename == NULL || *filename == '\0')
-    return (NULL);
-
-  graphic = open_xpm (filename);
-
-  if (graphic == NULL)
-    return (NULL);
-
-  if ((pix = gtk_image_new_from_pixbuf (graphic->pb)) == NULL)
-    return (NULL);
-
-  gtk_widget_show (pix);
-  return (pix);
-}
-
-
 gftp_graphic *
 open_xpm (char *filename)
 {
@@ -547,124 +524,174 @@ add_file_listbox (gftp_window_data * wdata, gftp_file * fle)
   }
 }
 
-
-void
-destroy_dialog (gftp_dialog_data * ddata)
+char *
+MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item, char *checktext, const gchar * yes_text, int * checked)
 {
-  if (ddata->dialog != NULL)
-    {
-      gtk_widget_destroy (ddata->dialog);
-      ddata->dialog = NULL;
-    }
-}
+  gint size;
+  PangoFontDescription *font_desc;
+  GtkStyleContext *context;
+  GtkStateFlags state;
+  GtkWidget * hbox, * content_area, * dialog, * label, * image, * secondary_label, * message_area;
+  GtkWidget * edit, * checkbox;
+  char * ret;
 
-void
-MakeEditDialog (char *diagtxt, char *infotxt, char *deftext, int passwd_item,
-        char *checktext, const gchar * yes_text, void (*okfunc) (), void *okptr,
-        void (*cancelfunc) (), void *cancelptr)
-{
-  GtkWidget * tempwid, * dialog;
-  gftp_dialog_data * ddata;
-
-  ddata = g_malloc0 (sizeof (*ddata));
-  ddata->yesfunc = okfunc;
-  ddata->yespointer = okptr;
-  ddata->nofunc = cancelfunc;
-  ddata->nopointer = cancelptr;
-
-  dialog = gtk_dialog_new_with_buttons (_(diagtxt), GTK_WINDOW(window), 0,
+  dialog = gtk_dialog_new_with_buttons (diagtxt, GTK_WINDOW(window), 0,
                                         GTK_STOCK_CANCEL, GTK_RESPONSE_NO,
                                         yes_text, GTK_RESPONSE_YES,
                                         NULL);
-  gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
-  gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
 
-  ddata->dialog = dialog;
+  content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
 
-  tempwid = gtk_label_new (infotxt);
-  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), tempwid, TRUE,
-              TRUE, 0);
-  gtk_widget_show (tempwid);
+  gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
+  gtk_window_set_skip_taskbar_hint (GTK_WINDOW (dialog), TRUE);
 
-  ddata->edit = gtk_entry_new ();
-  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), ddata->edit, TRUE,
-              TRUE, 0);
-  gtk_widget_grab_focus (ddata->edit);
-  gtk_entry_set_visibility (GTK_ENTRY (ddata->edit), passwd_item);
+  image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
+  gtk_widget_set_halign (image, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (image, GTK_ALIGN_START);
+  gtk_widget_show (image);
 
+  label = gtk_label_new (diagtxt);
+  gtk_label_set_line_wrap  (GTK_LABEL (label), TRUE);
+  gtk_label_set_selectable (GTK_LABEL (label), TRUE);
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_START);
+  context = gtk_widget_get_style_context (label);
+  state = gtk_widget_get_state_flags (label);
+
+  size = pango_font_description_get_size (gtk_style_context_get_font (context, state));
+  font_desc = pango_font_description_new ();
+  pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
+  pango_font_description_set_size (font_desc, size * PANGO_SCALE_LARGE);
+  gtk_widget_override_font (label, font_desc);
+  pango_font_description_free (font_desc);
+  gtk_widget_show (label);
+
+  secondary_label = gtk_label_new (infotxt);
+  gtk_label_set_line_wrap  (GTK_LABEL (secondary_label), TRUE);
+  gtk_label_set_selectable (GTK_LABEL (secondary_label), TRUE);
+  gtk_widget_set_halign (secondary_label, GTK_ALIGN_START);
+  gtk_widget_set_valign (secondary_label, GTK_ALIGN_START);
+  gtk_widget_show (secondary_label);
+
+  edit = gtk_entry_new ();
+  gtk_widget_grab_focus (edit);
+  gtk_entry_set_visibility (GTK_ENTRY (edit), passwd_item);
   if (deftext != NULL)
     {
-      gtk_entry_set_text (GTK_ENTRY (ddata->edit), deftext);
-      gtk_editable_select_region (GTK_EDITABLE (ddata->edit), 0, strlen (deftext));
+      gtk_entry_set_text (GTK_ENTRY (edit), deftext);
+      gtk_editable_select_region (GTK_EDITABLE (edit), 0, strlen (deftext));
     }
-  gtk_widget_show (ddata->edit);
+  gtk_widget_show (edit);
 
+  message_area = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
+  gtk_box_pack_start (GTK_BOX (message_area), label, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (message_area), secondary_label, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (message_area), edit, TRUE, TRUE, 0);
   if (checktext != NULL)
     {
-      ddata->checkbox = gtk_check_button_new_with_label (checktext);
-      gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))),
-                          ddata->checkbox, TRUE, TRUE, 0);
-      gtk_widget_show (ddata->checkbox);
+      checkbox = gtk_check_button_new_with_label (checktext);
+      gtk_box_pack_start (GTK_BOX (message_area), checkbox, TRUE, TRUE, 0);
+      gtk_widget_show (checkbox);
     }
+  gtk_widget_show (message_area);
+
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
+  gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox), message_area, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (content_area), hbox, FALSE, FALSE, 0);
+  gtk_widget_show (hbox);
+
+  gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+  gtk_box_set_spacing (GTK_BOX (content_area), 14);
 
   gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_YES);
   gint response = gtk_dialog_run (GTK_DIALOG(dialog));
   if (response == GTK_RESPONSE_YES)
     {
-      if (ddata->yesfunc != NULL)
-        ddata->yesfunc (ddata->yespointer, ddata);
+      ret = g_strdup(gtk_entry_get_text (GTK_ENTRY (edit)));
     }
   else
     {
-      if (ddata->nofunc != NULL)
-        ddata->nofunc (ddata->nopointer, ddata);
+      ret = NULL;
     }
-  g_free (ddata);
+
+  if (checktext != NULL)
+    {
+      *checked = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON (checkbox));
+    }
   gtk_widget_destroy (dialog);
+
+  return ret;
 }
 
 
-void
-MakeYesNoDialog (char *diagtxt, char *infotxt,
-                 void (*yesfunc) (), gpointer yespointer,
-                 void (*nofunc) (), gpointer nopointer)
+int
+MakeYesNoDialog (char *diagtxt, char *infotxt)
 {
-  GtkWidget * text, * dialog;
-  gftp_dialog_data * ddata;
+  gint size;
+  PangoFontDescription *font_desc;
+  GtkStyleContext *context;
+  GtkStateFlags state;
+  GtkWidget * hbox, * content_area, * dialog, * label, * image, * secondary_label, * message_area;
 
-  ddata = g_malloc0 (sizeof (*ddata));
-  ddata->yesfunc = yesfunc;
-  ddata->yespointer = yespointer;
-  ddata->nofunc = nofunc;
-  ddata->nopointer = nopointer;
-  dialog = gtk_dialog_new_with_buttons (_(diagtxt), GTK_WINDOW(window), 0,
+  dialog = gtk_dialog_new_with_buttons (diagtxt, GTK_WINDOW(window), 0,
                                         GTK_STOCK_NO, GTK_RESPONSE_NO,
                                         GTK_STOCK_YES, GTK_RESPONSE_YES,
                                         NULL);
 
-  gtk_container_set_border_width (GTK_CONTAINER (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 10);
-  gtk_box_set_spacing (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), 5);
+  content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
 
-  ddata->dialog = dialog;
+  gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
+  gtk_window_set_skip_taskbar_hint (GTK_WINDOW (dialog), TRUE);
 
-  text = gtk_label_new (infotxt);
-  gtk_box_pack_start (GTK_BOX (gtk_dialog_get_content_area(GTK_DIALOG (dialog))), text, TRUE, TRUE, 0);
-  gtk_widget_show (text);
+  image = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION, GTK_ICON_SIZE_DIALOG);
+  gtk_widget_set_halign (image, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign (image, GTK_ALIGN_START);
+  gtk_widget_show (image);
+
+  label = gtk_label_new (diagtxt);
+  gtk_label_set_line_wrap  (GTK_LABEL (label), TRUE);
+  gtk_label_set_selectable (GTK_LABEL (label), TRUE);
+  gtk_widget_set_halign (label, GTK_ALIGN_START);
+  gtk_widget_set_valign (label, GTK_ALIGN_START);
+  context = gtk_widget_get_style_context (label);
+  state = gtk_widget_get_state_flags (label);
+  size = pango_font_description_get_size (gtk_style_context_get_font (context, state));
+  font_desc = pango_font_description_new ();
+  pango_font_description_set_weight (font_desc, PANGO_WEIGHT_BOLD);
+  pango_font_description_set_size (font_desc, size * PANGO_SCALE_LARGE);
+  gtk_widget_override_font (label, font_desc);
+  pango_font_description_free (font_desc);
+  gtk_widget_show (label);
+
+  secondary_label = gtk_label_new (infotxt);
+  gtk_label_set_line_wrap  (GTK_LABEL (secondary_label), TRUE);
+  gtk_label_set_selectable (GTK_LABEL (secondary_label), TRUE);
+  gtk_widget_set_halign (secondary_label, GTK_ALIGN_START);
+  gtk_widget_set_valign (secondary_label, GTK_ALIGN_START);
+  gtk_widget_show (secondary_label);
+
+  message_area = gtk_box_new (GTK_ORIENTATION_VERTICAL, 12);
+  gtk_box_pack_start (GTK_BOX (message_area), label, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (message_area), secondary_label, TRUE, TRUE, 0);
+  gtk_widget_show (message_area);
+
+  hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 12);
+  gtk_box_pack_start (GTK_BOX (hbox), image, FALSE, FALSE, 0);
+  gtk_box_pack_start (GTK_BOX (hbox), message_area, TRUE, TRUE, 0);
+  gtk_box_pack_start (GTK_BOX (content_area), hbox, FALSE, FALSE, 0);
+  gtk_widget_show (hbox);
+
+  gtk_container_set_border_width (GTK_CONTAINER (dialog), 5);
+  gtk_container_set_border_width (GTK_CONTAINER (hbox), 5);
+  gtk_box_set_spacing (GTK_BOX (content_area), 14);
 
   gtk_dialog_set_default_response (GTK_DIALOG(dialog), GTK_RESPONSE_YES);
   gint response = gtk_dialog_run (GTK_DIALOG(dialog));
-  if (response == GTK_RESPONSE_YES)
-    {
-      if (ddata->yesfunc != NULL)
-        ddata->yesfunc (ddata->yespointer, ddata);
-    }
-  else
-    {
-      if (ddata->nofunc != NULL)
-        ddata->nofunc (ddata->nopointer, ddata);
-    }
-  g_free (ddata);
   gtk_widget_destroy (dialog);
+
+  return response == GTK_RESPONSE_YES;
 }
 
 
@@ -730,7 +757,6 @@ update_directory_download_progress (gftp_transfer * transfer)
                           G_CALLBACK (trans_stop_button), transfer);
       gtk_box_pack_start (GTK_BOX (vbox), stopwid, TRUE, TRUE, 0);
       gtk_widget_show (stopwid);
-
       gtk_widget_show (dialog);
     }
 

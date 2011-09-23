@@ -325,42 +325,6 @@ free_edit_data (gftp_viewedit_data * ve_proc)
   g_free (ve_proc);
 }
 
-
-static void
-dont_upload (gftp_viewedit_data * ve_proc, gftp_dialog_data * ddata)
-{
-  remove_file (ve_proc);
-  free_edit_data (ve_proc);
-}
-
-
-static void
-do_upload (gftp_viewedit_data * ve_proc, gftp_dialog_data * ddata)
-{
-  gftp_transfer * tdata;
-  gftp_file * tempfle;
-  GList * newfile;
-
-  tempfle = g_malloc0 (sizeof (*tempfle));
-  tempfle->destfile = gftp_build_path (ve_proc->torequest,
-                                       ve_proc->torequest->directory,
-                                       ve_proc->remote_filename, NULL);
-  ve_proc->remote_filename = NULL;
-  tempfle->file = ve_proc->filename;
-  ve_proc->filename = NULL;
-  tempfle->done_rm = 1;
-  newfile = g_list_append (NULL, tempfle);
-  tdata = gftpui_common_add_file_transfer (ve_proc->fromwdata->request,
-                                           ve_proc->torequest,
-                                           ve_proc->fromwdata,
-                                           ve_proc->towdata, newfile);
-  free_edit_data (ve_proc);
-
-  if (tdata != NULL)
-    tdata->conn_error_no_timeout = 1;
-}
-
-
 static int
 _check_viewedit_process_status (gftp_viewedit_data * ve_proc, int ret)
 {
@@ -421,13 +385,39 @@ _prompt_to_upload_edited_file (gftp_viewedit_data * ve_proc)
       str = g_strdup_printf (_("File %s has changed.\nWould you like to upload it?"),
                              ve_proc->remote_filename);
 
-      MakeYesNoDialog (_("Edit File"), str, do_upload, ve_proc, dont_upload,
-                       ve_proc);
+      if (MakeYesNoDialog (_("Edit File"), str))
+        {
+          gftp_transfer * tdata;
+          gftp_file * tempfle;
+          GList * newfile;
+
+          tempfle = g_malloc0 (sizeof (*tempfle));
+          tempfle->destfile = gftp_build_path (ve_proc->torequest,
+                                               ve_proc->torequest->directory,
+                                               ve_proc->remote_filename, NULL);
+          ve_proc->remote_filename = NULL;
+          tempfle->file = ve_proc->filename;
+          ve_proc->filename = NULL;
+          tempfle->done_rm = 1;
+          newfile = g_list_append (NULL, tempfle);
+          tdata = gftpui_common_add_file_transfer (ve_proc->fromwdata->request,
+                                                   ve_proc->torequest,
+                                                   ve_proc->fromwdata,
+                                                   ve_proc->towdata, newfile);
+          free_edit_data (ve_proc);
+
+          if (tdata != NULL)
+            tdata->conn_error_no_timeout = 1;
+        }
+      else
+        {
+          remove_file (ve_proc);
+          free_edit_data (ve_proc);
+        }
       g_free (str);
       return (1);
     }
 }
-
 
 static void
 do_check_done_process (pid_t pid, int ret)
@@ -521,25 +511,6 @@ on_next_transfer (gftp_transfer * tdata, GtkTreeModel * model, GtkTreeIter * ite
     gftpui_refresh (tdata->towdata, 1);
 }
 
-
-static void
-get_trans_password (gftp_request * request, gftp_dialog_data * ddata)
-{
-  gftp_set_password (request, gtk_entry_get_text (GTK_ENTRY (ddata->edit)));
-  request->stopable = 0;
-}
-
-
-static void
-cancel_get_trans_password (gftp_transfer * tdata, gftp_dialog_data * ddata)
-{
-  if (tdata->fromreq->stopable == 0)
-    return;
-
-  gftpui_common_cancel_file_transfer (tdata);
-}
-
-
 static void
 show_transfer (gftp_transfer * tdata, GtkTreeModel * model, GtkTreeIter * iter)
 {
@@ -547,6 +518,7 @@ show_transfer (gftp_transfer * tdata, GtkTreeModel * model, GtkTreeIter * iter)
   GList * templist;
   char * status;
   GtkTreeIter sub;
+  char * text;
 
   gtk_tree_store_append (GTK_TREE_STORE(model), iter, NULL);
   gtk_tree_store_set(GTK_TREE_STORE(model), iter,
@@ -582,22 +554,47 @@ show_transfer (gftp_transfer * tdata, GtkTreeModel * model, GtkTreeIter * iter)
   if (!tdata->toreq->stopable && gftp_need_password (tdata->toreq))
     {
       tdata->toreq->stopable = 1;
-      MakeEditDialog (_("Enter Password"),
+      text = MakeEditDialog (_("Enter Password"),
               _("Please enter your password for this site"), NULL, 0,
-              NULL, _("Connect"), get_trans_password, tdata->toreq,
-              cancel_get_trans_password, tdata);
+              NULL, _("Connect"), NULL);
+      if (text != NULL)
+        {
+          gftp_set_password (tdata->toreq, text);
+          tdata->toreq->stopable = 0;
+          g_free(text);
+        }
+      else
+        {
+          if (! tdata->toreq->stopable != 0)
+            gftpui_common_cancel_file_transfer (tdata);
+        }
     }
-
   if (!tdata->fromreq->stopable && gftp_need_password (tdata->fromreq))
     {
       tdata->fromreq->stopable = 1;
-      MakeEditDialog (_("Enter Password"),
+      text = MakeEditDialog (_("Enter Password"),
               _("Please enter your password for this site"), NULL, 0,
-              NULL, _("Connect"), get_trans_password, tdata->fromreq,
-              cancel_get_trans_password, tdata);
+              NULL, _("Connect"), NULL);
+      if (text != NULL)
+      {
+          gftp_set_password (tdata->fromreq, text);
+          tdata->fromreq->stopable = 0;
+          g_free(text);
+      }
+      else
+      {
+        if (! tdata->fromreq->stopable == 0)
+           gftpui_common_cancel_file_transfer (tdata);
+      }
     }
 }
 
+#define GFTP_IS_SAME_HOST_STOP_TRANS(wdata,trequest) \
+  ((wdata) != NULL && (wdata)->request != NULL && \
+  (wdata)->request->datafd < 0 && !(wdata)->request->always_connected && \
+  (wdata)->request->cached && !(wdata)->request->stopable && \
+  trequest->datafd > 0 && !trequest->always_connected && \
+  compare_request (trequest, (wdata)->request, 0))
 
 static void
 transfer_done (GList * node, GtkTreeModel * model, GtkTreeIter * iter)
@@ -653,6 +650,12 @@ transfer_done (GList * node, GtkTreeModel * model, GtkTreeIter * iter)
 
   free_tdata (tdata);
 }
+
+#define GFTP_IS_SAME_HOST_START_TRANS(wdata,trequest) \
+  ((wdata) != NULL && (wdata)->request != NULL && \
+  (wdata)->request->datafd > 0 && !(wdata)->request->always_connected && \
+  !(wdata)->request->stopable && \
+  compare_request (trequest, (wdata)->request, 0))
 
 static void
 create_transfer (gftp_transfer * tdata, GtkTreeModel * model, GtkTreeIter * iter)

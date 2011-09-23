@@ -29,19 +29,6 @@
 #define GFTP_MENU_ITEM_WIN1 3
 #define GFTP_MENU_ITEM_WIN2 4
 
-#define GFTP_IS_SAME_HOST_START_TRANS(wdata,trequest) \
-  ((wdata) != NULL && (wdata)->request != NULL && \
-  (wdata)->request->datafd > 0 && !(wdata)->request->always_connected && \
-  !(wdata)->request->stopable && \
-  compare_request (trequest, (wdata)->request, 0))
-
-#define GFTP_IS_SAME_HOST_STOP_TRANS(wdata,trequest) \
-  ((wdata) != NULL && (wdata)->request != NULL && \
-  (wdata)->request->datafd < 0 && !(wdata)->request->always_connected && \
-  (wdata)->request->cached && !(wdata)->request->stopable && \
-  trequest->datafd > 0 && !trequest->always_connected && \
-  compare_request (trequest, (wdata)->request, 0))
-
 typedef struct gftp_window_data_tag
 {
   GtkWidget *combo,         /* Entry widget/history for the user to enter
@@ -63,20 +50,6 @@ typedef struct gftp_graphic_tag
   char * filename;
   GdkPixbuf * pb;
 } gftp_graphic;
-
-typedef struct gftp_dialog_data_tag
-{
-  GtkWidget * dialog,
-            * checkbox,
-            * edit;
-
-  void (*yesfunc) ();
-  gpointer yespointer;
-
-  void (*nofunc) ();
-  gpointer nopointer;
-} gftp_dialog_data;
-
 
 typedef struct gftp_viewedit_data_tag
 {
@@ -186,14 +159,7 @@ void stop_button                ( GtkWidget * widget,
                           gpointer data );
 
 /* gtkui.c */
-void gftpui_run_command             ( GtkWidget * widget,
-                          gpointer data );
-
-void gftpui_run_function_callback       ( gftp_window_data * wdata,
-                          gftp_dialog_data * ddata );
-
-void gftpui_run_function_cancel_callback    ( gftp_window_data * wdata,
-                          gftp_dialog_data * ddata );
+void gftpui_run_command             ( GtkWidget * widget, gpointer data );
 
 void gftpui_mkdir_dialog            (GtkAction * a,  gpointer data );
 
@@ -245,8 +211,6 @@ void update_window_info             ( void );
 
 void update_window              ( gftp_window_data * wdata );
 
-GtkWidget * toolbar_pixmap          ( char *filename );
-
 gftp_graphic * open_xpm             ( char *filename );
 void gftp_free_pixmap               ( char *filename );
 
@@ -269,25 +233,15 @@ int check_reconnect                 ( gftp_window_data * wdata );
 void add_file_listbox               ( gftp_window_data * wdata,
                           gftp_file * fle );
 
-void destroy_dialog                 ( gftp_dialog_data * ddata );
+char * MakeEditDialog ( char *diagtxt,
+                        char *infotxt,
+                        char *deftext,
+                        int passwd_item,
+                        char *checktext,
+                        const char * yestext,
+                        int * check );
 
-void MakeEditDialog                 ( char *diagtxt,
-                          char *infotxt,
-                          char *deftext,
-                          int passwd_item,
-                          char *checktext,
-                          const char * yestext,
-                          void (*okfunc) (),
-                          void *okptr,
-                          void (*cancelfunc) (),
-                          void *cancelptr );
-
-void MakeYesNoDialog                ( char *diagtxt,
-                          char *infotxt,
-                          void (*yesfunc) (),
-                          gpointer yespointer,
-                          void (*nofunc) (),
-                          gpointer nopointer );
+int MakeYesNoDialog                ( char *diagtxt, char *infotxt );
 
 void update_directory_download_progress     ( gftp_transfer * transfer );
 
@@ -357,17 +311,17 @@ typedef struct _gftpui_callback_data gftpui_callback_data;
 struct _gftpui_callback_data
 {
   gftp_request * request;
-  void *uidata;
+  gftp_window_data * uidata;
   char *input_string,
        *source_string;
   GList * files;
   void *user_data;
   int retries;
   int (*run_function) (gftpui_callback_data * cdata);
-  unsigned int dont_check_connection : 1,
-               dont_refresh : 1,
-               dont_clear_cache : 1,
-               toggled : 1;
+  int dont_check_connection;
+  int dont_refresh;
+  int dont_clear_cache;
+  int toggled;
 };
 
 

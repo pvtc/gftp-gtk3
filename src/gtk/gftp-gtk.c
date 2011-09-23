@@ -47,7 +47,7 @@ get_column (GtkTreeView * listbox, int column)
 
 
 static void
-_gftp_exit (GtkWidget * widget, gpointer data)
+_gftp_exit ()
 {
   gint remember_last_directory;
   const char *tempstr;
@@ -134,12 +134,15 @@ _gftp_try_close (GtkWidget * widget, void * a, gpointer data)
 {
   if (gftp_file_transfers == NULL)
     {
-      _gftp_exit (NULL, NULL);
+      _gftp_exit ();
       return (0);
     }
   else
     {
-      MakeYesNoDialog (_("Exit"), _("There are file transfers in progress.\nAre you sure you want to exit?"), _gftp_exit, NULL, NULL, NULL);
+      if (MakeYesNoDialog (_("Exit"), _("There are file transfers in progress.\nAre you sure you want to exit?")))
+      {
+         _gftp_exit();
+      }
       return (1);
     }
 }
@@ -156,7 +159,7 @@ static void
 _gftp_menu_exit (GtkAction * a, gpointer data)
 {
   if (!_gftp_try_close (NULL, NULL, NULL))
-    _gftp_exit (NULL, NULL);
+    _gftp_exit ();
 }
 
 
@@ -190,32 +193,23 @@ change_setting (gftp_window_data * wdata, int menuitem, GtkWidget * checkmenu)
     }
 }
 
-
-static void
-_gftpui_gtk_do_openurl (gftp_window_data * wdata, gftp_dialog_data * ddata)
-{
-  const char *tempstr;
-  char *buf;
-
-  tempstr = gtk_entry_get_text (GTK_ENTRY (ddata->edit));
-  if (tempstr != NULL && *tempstr != '\0')
-    {
-      buf = g_strdup (tempstr);
-      destroy_dialog (ddata);
-      gftpui_common_cmd_open (wdata, wdata->request, NULL, NULL, buf);
-      g_free (buf);
-    }
-}
-
-
 static void
 openurl_dialog (GtkAction * a, gpointer data)
 {
   gftp_window_data * wdata;
+  char * buf;
 
   wdata = data;
-  MakeEditDialog (_("Open Location"), _("Enter a URL to connect to"),
-    NULL, 1, NULL, _("Connect"), _gftpui_gtk_do_openurl, wdata, NULL, NULL);
+  buf = MakeEditDialog (_("Open Location"), _("Enter a URL to connect to"),
+    NULL, 1, NULL, _("Connect"),  NULL);
+  if (buf != NULL)
+    {
+      if (*buf != '\0')
+        {
+          gftpui_common_cmd_open (wdata, wdata->request, NULL, NULL, buf);
+        }
+      g_free (buf);
+    }
 }
 
 
@@ -1948,13 +1942,6 @@ main (int argc, char **argv)
   ui = CreateFTPWindows (window);
   gtk_container_add (GTK_CONTAINER (window), ui);
   gtk_widget_show (window);
-
-  char *str;
-  ftp_log (gftp_logging_misc, NULL, "%s, Copyright (C) 1998-2008 Brian Masney <masneyb@gftp.org>. If you have any questions, comments, or suggestions about this program, please feel free to email them to me. You can always find out the latest news about gFTP from my website at http://www.gftp.org/\n", gftp_version);
-  ftp_log (gftp_logging_misc, NULL, _("gFTP comes with ABSOLUTELY NO WARRANTY; for details, see the COPYING file. This is free software, and you are welcome to redistribute it under certain conditions; for details, see the COPYING file\n"));
-  str = _("Translated by");
-  if (strcmp (str, "Translated by") != 0)
-    ftp_log (gftp_logging_misc, NULL, "%s\n", str);
 
   g_timeout_add (1000, update_downloads, NULL);
 
