@@ -23,9 +23,6 @@ lib/socket-connect.c
 lib/sockutils.c
 lib/sshv2.c
 lib/sslcommon.c
-src/uicommon/gftpui.c
-src/uicommon/gftpuicallbacks.c
-src/uicommon/gftpui.h
 src/gtk/bookmarks.c
 src/gtk/chmod_dialog.c
 src/gtk/delete_dialog.c
@@ -39,6 +36,3 @@ src/gtk/misc-gtk.c
 src/gtk/options_dialog.c
 src/gtk/transfer.c
 src/gtk/view_dialog.c
-src/text/gftp-text.c
-src/text/gftp-text.h
-src/text/textui.c
