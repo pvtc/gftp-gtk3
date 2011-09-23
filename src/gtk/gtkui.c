@@ -74,41 +74,6 @@ _gftpui_gtk_abort (gftp_request * request, gftp_dialog_data * ddata)
 }
 
 void
-gftpui_prompt_username (void *uidata, gftp_request * request)
-{
-  MakeEditDialog (_("Enter Username"),
-                  _("Please enter your username for this site"), NULL,
-                  1, NULL, _("Connect"),
-                  _gftpui_gtk_set_username, request,
-                  _gftpui_gtk_abort, request);
-
-  request->stopable = 1;
-  while (request->stopable)
-    {
-      GDK_THREADS_LEAVE ();
-      g_main_context_iteration (NULL, TRUE);
-    }
-}
-
-
-void
-gftpui_prompt_password (void *uidata, gftp_request * request)
-{
-  MakeEditDialog (_("Enter Password"),
-                  _("Please enter your password for this site"), NULL,
-                  0, NULL, _("Connect"),
-                  _gftpui_gtk_set_password, request,
-                  _gftpui_gtk_abort, request);
-
-  request->stopable = 1;
-  while (request->stopable)
-    {
-      GDK_THREADS_LEAVE ();
-      g_main_context_iteration (NULL, TRUE);
-    }
-}
-
-void
 gftpui_run_function_callback (gftp_window_data * wdata,
                               gftp_dialog_data * ddata)
 {
@@ -156,6 +121,12 @@ gftpui_run_function_cancel_callback (gftp_window_data * wdata,
 }
 
 
+static int
+gftpui_common_run_mkdir (gftpui_callback_data * cdata)
+{
+  return (gftp_make_directory (cdata->request, cdata->input_string));
+}
+
 void
 gftpui_mkdir_dialog (GtkAction * a, gpointer data)
 {
@@ -177,6 +148,12 @@ gftpui_mkdir_dialog (GtkAction * a, gpointer data)
                   gftpui_run_function_cancel_callback, cdata);
 }
 
+static int
+gftpui_common_run_rename (gftpui_callback_data * cdata)
+{
+  return (gftp_rename_file (cdata->request, cdata->source_string,
+                            cdata->input_string));
+}
 
 void
 gftpui_rename_dialog (GtkAction * a, gpointer data)
@@ -216,6 +193,11 @@ gftpui_rename_dialog (GtkAction * a, gpointer data)
   g_free (tempstr);
 }
 
+static int
+gftpui_common_run_site (gftpui_callback_data * cdata)
+{
+  return (gftp_site_cmd (cdata->request, cdata->toggled, cdata->input_string));
+}
 
 void
 gftpui_site_dialog (GtkAction * a, gpointer data)
@@ -238,6 +220,11 @@ gftpui_site_dialog (GtkAction * a, gpointer data)
                   gftpui_run_function_cancel_callback, cdata);
 }
 
+static int
+gftpui_common_run_chdir (gftpui_callback_data * cdata)
+{
+  return (gftp_set_directory (cdata->request, cdata->input_string));
+}
 
 int
 gftpui_run_chdir (gpointer uidata, char *directory)
@@ -433,6 +420,40 @@ static int
 gftpui_common_run_connect (gftpui_callback_data * cdata)
 {
   return (gftp_connect (cdata->request));
+}
+
+static void
+gftpui_prompt_username (void *uidata, gftp_request * request)
+{
+  MakeEditDialog (_("Enter Username"),
+                  _("Please enter your username for this site"), NULL,
+                  1, NULL, _("Connect"),
+                  _gftpui_gtk_set_username, request,
+                  _gftpui_gtk_abort, request);
+
+  request->stopable = 1;
+  while (request->stopable)
+    {
+      GDK_THREADS_LEAVE ();
+      g_main_context_iteration (NULL, TRUE);
+    }
+}
+
+static void
+gftpui_prompt_password (void *uidata, gftp_request * request)
+{
+  MakeEditDialog (_("Enter Password"),
+                  _("Please enter your password for this site"), NULL,
+                  0, NULL, _("Connect"),
+                  _gftpui_gtk_set_password, request,
+                  _gftpui_gtk_abort, request);
+
+  request->stopable = 1;
+  while (request->stopable)
+    {
+      GDK_THREADS_LEAVE ();
+      g_main_context_iteration (NULL, TRUE);
+    }
 }
 
 int

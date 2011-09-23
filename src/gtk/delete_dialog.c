@@ -25,6 +25,67 @@ _gftp_gtk_free_del_data (gftp_transfer * transfer, gftp_dialog_data * ddata)
   free_tdata (transfer);
 }
 
+static void
+_gftpui_common_del_purge_cache (gpointer key, gpointer value,
+                                gpointer user_data)
+{
+  gftp_delete_cache_entry (NULL, key, 0);
+  g_free (key);
+}
+
+static int
+gftpui_common_run_delete (gftpui_callback_data * cdata)
+{
+  char *tempstr, description[BUFSIZ];
+  gftp_file * tempfle;
+  GHashTable * rmhash;
+  GList * templist;
+  int success, ret;
+
+  for (templist = cdata->files;
+       templist->next != NULL;
+       templist = templist->next);
+
+  if (cdata->request->use_cache)
+    rmhash = g_hash_table_new (string_hash_function, string_hash_compare);
+  else
+    rmhash = NULL;
+
+  ret = 0;
+  for (; templist != NULL; templist = templist->prev)
+    {
+      tempfle = templist->data;
+
+      if (S_ISDIR (tempfle->st_mode))
+        success = gftp_remove_directory (cdata->request, tempfle->file);
+      else
+        success = gftp_remove_file (cdata->request, tempfle->file);
+
+      if (success < 0)
+        ret = success;
+      else if (rmhash != NULL)
+        {
+          gftp_generate_cache_description (cdata->request, description,
+                                           sizeof (description), 0);
+          if (g_hash_table_lookup (rmhash, description) == NULL)
+            {
+              tempstr = g_strdup (description);
+              g_hash_table_insert (rmhash, tempstr, NULL);
+            }
+        }
+
+      if (!GFTP_IS_CONNECTED (cdata->request))
+        break;
+    }
+
+  if (rmhash != NULL)
+    {
+      g_hash_table_foreach (rmhash, _gftpui_common_del_purge_cache, NULL);
+      g_hash_table_destroy (rmhash);
+    }
+
+  return (ret);
+}
 
 static void
 yesCB (gftp_transfer * transfer, gftp_dialog_data * ddata)

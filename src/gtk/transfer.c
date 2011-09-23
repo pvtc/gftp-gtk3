@@ -21,6 +21,80 @@
 
 static int num_transfers_in_progress = 0;
 
+static int
+gftpui_common_run_ls (gftpui_callback_data * cdata)
+{
+  int got, matched_filespec, have_dotdot, ret;
+  char *sortcol_var, *sortasds_var;
+  intptr_t sortcol, sortasds;
+  gftp_file * fle;
+
+  ret = gftp_list_files (cdata->request);
+  if (ret < 0)
+    return (ret);
+
+  have_dotdot = 0;
+  cdata->request->gotbytes = 0;
+  cdata->files = NULL;
+  fle = g_malloc0 (sizeof (*fle));
+  while ((got = gftp_get_next_file (cdata->request, NULL, fle)) > 0 ||
+         got == GFTP_ERETRYABLE)
+    {
+      if (cdata->source_string == NULL)
+        matched_filespec = 1;
+      else
+        matched_filespec = gftp_match_filespec (cdata->request, fle->file,
+                                                cdata->source_string);
+
+      if (got < 0 || strcmp (fle->file, ".") == 0 || !matched_filespec)
+        {
+          gftp_file_destroy (fle, 0);
+          continue;
+        }
+      else if (strcmp (fle->file, "..") == 0)
+        have_dotdot = 1;
+
+      cdata->request->gotbytes += got;
+      cdata->files = g_list_prepend (cdata->files, fle);
+      fle = g_malloc0 (sizeof (*fle));
+    }
+  g_free (fle);
+
+  gftp_end_transfer (cdata->request);
+  cdata->request->gotbytes = -1;
+
+  if (!have_dotdot)
+    {
+      fle = g_malloc0 (sizeof (*fle));
+      fle->file = g_strdup ("..");
+      fle->user = g_malloc0 (1);
+      fle->group = g_malloc0 (1);
+      fle->st_mode = S_IFDIR | S_IRUSR | S_IWUSR | S_IXUSR;
+      cdata->files = g_list_prepend (cdata->files, fle);
+    }
+
+  if (cdata->files != NULL)
+    {
+      if (cdata->request->protonum == GFTP_LOCAL_NUM)
+        {
+          sortasds_var = "local_sortasds";
+          sortcol_var = "local_sortcol";
+        }
+      else
+        {
+          sortasds_var = "remote_sortasds";
+          sortcol_var = "remote_sortcol";
+        }
+
+      gftp_lookup_global_option (sortcol_var, &sortcol);
+      gftp_lookup_global_option (sortasds_var, &sortasds);
+
+      cdata->files = gftp_sort_filelist (cdata->files, sortcol, sortasds);
+    }
+
+  return (1);
+}
+
 int
 ftp_list_files (gftp_window_data * wdata)
 {

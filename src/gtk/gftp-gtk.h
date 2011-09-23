@@ -408,25 +408,7 @@ void gftpui_common_cancel_file_transfer ( gftp_transfer * tdata );
 int gftpui_common_transfer_files    ( gftp_transfer * tdata );
 
 /* gftpuicallback.c */
-int gftpui_common_run_mkdir         ( gftpui_callback_data * cdata );
-
-int gftpui_common_run_rename        ( gftpui_callback_data * cdata );
-
-int gftpui_common_run_site      ( gftpui_callback_data * cdata );
-
-int gftpui_common_run_chdir         ( gftpui_callback_data * cdata );
-
-int gftpui_common_run_chmod     ( gftpui_callback_data * cdata );
-
-int gftpui_common_run_ls        ( gftpui_callback_data * cdata );
-
-int gftpui_common_run_delete        ( gftpui_callback_data * cdata );
-
 void gftpui_refresh             ( void *uidata,  int clear_cache_entry );
-
-void gftpui_prompt_username     ( void *uidata, gftp_request * request );
-
-void gftpui_prompt_password         ( void *uidata, gftp_request * request );
 
 void gftpui_add_file_to_transfer    ( gftp_transfer * tdata, GList * curfle );
 
